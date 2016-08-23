@@ -31,8 +31,8 @@ void setup() {
   char strHello[] = "Hello World...";
   int szHello = strlen(strHello);
   lora.waitUntilReady(3000);
-//  lora.sendData((unsigned char*)strHello, szHello);
-  lora.sendData(strHello);
+  lora.sendData((unsigned char*)strHello, szHello);
+//  lora.sendData(strHello);
 }
 
 void loop() {
@@ -40,6 +40,7 @@ void loop() {
     szBuf = lora.receData(buf, 255);
   }
   lora.isBusy();
+  delay(100);
 
   // command to send
   if (Serial.available())
@@ -92,11 +93,18 @@ boolean parseCommand(char *strCmd)
     case '4':
       lora.writeConfig(868000, 0, 2, 7, 5);
       break;
+    case 'R':
+    case 'r':
+      lora.readConfig();
+      break;
+    case 't':
+      lora.writeConfig(918777, 0, 0, 7, 5);
+      break;
     case 'f':
       lora.writeConfig(868000, 0, 2, 7, 5);
       break;
     default:
-      lora.writeConfig(915000, 0, 0, 7, 5);
+      lora.writeConfig(915123, 0, 0, 7, 5);
       break;
   }
   

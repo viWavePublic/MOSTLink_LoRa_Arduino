@@ -36,14 +36,15 @@ void MOSTLora::begin()
 
   mySerial.begin(9600);
 
-  readConfig(); 
+  readConfig();
 }
 
 // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
 void MOSTLora::setMode(int p1, int p2)
 {
   digitalWrite(pinP1, p1);  // setup(1,1), normal(0,0)
-  digitalWrite(pinP2, p2);   
+  digitalWrite(pinP2, p2);
+  delay(100);
 }
 
 boolean MOSTLora::available()
@@ -70,7 +71,7 @@ boolean MOSTLora::printConfig(DataLora &data)
   int i;
   boolean bRet = false;
   if (data.tagBegin != 0x24 || data.tagEnd != 0x21) {
-    
+    Serial.print("++++++ incorrect config");
   }
   bRet = true;
   Serial.print("*** Module:");
@@ -146,13 +147,12 @@ void MOSTLora::readConfig()
 {
   waitUntilReady(5000);
   setMode(1, 1);    // setup(1,1), normal(0,0)
-  delay(100);
   
   uint8_t cmdRead[] = {0xFF,0x4C,0xCF,0x52,0xA1,0x52,0xF0};
   sendData(cmdRead, 7);
 
   // receive setting
-  delay(100);
+  delay(1000);
   receConfig(_data);
 }
 
@@ -160,7 +160,6 @@ void MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, ch
 {
   waitUntilReady(5000);
   setMode(1, 1);    // setup(1,1), normal(0,0)
-  delay(100);
   
   byte cmdWrite[16] = {0xFF,0x4C,0xCF,0x52,0xA1,0x57,0xF1};
   cmdWrite[7] = (freq >> 16) & 0xff;
@@ -176,7 +175,7 @@ void MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, ch
   sendData(cmdWrite, 16);
   
   // receive setting
-  delay(100);
+  delay(2000);
   receConfig(_data);  
 }
 
@@ -190,7 +189,8 @@ boolean MOSTLora::receConfig(DataLora &data)
     printConfig(data);
   }
   else {
-    Serial.println("------ Fail to get config!"); 
+    Serial.print(szRece);
+    Serial.println(") ------ Fail to get config!");
   }
   return bRet;
 }
@@ -245,8 +245,9 @@ int MOSTLora::parsePacket(byte *data, int szData)
   if (data[0] == '$') {
     
   }
-
-  
+  else if (data[0] == 0xFB && data[1] == 0xFC){
+      
+  }
 }
 
 boolean MOSTLora::isBusy()
@@ -264,7 +265,7 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
   boolean bRet = true;
   unsigned long tsStart = millis();
   while (isBusy()) {
-    delay(200);
+    delay(100);
     Serial.print("...!");
     if (timeout < millis() - tsStart) {
       bRet = false;
