@@ -1,7 +1,6 @@
 
 const int pinLed8 = 11;
 
-#include <Grove_LED_Bar.h>
 #include "MOSTLora.h"
 
 int count = 0;
@@ -19,24 +18,17 @@ int tsIdle = 0;
 void setup() {
   // put your setup code here, to run once:
   pinMode(pinTouch, INPUT);
-
   pinMode(pinLed8, OUTPUT);
-
-  digitalWrite(pinTouch, 0);
 
   digitalWrite(pinLed8, LOW);
   digitalWrite(pinTouch, LOW);
 
   Serial.begin(9600);
 
-//  char strRead[] = {0xFF,0x4C,0xCF,0x52,0xA1,0x52,0xF0, 0};
-//  applyLoraMode(1, 1);    // setup(1,1), normal(0,0)
-//  mySerial.print(strRead);
-
   lora.begin();
   lora.setMode(0, 1);
   
-  char strHello[] = "hello! How are you";
+  char strHello[] = "Hello World...";
   int szHello = strlen(strHello);
   lora.waitUntilReady(3000);
 //  lora.sendData((unsigned char*)strHello, szHello);
