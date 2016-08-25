@@ -2,6 +2,7 @@
 const int pinLedRece = 11;
 
 #include "MOSTLora.h"
+#include "MLpacket.h"
 #include "DHT.h"
 
 int count = 0;
@@ -12,6 +13,7 @@ bool bPressTouch = false;
 MOSTLora lora;
 DHT dht(2, DHT22);
 
+float fTemperature, fHumidity;
 int szBuf = 0;
 byte buf[256] = {0};
 int tsLast;
@@ -32,8 +34,11 @@ void setup() {
 
   Serial.print(F_CPU);
   Serial.println(" clocks CPU");
-//  readSensorDHT();
-  char strHello[] = "Hello World...";
+  
+  // init sensor for humidity & temperature
+  readSensorDHT(fHumidity, fTemperature);
+
+  char strHello[] = "Hello...";
   int szHello = strlen(strHello);
   delay(3000);
   lora.waitUntilReady(5000);
@@ -46,7 +51,8 @@ void loop() {
     szBuf = lora.receData(buf, 255);
     if (szBuf >= 2) {
       if (lora.parsePacket(buf, szBuf) >= 0) {
-        readSensorDHT();
+        readSensorDHT(fHumidity, fTemperature);
+        responseSensorData(fHumidity, fTemperature);
       }
     }
   }
@@ -62,11 +68,11 @@ void loop() {
   //digitalWrite(pinLedRece, bPressTouch);   // turn the LED on (HIGH is the voltage level)
 }
 
-boolean readSensorDHT()
+boolean readSensorDHT(float &h, float &t)
 {
     boolean bRet = false;
-    float h = dht.readHumidity();
-    float t = dht.readTemperature();
+    h = dht.readHumidity();
+    t = dht.readTemperature();
 //dht.readHT(&t, &h)
     // check if returns are valid, if they are NaN (not a number) then something went wrong!
     if (isnan(t) || isnan(h)) 
@@ -75,10 +81,7 @@ boolean readSensorDHT()
     } 
     else 
     {
-        if (0 != t && 0 != h) {
-        
-        }
-      
+        bRet = true;            
         Serial.print("Humidity: "); 
         Serial.print(h);
         Serial.print(" %\t");
@@ -87,8 +90,49 @@ boolean readSensorDHT()
         Serial.println(" *C");
     }
     delay(2000);
-    lora.sendData((char*)"Echo!");
     return bRet;
+}
+
+void responseSensorData(float h, float t)
+{
+    /////////////////////////
+    // RES_DATA packet
+    /////////////////////////   
+    MLUplink headUplink;
+    headUplink.length = 22 + 15;
+    memcpy(headUplink.sender_id, lora.getMacAddress(), 8);
+    // prepare uplink header
+    memcpy(buf, &headUplink, 22);
+    
+    // prapare payload chunk
+    byte payload[15], *ptr;
+    payload[0] = 0x0A;    // version
+    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA command
+    payload[3] = 0;       // error code: 0 - success
+    payload[4] = 8;       // data length
+    // humidity (4 bytes)
+    ptr = (byte*)&h;
+    payload[5] = ptr[3];
+    payload[6] = ptr[2];
+    payload[7] = ptr[1];
+    payload[8] = ptr[0];
+    // temperature (4 bytes)
+    ptr = (byte*)&t;
+    payload[9] = ptr[3];
+    payload[10] = ptr[2];
+    payload[11] = ptr[1];
+    payload[12] = ptr[0];
+    payload[13] = 0;      // option flag
+    payload[14] = 0;      // payload CRC
+
+    int nModeBackup = lora.getMode();
+    lora.setMode(E_LORA_WAKEUP);    
+    /////////////////////
+    // send data is ready
+    memcpy(buf + 22, payload, 15);
+    lora.sendData(buf, 37);
+    
+    lora.setMode(nModeBackup);    
 }
 
 void inputBySerial()
@@ -142,7 +186,7 @@ boolean parseCommand(char *strCmd)
       break;
     case 's':
     case 'S':
-      readSensorDHT();
+      readSensorDHT(fHumidity, fTemperature);
       break;
     case 'i':
     case 'I':

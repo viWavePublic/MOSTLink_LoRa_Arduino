@@ -45,7 +45,7 @@ class MOSTLora
 {
 private:
   DataLora _data;
-  byte _macHost[8];   // mac address for host
+  unsigned char _macHost[8];   // mac address for host
   int _eMode;
 public:
   MOSTLora();
@@ -56,7 +56,9 @@ private:
   // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
   void setMode(int p1, int p2);
 public:
-  void setMode(int eMode);
+  void setMode(int mode);
+  int getMode() { return _eMode; }
+  unsigned char *getMacAddress() { return _data.mac_addr; }
   boolean available();
   
   static void printBinary(const byte *data, const int szData);

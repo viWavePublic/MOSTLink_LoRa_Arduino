@@ -42,19 +42,19 @@ void MOSTLora::begin()
   setMode(E_LORA_WAKEUP);   // E_LORA_NORMAL
 }
 
-void MOSTLora::setMode(int eMode)
+void MOSTLora::setMode(int mode)
 {
-  if (_eMode == eMode)
+  if (_eMode == mode)
     return;
 
-  _eMode = eMode;
-  if (E_LORA_NORMAL == eMode)
+  _eMode = mode;
+  if (E_LORA_NORMAL == _eMode)
     setMode(0, 0);
-  else if (E_LORA_WAKEUP == eMode)
+  else if (E_LORA_WAKEUP == _eMode)
     setMode(0, 1);
-  else if (E_LORA_POWERSAVING == eMode)
+  else if (E_LORA_POWERSAVING == _eMode)
     setMode(1, 0);
-  else if (E_LORA_SETUP == eMode)
+  else if (E_LORA_SETUP == _eMode)
     setMode(1, 1);
 }
 

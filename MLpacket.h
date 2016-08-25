@@ -16,9 +16,11 @@ struct MLDownlink {
     unsigned char version;
     unsigned char length;
     // --------
-    unsigned char flag;             // 101H
+    unsigned char flag;             // 0
     unsigned char receiver_id[8];
     unsigned char headerCrc;
+    
+    MLDownlink();
 };
 
 // uplink packet header for MOST Link (22 bytes)
@@ -27,10 +29,12 @@ struct MLUplink {
     unsigned char version;
     unsigned char length;
     // --------
-    unsigned char flag;             // 101H
+    unsigned char flag;             // 0
     unsigned char receiver_id[8];
     unsigned char sender_id[8];
-    unsigned char packetCrc;
+    unsigned char headerCrc;
+
+    MLUplink();
 };
 
 #endif // __MLpacket_h
