@@ -1,7 +1,8 @@
 
-const int pinLed8 = 11;
+const int pinLedRece = 11;
 
 #include "MOSTLora.h"
+#include "DHT.h"
 
 int count = 0;
 const int pinTouch = 8;  // 12;
@@ -9,6 +10,7 @@ bool bPressTouch = false;
 //Grove_LED_Bar bar(7, 6, false);
 
 MOSTLora lora;
+DHT dht(2, DHT22);
 
 int szBuf = 0;
 byte buf[256] = {0};
@@ -18,36 +20,75 @@ int tsIdle = 0;
 void setup() {
   // put your setup code here, to run once:
   pinMode(pinTouch, INPUT);
-  pinMode(pinLed8, OUTPUT);
+  pinMode(pinLedRece, OUTPUT);
 
-  digitalWrite(pinLed8, LOW);
+  digitalWrite(pinLedRece, LOW);
   digitalWrite(pinTouch, LOW);
 
   Serial.begin(9600);
 
+  dht.begin();
   lora.begin();
-  lora.setMode(0, 1);
-  
+
+  Serial.print(F_CPU);
+  Serial.println(" clocks CPU");
+//  readSensorDHT();
   char strHello[] = "Hello World...";
   int szHello = strlen(strHello);
-  lora.waitUntilReady(3000);
-  lora.sendData((unsigned char*)strHello, szHello);
-//  lora.sendData(strHello);
+  delay(3000);
+  lora.waitUntilReady(5000);
+//  lora.sendData((unsigned char*)strHello, szHello);
+  lora.sendData(strHello);
 }
 
 void loop() {
   if (lora.available()) {
     szBuf = lora.receData(buf, 255);
+    if (szBuf >= 2) {
+      if (lora.parsePacket(buf, szBuf) >= 0) {
+        readSensorDHT();
+      }
+    }
   }
-  lora.isBusy();
-  delay(100);
+//  lora.isBusy();
+  delay(10);
+//  readSensorDHT();
 
   // command to send
   if (Serial.available())
     inputBySerial();
 
-  checkTouch();
-  //digitalWrite(pinLed8, bPressTouch);   // turn the LED on (HIGH is the voltage level)
+//  checkTouch();
+  //digitalWrite(pinLedRece, bPressTouch);   // turn the LED on (HIGH is the voltage level)
+}
+
+boolean readSensorDHT()
+{
+    boolean bRet = false;
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+//dht.readHT(&t, &h)
+    // check if returns are valid, if they are NaN (not a number) then something went wrong!
+    if (isnan(t) || isnan(h)) 
+    {
+        Serial.println("Failed to read from DHT");
+    } 
+    else 
+    {
+        if (0 != t && 0 != h) {
+        
+        }
+      
+        Serial.print("Humidity: "); 
+        Serial.print(h);
+        Serial.print(" %\t");
+        Serial.print("Temperature: "); 
+        Serial.print(t);
+        Serial.println(" *C");
+    }
+    delay(2000);
+    lora.sendData((char*)"Echo!");
+    return bRet;
 }
 
 void inputBySerial()
@@ -73,8 +114,10 @@ void inputBySerial()
 
 boolean parseCommand(char *strCmd)
 {
-  if (strCmd[0] != '/' || strlen(strCmd) < 2)
+  if (strCmd[0] != '/' || strlen(strCmd) < 2) {
+    lora.setMode(E_LORA_WAKEUP);
     return false;
+  }
 
   int nCmd = strCmd[1];
   switch (nCmd) {
@@ -97,18 +140,61 @@ boolean parseCommand(char *strCmd)
     case 'r':
       lora.readConfig();
       break;
+    case 's':
+    case 'S':
+      readSensorDHT();
+      break;
+    case 'i':
+    case 'I':
+      lora.printInfo();
+      break;
+    case 'm':
+    case 'M':
+      {
+        int nMode = atoi(strCmd + 2);
+        lora.setMode(nMode);
+        lora.printInfo();
+      }
+      break;
     case 't':
-      lora.writeConfig(918777, 0, 0, 7, 5);
+      lora.writeConfig(913000, 0, 0, 7, 5);
       break;
     case 'f':
-      lora.writeConfig(868000, 0, 2, 7, 5);
+      {
+        int i = 0;
+        int datarate = 0;
+        long freq = 915000;
+        char *strOut = strtok(strCmd + 2, ",");
+        while (strOut != NULL)
+        {
+          if (0 == i) {
+            Serial.print("frequency: ");
+            freq = atoi(strOut);
+            Serial.print(freq);
+          }
+          else if (1 == i) {
+            Serial.print(", data rate: ");
+            datarate = atoi(strOut);
+            Serial.print(datarate);
+            Serial.print(" --- END\n");
+          }
+          else {
+            Serial.print("#");
+            Serial.print(i);
+            Serial.print(" = ");
+            Serial.println(strOut);
+          }
+          strOut = strtok (NULL, ",");
+          i++;
+        }        
+        lora.writeConfig(freq, 0, datarate, 7, 5);
+      }
       break;
     default:
-      lora.writeConfig(915123, 0, 0, 7, 5);
+      lora.writeConfig(913000, 0, 0, 7, 5);
       break;
   }
   
-  lora.setMode(0, 0);
   return true;
 }
 

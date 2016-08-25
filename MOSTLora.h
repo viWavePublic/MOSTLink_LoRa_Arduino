@@ -16,6 +16,7 @@
 
 //
 enum E_LORA_MODE {
+  E_UNKNOWN_LORA_MODE = -1,
   E_LORA_NORMAL = 0,
   E_LORA_WAKEUP = 1,
   E_LORA_POWERSAVING = 2,
@@ -24,7 +25,7 @@ enum E_LORA_MODE {
 
 // config data for lora (30 bytes)
 struct DataLora {
-  char tagBegin;      // 24
+  char tagBegin;      // 0x24
   // --------
   char module_no[4];  // 101H
   char ver_no[7];     // version
@@ -37,7 +38,7 @@ struct DataLora {
   char uart_check;    // (default 0)none, (1)odd, (2)even
   char wakeup_time;   // (0)50ms, 100ms, 200ms, 400ms, 600ms, (default 5)1s, 1.5s, 2s, 2.5s, 3s, 4s, (0xb)5s
   // --------
-  char tagEnd;        // 21
+  char tagEnd;        // 0x21
 };
 
 class MOSTLora
@@ -45,17 +46,22 @@ class MOSTLora
 private:
   DataLora _data;
   byte _macHost[8];   // mac address for host
+  int _eMode;
 public:
   MOSTLora();
 
   void begin();
 
+private:
   // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
   void setMode(int p1, int p2);
+public:
+  void setMode(int eMode);
   boolean available();
   
   static void printBinary(const byte *data, const int szData);
   boolean printConfig(DataLora &data);
+  boolean printInfo();
 
   boolean setHostMAC(char *strMac);
   void readConfig();

@@ -6,6 +6,7 @@
  */
 
 #include "MOSTLora.h"
+#include "MLpacket.h"
 
 #ifdef USE_ARDUINO_UNO         // for arduino Uno
 #include <SoftwareSerial.h>
@@ -21,7 +22,7 @@ const int pinBZ = A2;
  
 MOSTLora::MOSTLora()
 {
-
+    _eMode = E_UNKNOWN_LORA_MODE;
 }
 
 void MOSTLora::begin()
@@ -37,6 +38,24 @@ void MOSTLora::begin()
   mySerial.begin(9600);
 
   readConfig();
+    
+  setMode(E_LORA_WAKEUP);   // E_LORA_NORMAL
+}
+
+void MOSTLora::setMode(int eMode)
+{
+  if (_eMode == eMode)
+    return;
+
+  _eMode = eMode;
+  if (E_LORA_NORMAL == eMode)
+    setMode(0, 0);
+  else if (E_LORA_WAKEUP == eMode)
+    setMode(0, 1);
+  else if (E_LORA_POWERSAVING == eMode)
+    setMode(1, 0);
+  else if (E_LORA_SETUP == eMode)
+    setMode(1, 1);
 }
 
 // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
@@ -44,7 +63,7 @@ void MOSTLora::setMode(int p1, int p2)
 {
   digitalWrite(pinP1, p1);  // setup(1,1), normal(0,0)
   digitalWrite(pinP2, p2);
-  delay(100);
+  delay(200);
 }
 
 boolean MOSTLora::available()
@@ -110,6 +129,26 @@ boolean MOSTLora::printConfig(DataLora &data)
   char *pData = (char*)&data;
   Serial.println("\n");
   return bRet;
+}
+
+boolean MOSTLora::printInfo()
+{
+    boolean bRet = MOSTLora::printConfig(_data);
+    switch (_eMode) {
+        case E_LORA_NORMAL:
+            Serial.println("--- Normal Mode ---");
+            break;
+        case E_LORA_WAKEUP:
+            Serial.println("--- Wakeup Mode ---");
+            break;
+        case E_LORA_POWERSAVING:
+            Serial.println("--- Power Saving Mode ---");
+            break;
+        case E_LORA_SETUP:
+            Serial.println("--- Setup Mode ---");
+            break;
+    }
+    return bRet;
 }
 
 boolean MOSTLora::setHostMAC(char *strMac)
@@ -215,23 +254,43 @@ int MOSTLora::sendData(byte *data, int szData)
 
 int MOSTLora::receData(byte *data, int szData)
 {
-  int nCountBuf = 0;
-  while (mySerial.available() && (nCountBuf < szData)) {
-    if (0 == nCountBuf) {
-      digitalWrite(pinLedIO, HIGH);   // turn the LED on (HIGH is the voltage level)
-    }
-   
-    int c = mySerial.read();
-    data[nCountBuf] = c;
+  int nRssi = 0;
+  if (!mySerial.available())
+    return 0;
+  int i, nCountBuf = 0;
+//  while (mySerial.available() && (nCountBuf < szData)) {
+  for (i = 0; i < 6; i++) {
+      int nCharRead = 0;
+      while (mySerial.available() && (nCountBuf < szData)) {
+        if (0 == nCountBuf) {
+          digitalWrite(pinLedIO, HIGH);   // turn the LED on (HIGH is the voltage level)
+        }
+       
+        int c = mySerial.read();
+        data[nCountBuf] = c;
 
-    nCountBuf++;
-    delay(1);
+        nCountBuf++;
+        nCharRead++;
+        delay(1);
+      }
+
+      delay(300);
+      if (nCharRead > 0) {
+          Serial.print(nCharRead);
+          Serial.print(") ");
+          if (E_LORA_WAKEUP == _eMode) {      // get RSSI at last character
+              nCountBuf--;
+              nRssi = data[nCountBuf];
+              Serial.print(nRssi);
+              Serial.print(" RSSI. ");
+          }
+      }
   }
   if (nCountBuf > 0) {
     digitalWrite(pinLedIO, LOW);    // turn the LED off by making the voltage LOW
 
     data[nCountBuf] = 0;
-    Serial.print("Rece: ");
+    Serial.print("\nRece: ");
     printBinary(data, nCountBuf);
     Serial.println((char*)data);
   }
@@ -242,12 +301,20 @@ int MOSTLora::receData(byte *data, int szData)
 
 int MOSTLora::parsePacket(byte *data, int szData)
 {
+  int nRet = -1;
   if (data[0] == '$') {
     
   }
-  else if (data[0] == 0xFB && data[1] == 0xFC){
-      
+  else if (data[0] == 0xFB && data[1] == 0xFC) {    // for MOST Link protocol
+    // downlink header
+      MLDownlink header;
+      const int szHeader = sizeof(MLDownlink);
+      if (szData > szHeader) {
+          memcpy(&header, data, szHeader);
+          nRet = 0;
+      }
   }
+  return nRet;
 }
 
 boolean MOSTLora::isBusy()
@@ -266,12 +333,14 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
   unsigned long tsStart = millis();
   while (isBusy()) {
     delay(100);
-    Serial.print("...!");
+    Serial.print("..!");
     if (timeout < millis() - tsStart) {
       bRet = false;
       break;
     }
   }
+  Serial.print((millis() - tsStart));
+  Serial.println(" Ready");
   return bRet;
 }
 
