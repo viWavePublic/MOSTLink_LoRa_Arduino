@@ -19,16 +19,20 @@ byte buf[256] = {0};
 int tsLast;
 int tsIdle = 0;
 
+long tsCurr = millis();
+long countRun = 0;
+boolean bLedRun = HIGH;
 void setup() {
   // put your setup code here, to run once:
   pinMode(pinTouch, INPUT);
   pinMode(pinLedRece, OUTPUT);
-
+  
   digitalWrite(pinLedRece, LOW);
   digitalWrite(pinTouch, LOW);
 
-  Serial.begin(9600);
-
+  // Serial for log monitor
+  Serial.begin(9600);  // use serial port
+  
   dht.begin();
   lora.begin();
 
@@ -38,7 +42,7 @@ void setup() {
   // init sensor for humidity & temperature
   readSensorDHT(fHumidity, fTemperature);
 
-  char strHello[] = "Hello...";
+  char strHello[] = "Hello LoRa...";
   int szHello = strlen(strHello);
   delay(3000);
   lora.waitUntilReady(5000);
@@ -58,7 +62,14 @@ void loop() {
   }
 //  lora.isBusy();
   delay(10);
-//  readSensorDHT();
+
+  // led builtin
+  countRun++;
+  if (countRun > 20) {
+    bLedRun = !bLedRun;
+    digitalWrite(pinLedRece, bLedRun);
+    countRun = 0;
+  }
 
   // command to send
   if (Serial.available())
