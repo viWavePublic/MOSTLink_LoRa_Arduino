@@ -185,7 +185,7 @@ boolean MOSTLora::setHostMAC(char *strMac)
 void MOSTLora::readConfig()
 {
   waitUntilReady(5000);
-  setMode(1, 1);    // setup(1,1), normal(0,0)
+  setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
   
   uint8_t cmdRead[] = {0xFF,0x4C,0xCF,0x52,0xA1,0x52,0xF0};
   sendData(cmdRead, 7);
@@ -198,7 +198,7 @@ void MOSTLora::readConfig()
 void MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, char power, char wakeup_time)
 {
   waitUntilReady(5000);
-  setMode(1, 1);    // setup(1,1), normal(0,0)
+  setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
   
   byte cmdWrite[16] = {0xFF,0x4C,0xCF,0x52,0xA1,0x57,0xF1};
   cmdWrite[7] = (freq >> 16) & 0xff;
