@@ -10,14 +10,19 @@
 
 #ifdef USE_ARDUINO_UNO         // for arduino Uno
 #include <SoftwareSerial.h>
-SoftwareSerial mySerial(5, 4); // RX, TX
+const int pinLoraRX = 4;//10;
+const int pinLoraTX = 5;//11;
+SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);//10, 11); // RX, TX
 #else // USE_ARDUINO_UNO
-#define mySerial Serial1       // for LinkIt ONE
+#define loraSerial Serial1       // for LinkIt ONE
 #endif // USE_ARDUINO_UNO
 
+#ifdef DEBUG_LORA
+//#define loraSerial Serial       // for LinkIt ONE
+#endif
 const int pinP1 = 13;
 const int pinP2 = 12;
-const int pinLedIO = 11;
+const int pinLedIO = 9;
 const int pinBZ = A2;
  
 MOSTLora::MOSTLora()
@@ -28,14 +33,19 @@ MOSTLora::MOSTLora()
 void MOSTLora::begin()
 {
   Serial.println("=== MOSTLink LoRa v1.0 ===");
-  
+    
+#ifdef USE_ARDUINO_UNO         // for arduino Uno
+    pinMode(pinLoraRX, INPUT);
+    pinMode(pinLoraTX, OUTPUT);
+#endif // USE_ARDUINO_UNO
+    
   pinMode(pinP1, OUTPUT);
   pinMode(pinP2, OUTPUT);
 
   pinMode(pinLedIO, OUTPUT);
   pinMode(pinBZ, INPUT);
 
-  mySerial.begin(9600);
+  loraSerial.begin(9600);
 
   readConfig();
     
@@ -68,11 +78,12 @@ void MOSTLora::setMode(int p1, int p2)
 
 boolean MOSTLora::available()
 {
-  return mySerial.available();
+  return loraSerial.available();
 }
 
 void MOSTLora::printBinary(const byte *data, const int szData)
 {
+#ifdef DEBUG_LORA
   int i;
   for (i = 0; i < szData; i++) {
     if (data[i] < 16)
@@ -83,12 +94,14 @@ void MOSTLora::printBinary(const byte *data, const int szData)
   Serial.print(" (");
   Serial.print(szData, DEC);
   Serial.print(" bytes)\n");
+#endif // DEBUG_LORA
 }
 
 boolean MOSTLora::printConfig(DataLora &data)
 {
-  int i;
   boolean bRet = false;
+#ifdef DEBUG_LORA
+  int i;
   if (data.tagBegin != 0x24 || data.tagEnd != 0x21) {
     Serial.print("++++++ incorrect config");
   }
@@ -128,6 +141,7 @@ boolean MOSTLora::printConfig(DataLora &data)
 
   char *pData = (char*)&data;
   Serial.println("\n");
+#endif // DEBUG_LORA
   return bRet;
 }
 
@@ -236,7 +250,8 @@ boolean MOSTLora::receConfig(DataLora &data)
 
 int MOSTLora::sendData(char *strData)
 {
-  int nRet = mySerial.print(strData);
+  int nRet = loraSerial.print(strData);
+  delay(100);
   Serial.print(nRet);
   Serial.print(") Send String: ");
   Serial.println(strData);
@@ -245,7 +260,8 @@ int MOSTLora::sendData(char *strData)
 
 int MOSTLora::sendData(byte *data, int szData)
 {
-  int nRet = mySerial.write(data, szData);
+  int nRet = loraSerial.write(data, szData);
+  delay(100);
   Serial.print(nRet);
   Serial.print(") Send: ");
   printBinary(data, szData);
@@ -255,18 +271,18 @@ int MOSTLora::sendData(byte *data, int szData)
 int MOSTLora::receData(byte *data, int szData)
 {
   int nRssi = 0;
-  if (!mySerial.available())
+  if (!loraSerial.available())
     return 0;
   int i, nCountBuf = 0;
-//  while (mySerial.available() && (nCountBuf < szData)) {
+//  while (loraSerial.available() && (nCountBuf < szData)) {
   for (i = 0; i < 6; i++) {
       int nCharRead = 0;
-      while (mySerial.available() && (nCountBuf < szData)) {
+      while (loraSerial.available() && (nCountBuf < szData)) {
         if (0 == nCountBuf) {
           digitalWrite(pinLedIO, HIGH);   // turn the LED on (HIGH is the voltage level)
         }
        
-        int c = mySerial.read();
+        int c = loraSerial.read();
         data[nCountBuf] = c;
 
         nCountBuf++;

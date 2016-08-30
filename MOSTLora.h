@@ -11,8 +11,8 @@
 
 #include <Arduino.h>
 
-//#define USE_ARDUINO_UNO     // for LinkeONE, remark this line
-
+#define USE_ARDUINO_UNO     // for LinkeONE, remark this line
+#define DEBUG_LORA     // for LinkeONE, remark this line
 
 //
 enum E_LORA_MODE {
