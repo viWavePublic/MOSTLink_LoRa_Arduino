@@ -11,9 +11,11 @@
 
 #include <Arduino.h>
 
-#define USE_ARDUINO_UNO     // for LinkeONE, remark this line
-#define DEBUG_LORA     // for LinkeONE, remark this line
-
+#define USE_LINKIT_ONE   // for LinkeONE
+//#define USE_VINDIUNO   // for Vinduino
+#ifndef USE_VINDIUNO
+#define DEBUG_LORA     // debug by Serial Monitor
+#endif
 //
 enum E_LORA_MODE {
   E_UNKNOWN_LORA_MODE = -1,

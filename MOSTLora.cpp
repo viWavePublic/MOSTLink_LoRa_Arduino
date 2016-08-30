@@ -8,18 +8,38 @@
 #include "MOSTLora.h"
 #include "MLpacket.h"
 
-#ifdef USE_ARDUINO_UNO         // for arduino Uno
-#include <SoftwareSerial.h>
-const int pinLoraRX = 4;//10;
-const int pinLoraTX = 5;//11;
-SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);//10, 11); // RX, TX
-#else // USE_ARDUINO_UNO
-#define loraSerial Serial1       // for LinkIt ONE
-#endif // USE_ARDUINO_UNO
+#ifdef USE_LINKIT_ONE
+    #define loraSerial Serial1       // for LinkIt ONE
+
+#else // USE_LINKIT_ONE
+    #ifdef DEBUG_LORA
+
+        // for arduino Uno
+        #include <SoftwareSerial.h>
+        const int pinLoraRX = 4;//10;
+        const int pinLoraTX = 5;//11;
+        SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);    // RX, TX
+//    pinMode(pinLoraRX, INPUT);
+//    pinMode(pinLoraTX, OUTPUT);
+    #else // DEBUG_LORA
+
+        #define loraSerial Serial       // for Vinduino
+
+    #endif // DEBUG_LORA
+
+#endif // USE_LINKIT_ONE
 
 #ifdef DEBUG_LORA
-//#define loraSerial Serial       // for LinkIt ONE
+#define debugSerial Serial
+#else
+
+class DummySerial {
+    
+};
+#define debugSerial DummySerial
+
 #endif
+
 const int pinP1 = 13;
 const int pinP2 = 12;
 const int pinLedIO = 9;
@@ -32,12 +52,11 @@ MOSTLora::MOSTLora()
 
 void MOSTLora::begin()
 {
-  Serial.println("=== MOSTLink LoRa v1.0 ===");
-    
-#ifdef USE_ARDUINO_UNO         // for arduino Uno
-    pinMode(pinLoraRX, INPUT);
-    pinMode(pinLoraTX, OUTPUT);
-#endif // USE_ARDUINO_UNO
+#ifdef DEBUG_LORA
+  debugSerial.println("=== MOSTLink LoRa v1.0 ===");
+  debugSerial.print("CPU clock: ");
+  debugSerial.println(F_CPU);
+#endif // DEBUG_LORA
     
   pinMode(pinP1, OUTPUT);
   pinMode(pinP2, OUTPUT);
@@ -87,13 +106,13 @@ void MOSTLora::printBinary(const byte *data, const int szData)
   int i;
   for (i = 0; i < szData; i++) {
     if (data[i] < 16)
-      Serial.print("0"); 
+      debugSerial.print("0"); 
     
-    Serial.print(data[i], HEX); 
+    debugSerial.print(data[i], HEX); 
   }
-  Serial.print(" (");
-  Serial.print(szData, DEC);
-  Serial.print(" bytes)\n");
+  debugSerial.print(" (");
+  debugSerial.print(szData, DEC);
+  debugSerial.print(" bytes)\n");
 #endif // DEBUG_LORA
 }
 
@@ -103,44 +122,44 @@ boolean MOSTLora::printConfig(DataLora &data)
 #ifdef DEBUG_LORA
   int i;
   if (data.tagBegin != 0x24 || data.tagEnd != 0x21) {
-    Serial.print("++++++ incorrect config");
+    debugSerial.print("++++++ incorrect config");
   }
   bRet = true;
-  Serial.print("*** Module:");
-  Serial.write(data.module_no, 4);
+  debugSerial.print("*** Module:");
+  debugSerial.write(data.module_no, 4);
 
-  Serial.print(", Version:");
-  Serial.write(data.ver_no, 7);
+  debugSerial.print(", Version:");
+  debugSerial.write(data.ver_no, 7);
 
-  Serial.print(", MAC:");
+  debugSerial.print(", MAC:");
   for (i = 0; i < 8; i++) {
-    Serial.print(data.mac_addr[i], HEX);
+    debugSerial.print(data.mac_addr[i], HEX);
   }
 
-  Serial.print("\n    group:");
-  Serial.print(data.group_id, DEC);
+  debugSerial.print("\n    group:");
+  debugSerial.print(data.group_id, DEC);
 
   long nFrequency;
   nFrequency = ((long)data.freq[0] << 16) + ((long)data.freq[1] << 8) + data.freq[2];
-  Serial.print(", frequency:");
-  Serial.print(nFrequency);
+  debugSerial.print(", frequency:");
+  debugSerial.print(nFrequency);
   
-  Serial.print(", data rate:");
-  Serial.print(data.data_rate, DEC);
+  debugSerial.print(", data rate:");
+  debugSerial.print(data.data_rate, DEC);
   
-  Serial.print(", power:");
-  Serial.print(data.power, DEC);
+  debugSerial.print(", power:");
+  debugSerial.print(data.power, DEC);
 
-  Serial.print(", \n    uart baud:");
-  Serial.print(data.uart_baud, DEC);
-  Serial.print(", uart check:");
-  Serial.print(data.uart_check, DEC);
+  debugSerial.print(", \n    uart baud:");
+  debugSerial.print(data.uart_baud, DEC);
+  debugSerial.print(", uart check:");
+  debugSerial.print(data.uart_check, DEC);
   
-  Serial.print(", wakeup time:");
-  Serial.print(data.wakeup_time, DEC);
+  debugSerial.print(", wakeup time:");
+  debugSerial.print(data.wakeup_time, DEC);
 
   char *pData = (char*)&data;
-  Serial.println("\n");
+  debugSerial.println("\n");
 #endif // DEBUG_LORA
   return bRet;
 }
@@ -148,20 +167,24 @@ boolean MOSTLora::printConfig(DataLora &data)
 boolean MOSTLora::printInfo()
 {
     boolean bRet = MOSTLora::printConfig(_data);
+    char *strMode = "Unknown Mode";
     switch (_eMode) {
         case E_LORA_NORMAL:
-            Serial.println("--- Normal Mode ---");
+            strMode = "--- Normal Mode ---";
             break;
         case E_LORA_WAKEUP:
-            Serial.println("--- Wakeup Mode ---");
+            strMode = "--- Wakeup Mode ---";
             break;
         case E_LORA_POWERSAVING:
-            Serial.println("--- Power Saving Mode ---");
+            strMode = "--- Power Saving Mode ---";
             break;
         case E_LORA_SETUP:
-            Serial.println("--- Setup Mode ---");
+            strMode = "--- Setup Mode ---";
             break;
     }
+#ifdef DEBUG_LORA
+    debugSerial.println(strMode);
+#endif // DEBUG_LORA
     return bRet;
 }
 
@@ -242,8 +265,10 @@ boolean MOSTLora::receConfig(DataLora &data)
     printConfig(data);
   }
   else {
-    Serial.print(szRece);
-    Serial.println(") ------ Fail to get config!");
+#ifdef DEBUG_LORA
+    debugSerial.print(szRece);
+    debugSerial.println(") ------ Fail to get config!");
+#endif // DEBUG_LORA
   }
   return bRet;
 }
@@ -252,9 +277,11 @@ int MOSTLora::sendData(char *strData)
 {
   int nRet = loraSerial.print(strData);
   delay(100);
-  Serial.print(nRet);
-  Serial.print(") Send String: ");
-  Serial.println(strData);
+#ifdef DEBUG_LORA
+  debugSerial.print(nRet);
+  debugSerial.print(") Send String: ");
+  debugSerial.println(strData);
+#endif // DEBUG_LORA
   return nRet;
 }
 
@@ -262,9 +289,11 @@ int MOSTLora::sendData(byte *data, int szData)
 {
   int nRet = loraSerial.write(data, szData);
   delay(100);
-  Serial.print(nRet);
-  Serial.print(") Send: ");
+#ifdef DEBUG_LORA
+  debugSerial.print(nRet);
+  debugSerial.print(") Send: ");
   printBinary(data, szData);
+#endif // DEBUG_LORA
   return nRet;
 }
 
@@ -292,23 +321,30 @@ int MOSTLora::receData(byte *data, int szData)
 
       delay(300);
       if (nCharRead > 0) {
-          Serial.print(nCharRead);
-          Serial.print(") ");
+#ifdef DEBUG_LORA
+          debugSerial.print(nCharRead);
+          debugSerial.print(") ");
+#endif // DEBUG_LORA
           if (E_LORA_WAKEUP == _eMode) {      // get RSSI at last character
               nCountBuf--;
+#ifdef DEBUG_LORA
               nRssi = data[nCountBuf];
-              Serial.print(nRssi);
-              Serial.print(" RSSI. ");
+              debugSerial.print(nRssi);
+              debugSerial.print(" rssi. ");
+#endif // DEBUG_LORA
           }
       }
   }
   if (nCountBuf > 0) {
-    digitalWrite(pinLedIO, LOW);    // turn the LED off by making the voltage LOW
-
     data[nCountBuf] = 0;
-    Serial.print("\nRece: ");
+    digitalWrite(pinLedIO, LOW);    // turn the LED off by making the voltage LOW
+      
+#ifdef DEBUG_LORA
+    debugSerial.print("\nRece: ");
     printBinary(data, nCountBuf);
-    Serial.println((char*)data);
+    debugSerial.println((char*)data);
+#endif // DEBUG_LORA
+
   }
   // parse downlink packet
   parsePacket(data, szData);
@@ -336,9 +372,9 @@ int MOSTLora::parsePacket(byte *data, int szData)
 boolean MOSTLora::isBusy()
 {
   int nBusy = analogRead(pinBZ);
-/*  Serial.print("busy:");
-  Serial.print(nBusy, DEC);
-  Serial.println(".");
+/*  debugSerial.print("busy:");
+  debugSerial.print(nBusy, DEC);
+  debugSerial.println(".");
   */
   return (nBusy < 512);
 }
@@ -349,14 +385,15 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
   unsigned long tsStart = millis();
   while (isBusy()) {
     delay(100);
-    Serial.print("..!");
     if (timeout < millis() - tsStart) {
       bRet = false;
       break;
     }
   }
-  Serial.print((millis() - tsStart));
-  Serial.println(" Ready");
+#ifdef DEBUG_LORA
+  debugSerial.print((millis() - tsStart));
+  debugSerial.println(" Ready");
+#endif // DEBUG_LORA
   return bRet;
 }
 
