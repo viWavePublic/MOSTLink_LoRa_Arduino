@@ -1,5 +1,5 @@
 
-const int pinLedRece = 11;
+const int pinLedRece = 9;
 
 #include "MOSTLora.h"
 #include "MLpacket.h"
@@ -36,9 +36,7 @@ void setup() {
   dht.begin();
   lora.begin();
 
-  Serial.print(F_CPU);
-  Serial.println(" clocks CPU");
-  
+ 
   // init sensor for humidity & temperature
   readSensorDHT(fHumidity, fTemperature);
 
@@ -58,6 +56,12 @@ void loop() {
         readSensorDHT(fHumidity, fTemperature);
         responseSensorData(fHumidity, fTemperature);
       }
+      else {
+        char *strBuf = (char*)buf;
+        strcat(strBuf, " (ack)");
+        szBuf = strlen(strBuf);
+        lora.sendData(buf, szBuf);
+      }
     }
   }
 //  lora.isBusy();
@@ -65,7 +69,7 @@ void loop() {
 
   // led builtin
   countRun++;
-  if (countRun > 20) {
+  if (countRun > 50) {
     bLedRun = !bLedRun;
     digitalWrite(pinLedRece, bLedRun);
     countRun = 0;

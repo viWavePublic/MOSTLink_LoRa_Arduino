@@ -11,7 +11,7 @@
 
 #include <Arduino.h>
 
-#define USE_LINKIT_ONE   // for LinkeONE
+//#define USE_LINKIT_ONE   // for LinkeONE
 //#define USE_VINDIUNO   // for Vinduino
 #ifndef USE_VINDIUNO
 #define DEBUG_LORA     // debug by Serial Monitor

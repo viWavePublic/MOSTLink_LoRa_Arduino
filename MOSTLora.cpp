@@ -275,6 +275,7 @@ boolean MOSTLora::receConfig(DataLora &data)
 
 int MOSTLora::sendData(char *strData)
 {
+  waitUntilReady(3000);
   int nRet = loraSerial.print(strData);
   delay(100);
 #ifdef DEBUG_LORA
@@ -287,6 +288,7 @@ int MOSTLora::sendData(char *strData)
 
 int MOSTLora::sendData(byte *data, int szData)
 {
+  waitUntilReady(3000);
   int nRet = loraSerial.write(data, szData);
   delay(100);
 #ifdef DEBUG_LORA
