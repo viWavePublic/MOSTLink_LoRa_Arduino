@@ -1,14 +1,22 @@
 #include "MLPacketGen.h"
 
-MLPayloadGen::MLPayloadGen(uint16_t cmdId, uint16_t resInterval,uint8_t dataLen, uint8_t *data, uint8_t version) {
-    _version = version;
+MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t cmdId) {
+    _version = 0;
     _cmdId = cmdId;
-    _resInterval = resInterval;
-    _dataLen = dataLen;
-    memcpy(_data, data, dataLen);
+    _resInterval = 0;
+    _dataLen = 0;
+    memset(_data, 0, sizeof(_data));
 }
 
-int MLPayloadGen::getPayload(uint8_t *payload) {
+int MLReqDataPayloadGen::setPayload(uint8_t *data, uint8_t dataLen, uint16_t *param, uint8_t version) {
+    _version = version;
+    _resInterval = param[0];
+    _dataLen = dataLen;
+    memcpy(_data, data, _dataLen);
+    return 0;
+}
+
+int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
     payload[0] = _version;
     payload[1] = _cmdId >> 8;
     payload[2] = _cmdId & 0x0F;
@@ -19,6 +27,32 @@ int MLPayloadGen::getPayload(uint8_t *payload) {
     return _dataLen + 6;
 }
 
+MLResDataPayloadGen::MLResDataPayloadGen(uint16_t cmdId) {
+    _version = 0;
+    _cmdId = cmdId;
+    _errorCode = 0;
+    _dataLen = 0;
+    memset(_data, 0, sizeof(_data));
+}
+
+int MLResDataPayloadGen::setPayload(uint8_t *data, uint8_t dataLen, uint16_t *param, uint8_t version) {
+    _version = version;
+    _errorCode = param[0] & 0xFF;
+    _dataLen = dataLen;
+    memcpy(_data, data, _dataLen);
+    return 0;
+}
+
+int MLResDataPayloadGen::getPayload(uint8_t *payload) {
+    payload[0] = _version;
+    payload[1] = _cmdId >> 8;
+    payload[2] = _cmdId & 0x0F;
+    payload[3] = _errorCode;
+    payload[4] = _dataLen;
+    memcpy(&payload[5], _data, _dataLen);
+    return _dataLen + 5;
+}
+
 MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint64_t receiverID, uint64_t senderID, uint8_t version) {
     _ackBit = ackBit;
     _receiverFlag = receiverFlag;
@@ -27,12 +61,25 @@ MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetTyp
     _receiverID = receiverID;
     _senderID = senderID;
     _version = version;
+    _payloadCreator = new MLPayloadCreator;
     _mlPayloadGen = NULL;
 }
 
-int MLPacketGen::setMLPayload(uint16_t cmdId, uint16_t resInterval,uint8_t dataLen, uint8_t *data, uint8_t version) {
-    _mlPayloadGen = new MLPayloadGen(cmdId, resInterval, dataLen, data, version);
-    return 0;
+void MLPacketGen::setMLPayloadGen(uint16_t cmdId) {
+    _mlPayloadGen = _payloadCreator->createMLPayload(cmdId);
+}
+
+MLPayloadGen* MLPayloadCreator::createMLPayload(uint16_t cmdId) {
+    if(CMD_REQ_DATA == cmdId)
+        return new MLResDataPayloadGen(cmdId);
+    else if(CMD_RES_DATA == cmdId)
+        return new MLResDataPayloadGen(cmdId);
+    else
+        return NULL;
+}
+
+MLPayloadGen* MLPacketGen::getMLPayloadGen() {
+    return _mlPayloadGen;
 }
 
 int MLPacketGen::getMLPayload(uint8_t *payload) {
@@ -87,7 +134,7 @@ uint8_t MLPacketGen::getCrc(const uint8_t *dataBuffer, const uint8_t length) {
     for (uint8_t i=0; i<length; i++) {
         crc^=dataBuffer[i];
     }
-    printf("%x\n", crc);
+    //printf("%x\n", crc);
     return crc;
 }
 
