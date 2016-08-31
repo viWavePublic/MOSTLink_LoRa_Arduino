@@ -1,8 +1,6 @@
 /* viWave LoRa Module by GlobalSat
 
 	MOST-Link protocol
-	
-	
  */
 
 #include "MOSTLora.h"
@@ -16,8 +14,8 @@
 
         // for arduino Uno
         #include <SoftwareSerial.h>
-        const int pinLoraRX = 4;//10;
-        const int pinLoraTX = 5;//11;
+        const int pinLoraRX = 10;
+        const int pinLoraTX = 11;
         SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);    // RX, TX
 //    pinMode(pinLoraRX, INPUT);
 //    pinMode(pinLoraTX, OUTPUT);
@@ -32,7 +30,7 @@
 #ifdef DEBUG_LORA
 #define debugSerial Serial
 #else
-
+// not ready yet
 class DummySerial {
     
 };
@@ -40,13 +38,15 @@ class DummySerial {
 
 #endif
 
-const int pinP1 = 13;
-const int pinP2 = 12;
-const int pinLedIO = 9;
-const int pinBZ = A2;
- 
-MOSTLora::MOSTLora()
+#ifdef USE_PIN_LED_LORA
+const int pinLedLora = USE_PIN_LED_LORA;
+#endif // USE_PIN_LED_LORA
+
+MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 {
+    _pinP1 = pinP1;
+    _pinP2 = pinP2;
+    _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
 }
 
@@ -58,11 +58,13 @@ void MOSTLora::begin()
   debugSerial.println(F_CPU);
 #endif // DEBUG_LORA
     
-  pinMode(pinP1, OUTPUT);
-  pinMode(pinP2, OUTPUT);
-
-  pinMode(pinLedIO, OUTPUT);
-  pinMode(pinBZ, INPUT);
+#ifdef USE_PIN_LED_LORA
+  pinMode(pinLedLora, OUTPUT);
+#endif // USE_PIN_LED_LORA
+    
+  pinMode(_pinP1, OUTPUT);
+  pinMode(_pinP2, OUTPUT);
+  pinMode(_pinBZ, INPUT);
 
   loraSerial.begin(9600);
 
@@ -90,8 +92,8 @@ void MOSTLora::setMode(int mode)
 // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
 void MOSTLora::setMode(int p1, int p2)
 {
-  digitalWrite(pinP1, p1);  // setup(1,1), normal(0,0)
-  digitalWrite(pinP2, p2);
+  digitalWrite(_pinP1, p1);  // setup(1,1), normal(0,0)
+  digitalWrite(_pinP2, p2);
   delay(200);
 }
 
@@ -188,20 +190,20 @@ boolean MOSTLora::printInfo()
     return bRet;
 }
 
-boolean MOSTLora::setHostMAC(char *strMac)
+boolean MOSTLora::setReceiverID(const char *strID)
 {
-  if (strMac == NULL || strlen(strMac) != 16)
+  if (strID == NULL || strlen(strID) != 16)
     return false;
 
   boolean bRet = true;
   char strHex[16];
   int i;
   for (i = 0; i < 16; i++) {
-    if (!isHexadecimalDigit(strMac[i])) {
+    if (!isHexadecimalDigit(strID[i])) {
       bRet = false;
       break;
     }
-    strHex[i] = toupper(strMac[i]);
+    strHex[i] = toupper(strID[i]);
   }
   if (bRet) {
     char strVal[4] = {0};
@@ -209,7 +211,7 @@ boolean MOSTLora::setHostMAC(char *strMac)
       strVal[0] = strHex[i * 2];
       strVal[1] = strHex[i * 2 + 1];
       
-      _macHost[i] = strtoul (strVal, NULL, 16);
+      _receiverID[i] = strtoul (strVal, NULL, 16);
     }
   }
   
@@ -310,7 +312,9 @@ int MOSTLora::receData(byte *data, int szData)
       int nCharRead = 0;
       while (loraSerial.available() && (nCountBuf < szData)) {
         if (0 == nCountBuf) {
-          digitalWrite(pinLedIO, HIGH);   // turn the LED on (HIGH is the voltage level)
+#ifdef USE_PIN_LED_LORA
+          digitalWrite(pinLedLora, HIGH);   // turn the LED on (HIGH is the voltage level)
+#endif // USE_PIN_LED_LORA
         }
        
         int c = loraSerial.read();
@@ -339,7 +343,9 @@ int MOSTLora::receData(byte *data, int szData)
   }
   if (nCountBuf > 0) {
     data[nCountBuf] = 0;
-    digitalWrite(pinLedIO, LOW);    // turn the LED off by making the voltage LOW
+#ifdef USE_PIN_LED_LORA
+    digitalWrite(pinLedLora, LOW);    // turn the LED off by making the voltage LOW
+#endif // USE_PIN_LED_LORA
       
 #ifdef DEBUG_LORA
     debugSerial.print("\nRece: ");
@@ -373,7 +379,7 @@ int MOSTLora::parsePacket(byte *data, int szData)
 
 boolean MOSTLora::isBusy()
 {
-  int nBusy = analogRead(pinBZ);
+  int nBusy = analogRead(_pinBZ);
 /*  debugSerial.print("busy:");
   debugSerial.print(nBusy, DEC);
   debugSerial.println(".");
@@ -398,4 +404,87 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
 #endif // DEBUG_LORA
   return bRet;
 }
+
+// RES_DATA command for humidity & temperature
+void MOSTLora::sendPacketResData(float h, float t)
+{
+    byte buf[99];
+    MLUplink headUplink;
+    headUplink.length = 22 + 15;
+    memcpy(headUplink.sender_id, getMacAddress(), 8);
+    // prepare uplink header
+    memcpy(buf, &headUplink, 22);
+    
+    // prapare payload chunk
+    byte payload[15], *ptr;
+    payload[0] = 0x0A;    // version
+    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA commandID
+    payload[3] = 0;       // error code: 0 - success
+    payload[4] = 8;       // data length
+    // humidity (4 bytes)
+    ptr = (byte*)&h;
+    payload[5] = ptr[3];
+    payload[6] = ptr[2];
+    payload[7] = ptr[1];
+    payload[8] = ptr[0];
+    // temperature (4 bytes)
+    ptr = (byte*)&t;
+    payload[9] = ptr[3];
+    payload[10] = ptr[2];
+    payload[11] = ptr[1];
+    payload[12] = ptr[0];
+    payload[13] = 0;      // option flag
+    payload[14] = 0;      // payload CRC
+    
+    int nModeBackup = getMode();
+    setMode(E_LORA_WAKEUP);
+    /////////////////////
+    // send data is ready
+    memcpy(buf + 22, payload, 15);
+    sendData(buf, 37);
+    
+    setMode(nModeBackup);
+}
+
+// NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
+void MOSTLora::sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+{
+    byte buf[99];
+    MLUplink headUplink;
+    headUplink.length = 22 + 53;
+    memcpy(headUplink.sender_id, getMacAddress(), 8);
+    // prepare uplink header
+    memcpy(buf, &headUplink, 22);
+    
+    // prapare payload chunk
+    const float arrF[8] = {f0, f1, f2, f3, f4, f5, f6, f7};
+    byte payload[53], *ptr;
+    payload[0] = 0x0A;    // version
+    payload[1] = 0x10;    payload[2] = 0x02;  // 0x1002 NTF_UPLOAD_VINDUINO_FIELD commandID
+    memcpy(payload + 3, apiKey, 16);
+    
+    // 8 floats (4 bytes)
+    int i, index = 3 + 16;
+    for (i = 0; i < 8; i++) {
+        ptr = (byte*)(arrF + i);
+        payload[index] = ptr[3];
+        payload[index + 1] = ptr[2];
+        payload[index + 2] = ptr[1];
+        payload[index + 3] = ptr[0];
+        index += 4;
+    }
+    
+    payload[index] = 0;      // option flag
+    payload[index + 1] = 0;  // payload CRC
+    
+    int nModeBackup = getMode();
+    setMode(E_LORA_WAKEUP);
+    /////////////////////
+    // send data is ready
+    memcpy(buf + 22, payload, 53);
+    sendData(buf, 75);
+    
+    setMode(nModeBackup);
+}
+
 

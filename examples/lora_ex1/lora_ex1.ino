@@ -2,7 +2,6 @@
 const int pinLedRece = 9;
 
 #include "MOSTLora.h"
-#include "MLpacket.h"
 #include "DHT.h"
 
 int count = 0;
@@ -40,7 +39,7 @@ void setup() {
   // init sensor for humidity & temperature
   readSensorDHT(fHumidity, fTemperature);
 
-  char strHello[] = "Hello LoRa...";
+  char strHello[] = "Hello LoRa...1";
   int szHello = strlen(strHello);
   delay(3000);
   lora.waitUntilReady(5000);
@@ -54,7 +53,7 @@ void loop() {
     if (szBuf >= 2) {
       if (lora.parsePacket(buf, szBuf) >= 0) {
         readSensorDHT(fHumidity, fTemperature);
-        responseSensorData(fHumidity, fTemperature);
+        lora.sendPacketResData(fHumidity, fTemperature);
       }
       else {
         char *strBuf = (char*)buf;
@@ -106,48 +105,6 @@ boolean readSensorDHT(float &h, float &t)
     }
     delay(2000);
     return bRet;
-}
-
-void responseSensorData(float h, float t)
-{
-    /////////////////////////
-    // RES_DATA packet
-    /////////////////////////   
-    MLUplink headUplink;
-    headUplink.length = 22 + 15;
-    memcpy(headUplink.sender_id, lora.getMacAddress(), 8);
-    // prepare uplink header
-    memcpy(buf, &headUplink, 22);
-    
-    // prapare payload chunk
-    byte payload[15], *ptr;
-    payload[0] = 0x0A;    // version
-    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA command
-    payload[3] = 0;       // error code: 0 - success
-    payload[4] = 8;       // data length
-    // humidity (4 bytes)
-    ptr = (byte*)&h;
-    payload[5] = ptr[3];
-    payload[6] = ptr[2];
-    payload[7] = ptr[1];
-    payload[8] = ptr[0];
-    // temperature (4 bytes)
-    ptr = (byte*)&t;
-    payload[9] = ptr[3];
-    payload[10] = ptr[2];
-    payload[11] = ptr[1];
-    payload[12] = ptr[0];
-    payload[13] = 0;      // option flag
-    payload[14] = 0;      // payload CRC
-
-    int nModeBackup = lora.getMode();
-    lora.setMode(E_LORA_WAKEUP);    
-    /////////////////////
-    // send data is ready
-    memcpy(buf + 22, payload, 15);
-    lora.sendData(buf, 37);
-    
-    lora.setMode(nModeBackup);    
 }
 
 void inputBySerial()

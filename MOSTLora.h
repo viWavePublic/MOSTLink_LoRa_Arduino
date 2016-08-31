@@ -11,9 +11,12 @@
 
 #include <Arduino.h>
 
-//#define USE_LINKIT_ONE   // for LinkeONE
-//#define USE_VINDIUNO   // for Vinduino
-#ifndef USE_VINDIUNO
+//#define USE_LINKIT_ONE     // for LinkeONE
+//#define USE_VINDUINO       // for Vinduino
+
+//#define USE_PIN_LED_LORA     9   // pin-LED for LoRa receive data
+
+#ifndef USE_VINDUINO
 #define DEBUG_LORA     // debug by Serial Monitor
 #endif
 //
@@ -46,11 +49,12 @@ struct DataLora {
 class MOSTLora
 {
 private:
-  DataLora _data;
-  unsigned char _macHost[8];   // mac address for host
+  int _pinP1, _pinP2, _pinBZ;   // p1, p2, busy
   int _eMode;
+  DataLora _data;
+  unsigned char _receiverID[8];   // receiver ID
 public:
-  MOSTLora();
+  MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
 
   void begin();
 
@@ -67,7 +71,7 @@ public:
   boolean printConfig(DataLora &data);
   boolean printInfo();
 
-  boolean setHostMAC(char *strMac);
+  boolean setReceiverID(const char *strID);
   void readConfig();
   void writeConfig(long freq, unsigned char group_id = 0, char data_rate = 0, char power = 7, char wakeup_time = 5);
   boolean receConfig(DataLora &data);
@@ -81,6 +85,16 @@ public:
   boolean waitUntilReady(unsigned long timeout);
 
   void run();
+    
+  /////////////////////////////////////////
+  // command packet for MOST Link protocol
+  /////////////////////////////////////////
+    
+  // RES_DATA command for humidity & temperature
+  void sendPacketResData(float h, float t);
+    
+  // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
+  void sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
 };
 
 #endif // __MOSTLora_h
