@@ -1,7 +1,17 @@
-/* viWave LoRa Module by GlobalSat
-
-	MOST-Link protocol
+/*
+  Library for MOSTLink LoRa Shield Library
+ 
+  MOSTLink LoRa Shield with Semtech sx1276 for LoRa technology.
+  Support device: Arduino UNO, Linkit One, Vinduino
+ 
+  2016 Copyright (c) viWave Co. Ltd., All right reserved.
+  http://mostlink.viwave.com/
+ 
+  Original Author: Macbear Chen, Auguest 12, 2016.
+  --------------------------------------------------------------
+ 
  */
+
 
 #include "MOSTLora.h"
 #include "MLpacket.h"
@@ -78,15 +88,25 @@ void MOSTLora::setMode(int mode)
   if (_eMode == mode)
     return;
 
-  _eMode = mode;
-  if (E_LORA_NORMAL == _eMode)
+  if (E_LORA_NORMAL == mode)
     setMode(0, 0);
-  else if (E_LORA_WAKEUP == _eMode)
+  else if (E_LORA_WAKEUP == mode)
     setMode(0, 1);
-  else if (E_LORA_POWERSAVING == _eMode)
+  else if (E_LORA_POWERSAVING == mode) {
+//    if (E_LORA_SETUP == _eMode) {       // Setup -> Normal -> Power Saving
+//      setMode(0, 0);
+//    }
     setMode(1, 0);
-  else if (E_LORA_SETUP == _eMode)
+  }
+  else if (E_LORA_SETUP == mode) {
+    if (E_LORA_POWERSAVING == _eMode) { // Power Saving -> Normal -> Setup
+        setMode(0, 0);
+    }
     setMode(1, 1);
+  }
+  
+  // assign to new state
+  _eMode = mode;
 }
 
 // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
@@ -169,19 +189,19 @@ boolean MOSTLora::printConfig(DataLora &data)
 boolean MOSTLora::printInfo()
 {
     boolean bRet = MOSTLora::printConfig(_data);
-    char *strMode = "Unknown Mode";
+    char *strMode = "* Unknown Mode *";
     switch (_eMode) {
         case E_LORA_NORMAL:
-            strMode = "--- Normal Mode ---";
+            strMode = "[ Normal Mode ]";
             break;
         case E_LORA_WAKEUP:
-            strMode = "--- Wakeup Mode ---";
+            strMode = "[ Wakeup Mode ]";
             break;
         case E_LORA_POWERSAVING:
-            strMode = "--- Power Saving Mode ---";
+            strMode = "[ Power Saving Mode ]";
             break;
         case E_LORA_SETUP:
-            strMode = "--- Setup Mode ---";
+            strMode = "[ Setup Mode ]";
             break;
     }
 #ifdef DEBUG_LORA

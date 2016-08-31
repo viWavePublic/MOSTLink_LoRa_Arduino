@@ -47,7 +47,21 @@ void setup() {
   lora.sendData(strHello);
 }
 
+
 void loop() {
+/*  long tsNow = millis();
+  if (tsNow - tsCurr > (60000 * 3))
+  {
+    count++; 
+    tsCurr = tsNow;
+    char *strBuf = (char*)buf;
+    sprintf(strBuf, "Timer: %d\n", count);
+    lora.sendData(strBuf);
+    readSensorDHT(fHumidity, fTemperature);
+    lora.sendPacketResData(fHumidity, fTemperature);
+  }
+*/
+  
   if (lora.available()) {
     szBuf = lora.receData(buf, 255);
     if (szBuf >= 2) {
@@ -55,11 +69,15 @@ void loop() {
         readSensorDHT(fHumidity, fTemperature);
         lora.sendPacketResData(fHumidity, fTemperature);
       }
-      else {
+      else if ('/' == buf[0]) {
         char *strBuf = (char*)buf;
-        strcat(strBuf, " (ack)");
+        strBuf[0] = '>';
         szBuf = strlen(strBuf);
+        
+        int modeBak = lora.getMode();
+        lora.setMode(E_LORA_NORMAL);
         lora.sendData(buf, szBuf);
+        lora.setMode(modeBak);
       }
     }
   }
