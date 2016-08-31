@@ -203,7 +203,7 @@ boolean parseCommand(char *strCmd)
         {
           if (0 == i) {
             Serial.print("frequency: ");
-            freq = atoi(strOut);
+            freq = atol(strOut);
             Serial.print(freq);
           }
           else if (1 == i) {

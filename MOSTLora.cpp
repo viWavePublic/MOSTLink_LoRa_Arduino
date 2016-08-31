@@ -80,7 +80,7 @@ void MOSTLora::begin()
 
   readConfig();
     
-  setMode(E_LORA_WAKEUP);   // E_LORA_NORMAL
+  setMode(E_LORA_NORMAL);   // E_LORA_NORMAL
 }
 
 void MOSTLora::setMode(int mode)
@@ -93,9 +93,9 @@ void MOSTLora::setMode(int mode)
   else if (E_LORA_WAKEUP == mode)
     setMode(0, 1);
   else if (E_LORA_POWERSAVING == mode) {
-//    if (E_LORA_SETUP == _eMode) {       // Setup -> Normal -> Power Saving
-//      setMode(0, 0);
-//    }
+    if (E_LORA_SETUP == _eMode) {       // Setup -> Normal -> Power Saving
+      setMode(0, 0);
+    }
     setMode(1, 0);
   }
   else if (E_LORA_SETUP == mode) {
@@ -457,7 +457,7 @@ void MOSTLora::sendPacketResData(float h, float t)
     payload[14] = 0;      // payload CRC
     
     int nModeBackup = getMode();
-    setMode(E_LORA_WAKEUP);
+    setMode(E_LORA_NORMAL);
     /////////////////////
     // send data is ready
     memcpy(buf + 22, payload, 15);
@@ -498,7 +498,7 @@ void MOSTLora::sendPacketVinduino(char *apiKey, float f0, float f1, float f2, fl
     payload[index + 1] = 0;  // payload CRC
     
     int nModeBackup = getMode();
-    setMode(E_LORA_WAKEUP);
+    setMode(E_LORA_NORMAL);
     /////////////////////
     // send data is ready
     memcpy(buf + 22, payload, 53);
