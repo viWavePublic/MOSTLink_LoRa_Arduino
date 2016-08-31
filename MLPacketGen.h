@@ -8,6 +8,7 @@
 #define ML_MAX_PAYLOAD_SIZE    84
 #define ML_MAX_DATA_SIZE    69
 #define ML_MAX_OPTION_DATA_SIZE 3
+#define ML_FREQUENCY_LEN    3
 
 #define CMD_REQ_SET_LORA_CONFIG 0x0001
 #define CMD_REQ_DATA            0x0004
@@ -20,7 +21,9 @@
 class MLPayloadGen {
     public:
         virtual int getPayload(uint8_t *payload) = 0;
+        static MLPayloadGen *createReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version);
         static MLPayloadGen *createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createNotifyVindunoPayloadGen(uint8_t *apiKey, uint32_t soil_1, uint32_t soil_2, uint32_t soil_3, uint32_t soli_4, 
                 uint32_t sysVoltage, uint32_t humidity, uint32_t teamerature, uint32_t resvered, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
@@ -32,6 +35,18 @@ class MLPayloadGen {
         uint8_t _optionDataLen;
 };
 
+class MLReqSetLoraConfigGen : public MLPayloadGen {
+    public:
+        MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+    private:
+        uint8_t _frequency[ML_FREQUENCY_LEN];
+        uint8_t _dataRate;
+        uint8_t _power;
+        uint8_t _wakeupInterval;
+        uint8_t _groupId;
+};
+
 class MLReqDataPayloadGen : public MLPayloadGen {
     public:
         MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version);
@@ -40,6 +55,14 @@ class MLReqDataPayloadGen : public MLPayloadGen {
         uint16_t _resInterval;
         uint8_t _dataLen;
         uint8_t _data[ML_MAX_DATA_SIZE];
+};
+
+class MLResSetLoraConfigGen : public MLPayloadGen {
+    public:
+        MLResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+    private:
+        uint8_t _errorCode;
 };
 
 class MLResDataPayloadGen : public MLPayloadGen {

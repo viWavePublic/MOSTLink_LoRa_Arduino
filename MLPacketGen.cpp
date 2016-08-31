@@ -1,13 +1,24 @@
 #include "MLPacketGen.h"
 
+MLPayloadGen *createReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId,
+        uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLReqSetLoraConfigGen *req = new MLReqSetLoraConfigGen(frequency, dataRate, power, wakeupInterval, groupId, optionFlags, optionData, version);
+    return req;
+}
+
 MLPayloadGen* MLPayloadGen::createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
     MLReqDataPayloadGen *req = new MLReqDataPayloadGen(resInterval, dataLen, data, optionFlags, optionData, version);
     return req;
 }
 
+MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLResSetLoraConfigGen *res = new MLResSetLoraConfigGen(errorCode, optionFlags, optionData, version);
+    return res;
+}
+
 MLPayloadGen* MLPayloadGen::createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-     MLResDataPayloadGen *res = new MLResDataPayloadGen(errorCode, dataLen, data, optionFlags, optionData, version);
-     return res;
+    MLResDataPayloadGen *res = new MLResDataPayloadGen(errorCode, dataLen, data, optionFlags, optionData, version);
+    return res;
 }
 
 MLPayloadGen* MLPayloadGen::createNotifyVindunoPayloadGen(uint8_t *apiKey, uint32_t soil_1, uint32_t soil_2, uint32_t soil_3, uint32_t soil_4, 
@@ -15,6 +26,41 @@ MLPayloadGen* MLPayloadGen::createNotifyVindunoPayloadGen(uint8_t *apiKey, uint3
     MLNotifyVindunoPayloadGen *ntf = new MLNotifyVindunoPayloadGen(apiKey, soil_1, soil_2, soil_3, soil_4, sysVoltage, humidity, temperature, reserved, 
             optionFlags, optionData, version);
     return ntf;
+}
+
+MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_REQ_SET_LORA_CONFIG;
+    memcpy(_frequency, frequency, ML_FREQUENCY_LEN);
+    _dataRate = dataRate;
+    _power = power;
+    _wakeupInterval = wakeupInterval;
+    _groupId = groupId;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId >> 8;
+    payload[pos++] = _cmdId & 0x0F;
+    memcpy(&payload[pos], _frequency, ML_FREQUENCY_LEN);
+    pos += ML_FREQUENCY_LEN;
+    payload[pos++] = _dataRate;
+    payload[pos++] = _power;
+    payload[pos++] = _wakeupInterval;
+    payload[pos++] = _groupId;
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+
+    return pos;
 }
 
 MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
@@ -42,6 +88,33 @@ int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
     payload[pos++] = _dataLen;
     memcpy(&payload[pos], _data, _dataLen);
     pos += _dataLen;
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[++pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+
+    return pos;
+}
+
+MLResSetLoraConfigGen::MLResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_RES_SET_LORA_CONFIG;
+    _errorCode = errorCode;
+    _optionFlags = optionFlags;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLResSetLoraConfigGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId >> 8;
+    payload[pos++] = _cmdId & 0x0F;
+    payload[pos++] = _errorCode;
     payload[pos++] = _optionFlags;
     if (_optionDataLen > 0)
         memcpy(&payload[++pos], _optionData, _optionDataLen);
