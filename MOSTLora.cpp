@@ -15,6 +15,7 @@
 
 #include "MOSTLora.h"
 #include "MLpacket.h"
+#include "MLpacketGen.h"
 
 #ifdef USE_LINKIT_ONE
     #define loraSerial Serial1       // for LinkIt ONE
@@ -426,12 +427,47 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
 }
 
 // RES_DATA command for humidity & temperature
+void MOSTLora::sendPacketResData2(float h, float t)
+{
+    byte dataHT[8], *ptr;
+    // humidity (4 bytes)
+    ptr = (byte*)&h;
+    dataHT[0] = ptr[3];
+    dataHT[1] = ptr[2];
+    dataHT[2] = ptr[1];
+    dataHT[3] = ptr[0];
+    // temperature (4 bytes)
+    ptr = (byte*)&t;
+    dataHT[4] = ptr[3];
+    dataHT[5] = ptr[2];
+    dataHT[6] = ptr[1];
+    dataHT[7] = ptr[0];
+    
+    uint8_t mlpacket[99];
+    uint64_t *pSenderID = (uint64_t*)getMacAddress();
+    MLPacketGen mlPacketGen(0,0,0,1,0xFFFFFFFFFFFFFF01,*pSenderID);
+    MLPayloadGen *pPayload = MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(mlpacket);
+    
+    int nModeBackup = getMode();
+    setMode(E_LORA_NORMAL);
+    /////////////////////
+    // send data is ready
+    sendData(mlpacket, packetLen);
+    
+    setMode(nModeBackup);
+}
+
+// RES_DATA command for humidity & temperature
 void MOSTLora::sendPacketResData(float h, float t)
 {
     byte buf[99];
     MLUplink headUplink;
     headUplink.length = 22 + 15;
     memcpy(headUplink.sender_id, getMacAddress(), 8);
+    memcpy(headUplink.receiver_id, _receiverID, 8);
     // prepare uplink header
     memcpy(buf, &headUplink, 22);
     
@@ -462,6 +498,25 @@ void MOSTLora::sendPacketResData(float h, float t)
     // send data is ready
     memcpy(buf + 22, payload, 15);
     sendData(buf, 37);
+    
+    setMode(nModeBackup);
+}
+
+void MOSTLora::sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+{
+    uint8_t mlpacket[99];
+    uint64_t *pSenderID = (uint64_t*)getMacAddress();
+    MLPacketGen mlPacketGen(0,0,0,1,0xFFFFFFFFFFFFFF01, *pSenderID);
+    MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(mlpacket);
+    
+    int nModeBackup = getMode();
+    setMode(E_LORA_NORMAL);
+    /////////////////////
+    // send data is ready
+    sendData(mlpacket, packetLen);
     
     setMode(nModeBackup);
 }

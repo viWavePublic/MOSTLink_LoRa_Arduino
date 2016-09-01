@@ -101,9 +101,11 @@ public:
     
   // RES_DATA command for humidity & temperature
   void sendPacketResData(float h, float t);
+  void sendPacketResData2(float h, float t);
     
   // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
   void sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
+  void sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
 };
 
 #endif // __MOSTLora_h
