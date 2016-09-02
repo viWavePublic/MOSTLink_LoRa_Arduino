@@ -11,10 +11,8 @@ Requirements
 * Arduino IDE 1.6.x installed
 * MOSTLora lib copy to "~/Documents/Arduino/libraries/MOSTLora" folder
 
-Building and using the example app
+Building and using the example app by Arduino IDE
 ----
-
-run Arduino IDE
 1. [File] -> [Examples] -> [MOSTLora] -> [lora_ex1]
     Humidity & Temperature Sensor 
     
@@ -22,8 +20,6 @@ run Arduino IDE
     For Vinduino project example.
     Remember to unmark "#define USE_VINDUINO" in header "MOSTLora.h"
     Digit pin for RX/TX, and P1/P2 would be specified correctly. 
-
-3. 
 
 Reference
 ----
