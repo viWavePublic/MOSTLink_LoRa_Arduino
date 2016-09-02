@@ -284,13 +284,3 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     return totalLen;
 }
 
-uint8_t MLPacketGen::getCrc(const uint8_t *dataBuffer, const uint8_t length) {									
-    uint8_t crc = 0;
-
-    for (uint8_t i=0; i<length; i++) {
-        crc^=dataBuffer[i];
-    }
-    //printf("%x\n", crc);
-    return crc;
-}
-

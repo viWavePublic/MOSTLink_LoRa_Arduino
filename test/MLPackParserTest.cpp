@@ -20,12 +20,12 @@ const uint8_t RES_DATA_PK[] = {
 
 int main()
 {
-    mostloraPacketContext pkctx;
-    MOSTLoraPacketParser pkParser;
+    MLPacketCtx pkctx;
+    MLPacketParser pkParser;
 
-    pkParser.mostlora_packet_parse(&pkctx, packet);
-    pkParser.mostlora_packet_parse(&pkctx, REQ_DATA_PK);
-    pkParser.mostlora_packet_parse(&pkctx, RES_DATA_PK);
+    pkParser.mostloraPacketParse(&pkctx, packet);
+    pkParser.mostloraPacketParse(&pkctx, REQ_DATA_PK);
+    pkParser.mostloraPacketParse(&pkctx, RES_DATA_PK);
 
     return 0;
 }

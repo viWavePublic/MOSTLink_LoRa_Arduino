@@ -1,61 +1,91 @@
-#ifndef MOSTLINK_LORAPACKET_H
-#define MOSTLINK_LORAPACKET_H
+#ifndef MLPACKETPARSER_H
+#define MLPACKETPARSER_H
 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "MLPacketComm.h"
 
-#define ML_PK_PREAMBLE_1_POS 0
-#define ML_PK_PREAMBLE_2_POS 1
-#define ML_PK_VERSION_POS 2
-#define ML_PK_LENGTH_POS 3
-#define ML_PK_FLAGS_POS 4
-#define ML_PK_RECEIVER_ID_POS 5
-#define ML_PK_SENDER_ID_POS 13
+typedef struct MLPayloadContext {
+    uint8_t _cmdVersion;
+    uint8_t _cmdId;
+    /* REQ_SET_LORA_CONFIG */
+    uint8_t _frequency[ML_FREQUENCY_LEN];
+    uint8_t _dataRate;
+    uint8_t _power;
+    uint8_t _wakeupInterval;
+    uint8_t _groupId;
+    /* REQ_DATA */
+    uint8_t _responseInterval;
+    /* RES_DATA, RES_SET_LORA_CONFIG */
+    uint8_t _errorCode;
+    /* REQ_DATA, RES_DATA */
+    uint8_t _dataLen;
+    uint8_t _data[ML_MAX_DATA_SIZE];
+    /* NTF_UPLOAD_VINDUINO_FIELD */
+    uint8_t _apiKey[VINDUNO_API_KEY_LEN];
+    uint32_t _soil1;
+    uint32_t _soil2;
+    uint32_t _soil3;
+    uint32_t _soil4;
+    uint32_t _systemVoltage;
+    uint32_t _humidity;
+    uint32_t _temperature;
+    uint32_t _reserved;
+    /* OPTION */
+    uint8_t _optionResFreqFlag;
+    uint8_t _resFrequency[ML_FREQUENCY_LEN];
 
-#define ML_MAX_PK_LEN 84
-#define ML_MAC_CMD_PARAM_LEN 74
-
-#define CMD_VERSION_POS 0
-#define CMD_ID_POS 1
-#define CMD_PARAMETERS_POS 3
-
-#define CMD_REQ_D_RES_INT_POS 3
-#define CMD_REQ_D_DATA_LEN_POS 5
-#define CMD_REQ_D_DATA_POS 6
-
-#define CMD_RES_D_ERR_CODE_POS 3
-#define CMD_RES_D_DATA_LENGTH 4
-#define CMD_RES_D_DATA_POS 5
-
-#define ML_CMD_REQ_DATA 0x0004
-#define ML_CMD_RES_SET_LORA_CONFIG 0x0200
-#define ML_CMD_RES_DATA 0x0202
-
-typedef struct mostloraPacketContext {
-    uint8_t length;
-    uint8_t flag;
-    uint64_t nReceiverID;
-    uint64_t nSenderID;
-    uint8_t nDataLen;
-    uint8_t data[ML_MAC_CMD_PARAM_LEN];
-
-    mostloraPacketContext() {
-        length = 0;
-        flag = 0;
-        nReceiverID = 0;
-        nSenderID = 0;
-        nDataLen = 0;
-        memset(data, 0, sizeof(data));
+    MLPayloadContext() {
+        _cmdVersion = 0;
+        _cmdId = 0;
+        memset(_frequency, 0, ML_FREQUENCY_LEN);
+        _dataRate = 0;
+        _power = 0;
+        _wakeupInterval = 0;
+        _groupId = 0;
+        _responseInterval = 0;
+        _errorCode = 0;
+        _dataLen = 0;
+        memset(_data, 0, ML_MAX_DATA_SIZE);
+        memset(_apiKey, 0, VINDUNO_API_KEY_LEN);
+        _soil1 = 0;
+        _soil2 = 0;
+        _soil3 = 0;
+        _soil4 = 0;
+        _systemVoltage = 0;
+        _humidity = 0;
+        _temperature = 0;
+        _reserved = 0;
     }
-} mostloraPkCtx;
+} MLPayloadCtx;
 
-class MOSTLoraPacketParser {
+typedef struct MLPacketContext {
+    uint8_t _version;
+    uint8_t _ackBit;
+    uint8_t _receiverFlag;
+    uint8_t _packetType;
+    uint8_t _direction;
+    uint64_t _receiverID;
+    uint64_t _senderID;
+    MLPayloadCtx _mlPayloadCtx;
+
+    MLPacketContext() {
+        _version = 0;
+        _ackBit = 0;
+        _receiverFlag = 0;
+        _packetType = 0;
+        _direction = 0;
+        _receiverID = 0;
+        _senderID = 0;
+    }
+} MLPacketCtx;
+
+class MLPacketParser {
     public:
-        int mostlora_packet_parse(mostloraPkCtx *pkctx, const uint8_t *packet);
+        int mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packet);
     private:
-        uint8_t getCrc(const uint8_t *dataBuf, const uint8_t nLen);
-        int mostlora_payload_parse(mostloraPkCtx *pkctx, const uint8_t *payload);
+        int mostloraPayloadParse(MLPacketCtx *pkctx, const uint8_t *payload);
 };
 
-#endif /* MOSTLINK_LORAPACKET_H */
+#endif /* MLPACKETPARSER_H */

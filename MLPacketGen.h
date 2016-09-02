@@ -4,19 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
-#define ML_MAX_PAYLOAD_SIZE    84
-#define ML_MAX_DATA_SIZE    69
-#define ML_MAX_OPTION_DATA_SIZE 3
-#define ML_FREQUENCY_LEN    3
-
-#define CMD_REQ_SET_LORA_CONFIG 0x0001
-#define CMD_REQ_DATA            0x0004
-#define CMD_RES_SET_LORA_CONFIG 0x0200
-#define CMD_RES_DATA            0x0202
-
-#define CMD_NTF_UPLOAD_VINDUINO_FIELD 0x1002
-#define VINDUNO_API_KEY_LEN     16
+#include "MLPacketComm.h"
 
 class MLPayloadGen {
     public:
@@ -99,7 +87,6 @@ class MLPacketGen {
         int getMLPacket(uint8_t *mlpacket);
     private:
         int getMLPayload(uint8_t *payload);
-        uint8_t getCrc(const uint8_t *dataBuf, const uint8_t nLen);
     private:
         uint8_t _ackBit;
         uint8_t _receiverFlag;
