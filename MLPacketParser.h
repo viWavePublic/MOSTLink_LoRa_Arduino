@@ -24,14 +24,14 @@ typedef struct MLPayloadContext {
     uint8_t _data[ML_MAX_DATA_SIZE];
     /* NTF_UPLOAD_VINDUINO_FIELD */
     uint8_t _apiKey[VINDUNO_API_KEY_LEN];
-    uint32_t _soil1;
-    uint32_t _soil2;
-    uint32_t _soil3;
-    uint32_t _soil4;
-    uint32_t _systemVoltage;
-    uint32_t _humidity;
-    uint32_t _temperature;
-    uint32_t _reserved;
+    float _soil1;
+    float _soil2;
+    float _soil3;
+    float _soil4;
+    float _systemVoltage;
+    float _humidity;
+    float _temperature;
+    float _reserved;
     /* OPTION */
     uint8_t _optionResFreqFlag;
     uint8_t _resFrequency[ML_FREQUENCY_LEN];

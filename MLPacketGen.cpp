@@ -21,8 +21,8 @@ MLPayloadGen* MLPayloadGen::createResDataPayloadGen(uint8_t errorCode, uint8_t d
     return res;
 }
 
-MLPayloadGen* MLPayloadGen::createNotifyVindunoPayloadGen(uint8_t *apiKey, uint32_t soil_1, uint32_t soil_2, uint32_t soil_3, uint32_t soil_4, 
-                uint32_t sysVoltage, uint32_t humidity, uint32_t temperature, uint32_t reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+MLPayloadGen* MLPayloadGen::createNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
+                float sysVoltage, float humidity, float temperature, float reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
     MLNotifyVindunoPayloadGen *ntf = new MLNotifyVindunoPayloadGen(apiKey, soil_1, soil_2, soil_3, soil_4, sysVoltage, humidity, temperature, reserved, 
             optionFlags, optionData, version);
     return ntf;
@@ -155,8 +155,8 @@ int MLResDataPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, uint32_t soil_1, uint32_t soil_2, uint32_t soil_3, uint32_t soil_4, 
-                uint32_t sysVoltage, uint32_t humidity, uint32_t temperature, uint32_t reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
+                float sysVoltage, float humidity, float temperature, float reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
     _version = version;
     _cmdId = CMD_NTF_UPLOAD_VINDUINO_FIELD;
     memcpy(_apiKey, apiKey, VINDUNO_API_KEY_LEN);
@@ -184,38 +184,38 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     payload[pos++] = _cmdId & 0x0F;
     memcpy(&payload[pos], _apiKey, VINDUNO_API_KEY_LEN);
     pos += VINDUNO_API_KEY_LEN;
-    payload[pos++] = (_soil_1 & 0xFF000000) >> 24;
-    payload[pos++] = (_soil_1 & 0x00FF0000) >> 16;
-    payload[pos++] = (_soil_1 & 0x0000FF00) >> 8;
-    payload[pos++] = (_soil_1 & 0x000000FF);
-    payload[pos++] = (_soil_2 & 0xFF000000) >> 24;
-    payload[pos++] = (_soil_2 & 0x00FF0000) >> 16;
-    payload[pos++] = (_soil_2 & 0x0000FF00) >> 8;
-    payload[pos++] = (_soil_2 & 0x000000FF);
-    payload[pos++] = (_soil_3 & 0xFF000000) >> 24;
-    payload[pos++] = (_soil_3 & 0x00FF0000) >> 16;
-    payload[pos++] = (_soil_3 & 0x0000FF00) >> 8;
-    payload[pos++] = (_soil_3 & 0x000000FF);
-    payload[pos++] = (_soil_4 & 0xFF000000) >> 24;
-    payload[pos++] = (_soil_4 & 0x00FF0000) >> 16;
-    payload[pos++] = (_soil_4 & 0x0000FF00) >> 8;
-    payload[pos++] = (_soil_4 & 0x000000FF);
-    payload[pos++] = (_sysVoltage & 0xFF000000) >> 24;
-    payload[pos++] = (_sysVoltage & 0x00FF0000) >> 16;
-    payload[pos++] = (_sysVoltage & 0x0000FF00) >> 8;
-    payload[pos++] = (_sysVoltage & 0x000000FF);
-    payload[pos++] = (_humidity & 0xFF000000) >> 24;
-    payload[pos++] = (_humidity & 0x00FF0000) >> 16;
-    payload[pos++] = (_humidity & 0x0000FF00) >> 8;
-    payload[pos++] = (_humidity & 0x000000FF);
-    payload[pos++] = (_temperature & 0xFF000000) >> 24;
-    payload[pos++] = (_temperature & 0x00FF0000) >> 16;
-    payload[pos++] = (_temperature & 0x0000FF00) >> 8;
-    payload[pos++] = (_temperature & 0x000000FF);
-    payload[pos++] = (_reserved & 0xFF000000) >> 24;
-    payload[pos++] = (_reserved & 0x00FF0000) >> 16;
-    payload[pos++] = (_reserved & 0x0000FF00) >> 8;
-    payload[pos++] = (_reserved & 0x000000FF);
+    payload[pos++] = ((uint32_t)_soil_1 & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_soil_1 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_1 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_1 & 0x000000FF);
+    payload[pos++] = ((uint32_t)_soil_2 & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_soil_2 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_2 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_2 & 0x000000FF);
+    payload[pos++] = ((uint32_t)_soil_3 & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_soil_3 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_3 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_3 & 0x000000FF);
+    payload[pos++] = ((uint32_t)_soil_4 & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_soil_4 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_4 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_4 & 0x000000FF);
+    payload[pos++] = ((uint32_t)_sysVoltage & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_sysVoltage & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_sysVoltage & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_sysVoltage & 0x000000FF);
+    payload[pos++] = ((uint32_t)_humidity & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_humidity & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_humidity & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_humidity & 0x000000FF);
+    payload[pos++] = ((uint32_t)_temperature & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_temperature & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_temperature & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_temperature & 0x000000FF);
+    payload[pos++] = ((uint32_t)_reserved & 0xFF000000) >> 24;
+    payload[pos++] = ((uint32_t)_reserved & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_reserved & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_reserved & 0x000000FF);
     payload[pos++] = _optionFlags;
     if (_optionDataLen > 0)
         memcpy(&payload[pos], _optionData, _optionDataLen);

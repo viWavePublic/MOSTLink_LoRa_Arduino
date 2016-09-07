@@ -13,8 +13,8 @@ class MLPayloadGen {
         static MLPayloadGen *createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version);
         static MLPayloadGen *createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createNotifyVindunoPayloadGen(uint8_t *apiKey, uint32_t soil_1, uint32_t soil_2, uint32_t soil_3, uint32_t soli_4, 
-                uint32_t sysVoltage, uint32_t humidity, uint32_t teamerature, uint32_t resvered, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
+                float sysVoltage, float humidity, float teamerature, float resvered, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
     protected:
         uint8_t _version;
         uint16_t _cmdId;
@@ -65,19 +65,19 @@ class MLResDataPayloadGen : public MLPayloadGen {
 
 class MLNotifyVindunoPayloadGen : public MLPayloadGen {
     public:
-        MLNotifyVindunoPayloadGen(uint8_t *apiKey, uint32_t soil_1, uint32_t soil_2, uint32_t soil_3, uint32_t soli_4, 
-                uint32_t sysVoltage, uint32_t humidity, uint32_t temperature, uint32_t reserved, uint8_t option, uint8_t *optionData, uint8_t version);
+        MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
+                float sysVoltage, float humidity, float temperature, float reserved, uint8_t option, uint8_t *optionData, uint8_t version);
         int getPayload(uint8_t *payload);
     private:
         uint8_t _apiKey[VINDUNO_API_KEY_LEN]; 
-        uint32_t _soil_1; 
-        uint32_t _soil_2; 
-        uint32_t _soil_3; 
-        uint32_t _soil_4; 
-        uint32_t _sysVoltage; 
-        uint32_t _humidity; 
-        uint32_t _temperature; 
-        uint32_t _reserved;
+        float _soil_1;
+        float _soil_2;
+        float _soil_3;
+        float _soil_4;
+        float _sysVoltage;
+        float _humidity;
+        float _temperature;
+        float _reserved;
 };
 
 class MLPacketGen {
