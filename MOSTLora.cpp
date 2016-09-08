@@ -12,15 +12,14 @@
  
  */
 
-
 #include "MOSTLora.h"
 #include "MLpacket.h"
 #include "MLpacketGen.h"
 
-#ifdef USE_LINKIT_ONE
+#if defined(__LINKIT_ONE__)
     #define loraSerial Serial1       // for LinkIt ONE
 
-#else // USE_LINKIT_ONE
+#else // __LINKIT_ONE__
     #ifdef DEBUG_LORA
 
         // for arduino Uno
@@ -36,7 +35,7 @@
 
     #endif // DEBUG_LORA
 
-#endif // USE_LINKIT_ONE
+#endif // __LINKIT_ONE__
 
 #ifdef DEBUG_LORA
 #define debugSerial Serial

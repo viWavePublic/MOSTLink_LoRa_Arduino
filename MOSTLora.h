@@ -17,8 +17,21 @@
 
 #include <Arduino.h>
 
-//#define USE_LINKIT_ONE     // for LinkIt ONE
-//#define USE_VINDUINO       // for Vinduino project
+#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_NANO)
+
+#elif defined(ARDUINO_AVR_MINI)
+
+#define USE_VINDUINO       // for Vinduino project
+
+#elif defined(__LINKIT_ONE__)   // for LinkIt ONE
+
+#else
+
+// unsupported board
+#error "ARDUINO BOARD NOT SUPPORTED"
+
+#endif
+
 
 //#define USE_PIN_LED_LORA     9   // pin-LED for LoRa receive data
 
