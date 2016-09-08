@@ -17,11 +17,14 @@
 
 #include <Arduino.h>
 
+#define DEBUG_LORA     // debug by Serial Monitor
+
 #if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_NANO)
 
-#elif defined(ARDUINO_AVR_MINI)
+#elif defined(ARDUINO_AVR_MINI) // for Vinduino project
 
-#define USE_VINDUINO       // for Vinduino project
+#define USE_VINDUINO        // for Vinduino project
+#undef DEBUG_LORA           // don't monitor in Vinduino
 
 #elif defined(__LINKIT_ONE__)   // for LinkIt ONE
 
@@ -35,9 +38,7 @@
 
 //#define USE_PIN_LED_LORA     9   // pin-LED for LoRa receive data
 
-#ifndef USE_VINDUINO
-#define DEBUG_LORA     // debug by Serial Monitor
-#endif
+
 //
 enum E_LORA_MODE {
   E_UNKNOWN_LORA_MODE = -1,
