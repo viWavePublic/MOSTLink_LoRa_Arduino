@@ -14,7 +14,8 @@
 
 #include "MOSTLora.h"
 #include "MLpacket.h"
-#include "MLpacketGen.h"
+#include "MLPacketGen.h"
+#include "MLPacketParser.h"
 
 #if defined(__LINKIT_ONE__)
     #define loraSerial Serial1       // for LinkIt ONE
@@ -375,14 +376,14 @@ int MOSTLora::receData(byte *data, int szData)
 
   }
   // parse downlink packet
-  parsePacket(data, szData);
+//  parsePacket(data, szData);  // parse Packet by your code
   return nCountBuf;
 }
 
 int MOSTLora::parsePacket(byte *data, int szData)
 {
   int nRet = -1;
-  if (data[0] == '$') {
+  if (data[0] == '$') {     // for LT200 protocol
     
   }
   else if (data[0] == 0xFB && data[1] == 0xFC) {    // for MOST Link protocol
@@ -390,8 +391,32 @@ int MOSTLora::parsePacket(byte *data, int szData)
       MLDownlink header;
       const int szHeader = sizeof(MLDownlink);
       if (szData > szHeader) {
+          MLPacketCtx pkctx;
+          MLPacketParser pkParser;
+          
+          pkParser.mostloraPacketParse(&pkctx, data);
+          byte *pMac = (byte*)&pkctx._receiverID;
+          debugSerial.print((int)pkctx._mlPayloadCtx._dataLen, 10);
+          debugSerial.print(": ");
+          debugSerial.print((long)pkctx._receiverID, 16);
+          debugSerial.print(")pkParser Mac:");
+          printBinary(pMac, 8);
+          
           memcpy(&header, data, szHeader);
-          nRet = 0;
+          
+          debugSerial.print("rece ID: ");
+          printBinary(header.receiver_id, 8);
+          printBinary(_data.mac_addr, 8);
+          if (memcmp(header.receiver_id, _data.mac_addr, 8) == 0) // packet for me
+          {
+#ifdef DEBUG_LORA
+              short *pCmd = (short*)(data + 15);
+              debugSerial.print(") rece packet cmd: 0x");
+              debugSerial.println(*pCmd, 16);
+#endif // DEBUG_LORA
+
+              nRet = 0;
+          }
       }
   }
   return nRet;
@@ -431,16 +456,16 @@ void MOSTLora::sendPacketResData2(float h, float t)
     byte dataHT[8], *ptr;
     // humidity (4 bytes)
     ptr = (byte*)&h;
-    dataHT[0] = ptr[3];
-    dataHT[1] = ptr[2];
-    dataHT[2] = ptr[1];
-    dataHT[3] = ptr[0];
+    dataHT[0] = ptr[0];
+    dataHT[1] = ptr[1];
+    dataHT[2] = ptr[2];
+    dataHT[3] = ptr[3];
     // temperature (4 bytes)
     ptr = (byte*)&t;
-    dataHT[4] = ptr[3];
-    dataHT[5] = ptr[2];
-    dataHT[6] = ptr[1];
-    dataHT[7] = ptr[0];
+    dataHT[4] = ptr[0];
+    dataHT[5] = ptr[1];
+    dataHT[6] = ptr[2];
+    dataHT[7] = ptr[3];
     
     uint8_t mlpacket[99];
     uint64_t *pSenderID = (uint64_t*)getMacAddress();
@@ -477,17 +502,21 @@ void MOSTLora::sendPacketResData(float h, float t)
     payload[3] = 0;       // error code: 0 - success
     payload[4] = 8;       // data length
     // humidity (4 bytes)
-    ptr = (byte*)&h;
-    payload[5] = ptr[3];
-    payload[6] = ptr[2];
-    payload[7] = ptr[1];
-    payload[8] = ptr[0];
+//    ptr = (byte*)&h;
+//    payload[5] = ptr[3];
+//    payload[6] = ptr[2];
+//    payload[7] = ptr[1];
+//    payload[8] = ptr[0];
+    memcpy(payload + 5, &h, 4);
+    
     // temperature (4 bytes)
-    ptr = (byte*)&t;
-    payload[9] = ptr[3];
-    payload[10] = ptr[2];
-    payload[11] = ptr[1];
-    payload[12] = ptr[0];
+//    ptr = (byte*)&t;
+//    payload[9] = ptr[3];
+//    payload[10] = ptr[2];
+//    payload[11] = ptr[1];
+//    payload[12] = ptr[0];
+    memcpy(payload + 9, &t, 4);
+    
     payload[13] = 0;      // option flag
     payload[14] = 0;      // payload CRC
     

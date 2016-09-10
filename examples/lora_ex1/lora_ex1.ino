@@ -21,6 +21,9 @@ int tsIdle = 0;
 long tsCurr = millis();
 long countRun = 0;
 boolean bLedRun = HIGH;
+
+String strHi = "";
+
 void setup() {
   // put your setup code here, to run once:
   pinMode(pinTouch, INPUT);
@@ -31,26 +34,34 @@ void setup() {
 
   // Serial for log monitor
   Serial.begin(9600);  // use serial port
-  
-  dht.begin();
-  lora.begin();
 
  
+  dht.begin();
+  lora.begin();
+  lora.setReceiverID("FFFFFFFF00112233");
+
+//  lora.writeConfig(868000, 22, 0, 7, 5);
+  #if defined(__LINKIT_ONE__)
+    strHi += "[LinkitOne]";
+  #else
+    strHi += "[ArduinoUno]";
+  #endif
+
+  Serial.println(strHi);  // use serial port
   // init sensor for humidity & temperature
   readSensorDHT(fHumidity, fTemperature);
 
-  char strHello[] = "Hello LoRa...1";
-  int szHello = strlen(strHello);
+  int szHi = strHi.length();
   delay(3000);
   lora.waitUntilReady(5000);
 //  lora.sendData((unsigned char*)strHello, szHello);
-  lora.sendData(strHello);
+  lora.sendData((byte*)strHi.c_str(), szHi);
 }
 
 
 void loop() {
-/*  long tsNow = millis();
-  if (tsNow - tsCurr > (60000 * 3))
+  long tsNow = millis();
+/*  if (tsNow - tsCurr > (60000))
   {
     count++; 
     tsCurr = tsNow;
@@ -60,18 +71,22 @@ void loop() {
     readSensorDHT(fHumidity, fTemperature);
     lora.sendPacketResData(fHumidity, fTemperature);
   }
-*/
-  
+  */
   if (lora.available()) {
     szBuf = lora.receData(buf, 255);
     if (szBuf >= 2) {
+      Serial.print(szBuf);  // use serial port
+      Serial.println(") Parse rece <<<");  // use serial port
       if (lora.parsePacket(buf, szBuf) >= 0) {
         readSensorDHT(fHumidity, fTemperature);
         lora.sendPacketResData(fHumidity, fTemperature);
+//        lora.sendPacketResData2(fHumidity, fTemperature);
+//        lora.sendPacketVinduino2("0GFUGE371WNPMMJE", 0, 0, 0, 0, 0, 0, 0, 0);
       }
       else if ('/' == buf[0]) {
         char *strBuf = (char*)buf;
         strBuf[0] = '>';
+        strcat(strBuf, strHi.c_str());
         szBuf = strlen(strBuf);
         
         int modeBak = lora.getMode();
