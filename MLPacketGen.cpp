@@ -47,8 +47,8 @@ MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRat
 int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
     payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _cmdId & 0x0F;
     memcpy(&payload[pos], _frequency, ML_FREQUENCY_LEN);
     pos += ML_FREQUENCY_LEN;
     payload[pos++] = _dataRate;
@@ -81,10 +81,10 @@ MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, 
 int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
     payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _cmdId & 0x0F;
+    payload[pos++] = _resInterval & 0xFF;
     payload[pos++] = _resInterval >> 8;
-    payload[pos++] = _resInterval & 0x0F;
     payload[pos++] = _dataLen;
     memcpy(&payload[pos], _data, _dataLen);
     pos += _dataLen;
@@ -112,8 +112,8 @@ MLResSetLoraConfigGen::MLResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFl
 int MLResSetLoraConfigGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
     payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _cmdId & 0x0F;
     payload[pos++] = _errorCode;
     payload[pos++] = _optionFlags;
     if (_optionDataLen > 0)
@@ -141,8 +141,8 @@ MLResDataPayloadGen::MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uin
 int MLResDataPayloadGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
     payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _cmdId & 0x0F;
     payload[pos++] = _errorCode;
     payload[pos++] = _dataLen;
     memcpy(&payload[pos], _data, _dataLen);
@@ -180,42 +180,42 @@ MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil
 int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
     payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _cmdId & 0x0F;
     memcpy(&payload[pos], _apiKey, VINDUNO_API_KEY_LEN);
     pos += VINDUNO_API_KEY_LEN;
-    payload[pos++] = ((uint32_t)_soil_1 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_1 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_1 & 0x0000FF00) >> 8;
     payload[pos++] = ((uint32_t)_soil_1 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_2 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_2 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_2 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_1 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_1 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_1 & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_soil_2 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_3 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_3 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_3 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_2 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_2 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_2 & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_soil_3 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_4 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_4 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_4 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_3 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_3 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_3 & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_soil_4 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_sysVoltage & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_sysVoltage & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_sysVoltage & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_4 & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_soil_4 & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_soil_4 & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_sysVoltage & 0x000000FF);
-    payload[pos++] = ((uint32_t)_humidity & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_humidity & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_humidity & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_sysVoltage & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_sysVoltage & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_sysVoltage & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_humidity & 0x000000FF);
-    payload[pos++] = ((uint32_t)_temperature & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_temperature & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_temperature & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_humidity & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_humidity & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_humidity & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_temperature & 0x000000FF);
-    payload[pos++] = ((uint32_t)_reserved & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_reserved & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_reserved & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_temperature & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_temperature & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_temperature & 0xFF000000) >> 24;
     payload[pos++] = ((uint32_t)_reserved & 0x000000FF);
+    payload[pos++] = ((uint32_t)_reserved & 0x0000FF00) >> 8;
+    payload[pos++] = ((uint32_t)_reserved & 0x00FF0000) >> 16;
+    payload[pos++] = ((uint32_t)_reserved & 0xFF000000) >> 24;
     payload[pos++] = _optionFlags;
     if (_optionDataLen > 0)
         memcpy(&payload[pos], _optionData, _optionDataLen);
@@ -223,13 +223,13 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint64_t receiverID, uint64_t senderID, uint8_t version) {
+MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *receiverID, uint8_t *senderID, uint8_t version) {
     _ackBit = ackBit;
     _receiverFlag = receiverFlag;
     _packetType = packetType;
     _direction = direction;
-    _receiverID = receiverID;
-    _senderID = senderID;
+    memcpy(_receiverID, receiverID, ML_PK_ID_SIZE);
+    memcpy(_senderID, senderID, ML_PK_ID_SIZE);
     _version = version;
     _mlPayloadGen = NULL;
 }
@@ -249,28 +249,14 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     uint8_t pos = 0;
     uint8_t mlpayload[84];
 
-    mlpacket[0] = 0xFB;
-    mlpacket[1] = 0xFC;
-    mlpacket[2] = _version;
-    mlpacket[4] = (_direction & 0x01) << 3 | (_packetType & 0x01) << 2 | (_receiverFlag & 0x01) << 1 | (_ackBit & 0x01);
-    mlpacket[5] = (_receiverID & 0xFF00000000000000) >> 56;
-    mlpacket[6] = (_receiverID & 0x00FF000000000000) >> 48;
-    mlpacket[7] = (_receiverID & 0x0000FF0000000000) >> 40;
-    mlpacket[8] = (_receiverID & 0x000000FF00000000) >> 32;
-    mlpacket[9] = (_receiverID & 0x00000000FF000000) >> 24;
-    mlpacket[10] = (_receiverID & 0x0000000000FF0000) >> 16;
-    mlpacket[11] = (_receiverID & 0x000000000000FF00) >> 8;
-    mlpacket[12] = _receiverID & 0x00000000000000FF;
+    mlpacket[ML_PK_PREAMBLE_1_POS] = 0xFB;
+    mlpacket[ML_PK_PREAMBLE_2_POS] = 0xFC;
+    mlpacket[ML_PK_VERSION_POS] = _version;
+    mlpacket[ML_PK_FLAGS_POS] = (_direction & 0x01) << 3 | (_packetType & 0x01) << 2 | (_receiverFlag & 0x01) << 1 | (_ackBit & 0x01);
+    memcpy(&mlpacket[ML_PK_RECEIVER_ID_POS], _receiverID, ML_PK_ID_SIZE);
     pos = 13;
     if (_direction == 1) {
-        mlpacket[13] = (_senderID & 0xFF00000000000000) >> 56;
-        mlpacket[14] = (_senderID & 0x00FF000000000000) >> 48;
-        mlpacket[15] = (_senderID & 0x0000FF0000000000) >> 40;
-        mlpacket[16] = (_senderID & 0x000000FF00000000) >> 32;
-        mlpacket[17] = (_senderID & 0x00000000FF000000) >> 24;
-        mlpacket[18] = (_senderID & 0x0000000000FF0000) >> 16;
-        mlpacket[19] = (_senderID & 0x000000000000FF00) >> 8;
-        mlpacket[20] = _senderID & 0x00000000000000FF;
+        memcpy(&mlpacket[ML_PK_SENDER_ID_POS], _senderID, ML_PK_ID_SIZE);
         pos = 21;
     }
     uint8_t payloadLen = getMLPayload(mlpayload);
@@ -283,4 +269,3 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     mlpacket[totalLen-1] = getCrc(mlpacket, totalLen-1);
     return totalLen;
 }
-

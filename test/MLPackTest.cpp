@@ -2,7 +2,9 @@
 
 int main() {
     uint8_t mlpacket[99];
-    MLPacketGen mlPacketGen(0,0,0,1,0xFFFFFFFFFFFFFF01,0x9B667C0E0B000480);
+    uint8_t receiverID[8] = {0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    uint8_t senderID[8] = {0x80, 0x04, 0x00, 0x0B, 0x0E, 0x7C, 0x66, 0x9B};
+    MLPacketGen mlPacketGen(0, 0, 0, 1, receiverID, senderID);
 
     uint8_t cmdData[8] = {1,2,3,4,5,6,7,8};
     uint8_t optionData[3] = {0x12, 0x34, 0x56};

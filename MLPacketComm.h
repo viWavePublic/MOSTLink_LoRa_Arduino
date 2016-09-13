@@ -6,6 +6,8 @@
 #define ML_MAX_OPTION_DATA_SIZE 3
 #define ML_FREQUENCY_LEN    3
 
+#define ML_PK_ID_SIZE 8
+
 #define CMD_REQ_SET_LORA_CONFIG 0x0001
 #define CMD_REQ_DATA            0x0004
 #define CMD_RES_SET_LORA_CONFIG 0x0200

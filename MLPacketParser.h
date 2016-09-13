@@ -8,7 +8,7 @@
 
 typedef struct MLPayloadContext {
     uint8_t _cmdVersion;
-    uint8_t _cmdId;
+    uint16_t _cmdId;
     /* REQ_SET_LORA_CONFIG */
     uint8_t _frequency[ML_FREQUENCY_LEN];
     uint8_t _dataRate;
@@ -16,7 +16,7 @@ typedef struct MLPayloadContext {
     uint8_t _wakeupInterval;
     uint8_t _groupId;
     /* REQ_DATA */
-    uint8_t _responseInterval;
+    uint16_t _responseInterval;
     /* RES_DATA, RES_SET_LORA_CONFIG */
     uint8_t _errorCode;
     /* REQ_DATA, RES_DATA */
@@ -66,8 +66,8 @@ typedef struct MLPacketContext {
     uint8_t _receiverFlag;
     uint8_t _packetType;
     uint8_t _direction;
-    uint64_t _receiverID;
-    uint64_t _senderID;
+    uint8_t _receiverID[ML_PK_ID_SIZE];
+    uint8_t _senderID[ML_PK_ID_SIZE];
     MLPayloadCtx _mlPayloadCtx;
 
     MLPacketContext() {
@@ -76,8 +76,8 @@ typedef struct MLPacketContext {
         _receiverFlag = 0;
         _packetType = 0;
         _direction = 0;
-        _receiverID = 0;
-        _senderID = 0;
+        memset(_receiverID, 0, ML_PK_ID_SIZE);
+        memset(_senderID, 0, ML_PK_ID_SIZE);
     }
 } MLPacketCtx;
 

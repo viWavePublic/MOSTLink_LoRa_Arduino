@@ -82,7 +82,7 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
 
 class MLPacketGen {
     public:
-        MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint64_t receiverID, uint64_t senderID = 0, uint8_t version = 0x0A);
+        MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *receiverID, uint8_t *senderID = 0, uint8_t version = 0x0A);
         void setMLPayloadGen(MLPayloadGen *mlpayloadGen);
         int getMLPacket(uint8_t *mlpacket);
     private:
@@ -92,8 +92,8 @@ class MLPacketGen {
         uint8_t _receiverFlag;
         uint8_t _packetType;
         uint8_t _direction;
-        uint64_t _receiverID;
-        uint64_t _senderID;
+        uint8_t _receiverID[ML_PK_ID_SIZE];
+        uint8_t _senderID[ML_PK_ID_SIZE];
         uint8_t _version;
         MLPayloadGen *_mlPayloadGen;
 };
