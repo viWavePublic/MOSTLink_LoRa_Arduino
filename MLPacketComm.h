@@ -6,7 +6,10 @@
 #define ML_MAX_OPTION_DATA_SIZE 3
 #define ML_FREQUENCY_LEN    3
 
+#define ML_PK_HEADER_SIZE 15
 #define ML_PK_ID_SIZE 8
+#define ML_PK_HEADER_CRC_SIZE 1
+#define ML_PK_CRC_SIZE 1
 
 #define CMD_REQ_SET_LORA_CONFIG 0x0001
 #define CMD_REQ_DATA            0x0004
@@ -24,16 +27,14 @@
 #define ML_PK_DOWNLINK 0
 #define ML_PK_UPLINK 1
 
-#define ML_PK_DOWNLINK_CRC_POS 13
-#define ML_PK_UPLINK_CRC_POS 21
-
 #define ML_PK_PREAMBLE_1_POS 0
 #define ML_PK_PREAMBLE_2_POS 1
 #define ML_PK_VERSION_POS 2
 #define ML_PK_LENGTH_POS 3
 #define ML_PK_FLAGS_POS 4
-#define ML_PK_RECEIVER_ID_POS 5
-#define ML_PK_SENDER_ID_POS 13
+#define ML_PK_ID_POS 5
+#define ML_PK_HEADER_CRC_POS 13
+#define ML_PK_PAYLOAD_START_POS 14
 
 /* Payload */
 #define CMD_VERSION_POS 0
@@ -75,7 +76,7 @@ namespace {
         for (uint8_t i=0; i<length; i++) {
             crc^=dataBuffer[i];
         }
-        printf("%x\n", crc);
+        //printf("%x\n", crc);
         return crc;
     }
 }

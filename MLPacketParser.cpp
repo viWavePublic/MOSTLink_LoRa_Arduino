@@ -2,18 +2,10 @@
 
 int MLPacketParser::mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packet) {
     uint8_t nPacketLen;
-    uint8_t nDirection = 0;
     uint8_t payload[ML_MAX_PAYLOAD_SIZE] = {0};
     
     if(packet[ML_PK_PREAMBLE_1_POS] == 0xFB && packet[ML_PK_PREAMBLE_2_POS] == 0xFC){
-        nDirection =  (packet[ML_PK_FLAGS_POS] >> 3) & 0x01;
-        uint8_t crcPos = 0;
-        if (ML_PK_UPLINK == nDirection)
-            crcPos = ML_PK_UPLINK_CRC_POS;
-        else
-            crcPos = ML_PK_DOWNLINK_CRC_POS;
-
-        if (packet[crcPos] != getCrc(packet, crcPos++)) {
+        if (packet[ML_PK_HEADER_CRC_POS] != getCrc(packet, ML_PK_HEADER_SIZE-ML_PK_HEADER_CRC_SIZE-ML_PK_CRC_SIZE)) {
             printf("CRC error 1\n");
             return ML_PK_PARSE_HEADER_CRC_ERR;
         } else {
@@ -23,30 +15,15 @@ int MLPacketParser::mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packe
             pkctx->_receiverFlag = (packet[ML_PK_FLAGS_POS] >> 1) & 0x01;
             pkctx->_packetType = (packet[ML_PK_FLAGS_POS] >>2) & 0x01;
             pkctx->_direction = (packet[ML_PK_FLAGS_POS] >> 3) & 0x01;
-            uint8_t pos = ML_PK_RECEIVER_ID_POS;
-            if (ML_PK_UPLINK == nDirection) {
-                memcpy(pkctx->_receiverID, &packet[ML_PK_RECEIVER_ID_POS], ML_PK_ID_SIZE);
-                pos += ML_PK_ID_SIZE;
-                memcpy(pkctx->_senderID, &packet[ML_PK_SENDER_ID_POS], ML_PK_ID_SIZE);
-                pos += ML_PK_ID_SIZE;
-            } else {
-                memcpy(pkctx->_receiverID, &packet[ML_PK_RECEIVER_ID_POS], ML_PK_ID_SIZE);
-                pos += ML_PK_ID_SIZE;
-            }
-            uint8_t payloadStartPos = pos;
+            memcpy(pkctx->_id, &packet[ML_PK_ID_POS], ML_PK_ID_SIZE);
             uint8_t packetCRCPos = nPacketLen - 1;
-            uint8_t payloadLen = nPacketLen-payloadStartPos-1;
+            uint8_t payloadLen = nPacketLen-ML_PK_HEADER_SIZE;
+            //printf("packetLen:%d, payloadLen:%d\n", nPacketLen, payloadLen);
             if (packet[packetCRCPos] == getCrc(packet, nPacketLen-1)) {
-                //printf("pLen: %d\n", nPacketLen-pos-1);
-                //printf("buf[%d]: %x\n", pos, packet[pos]);
-                memcpy(payload, packet+payloadStartPos, payloadLen);
-                //pkctx->nDataLen = nPacketLen-pos-1;
+                memcpy(payload, packet+ML_PK_PAYLOAD_START_POS, payloadLen);
                 mostloraPayloadParse(pkctx, payload);
-                //for (i=0; i<pkctx->nDataLen; i++) {
-                //    printf("Data[%d] = %x\n", i , pkctx->data[i]);
-                //}
             } else {
-                printf("CRC)error 2\n");
+                printf("CRC error 2\n");
                 return ML_PK_PARSE_PACKET_CRC_ERR;
             }
             return 0;
@@ -58,7 +35,6 @@ int MLPacketParser::mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packe
 int MLPacketParser::mostloraPayloadParse(MLPacketCtx *pkctx, const uint8_t *payload) {
     pkctx->_mlPayloadCtx._cmdVersion = payload[CMD_VERSION_POS];
     pkctx->_mlPayloadCtx._cmdId = payload[CMD_ID_POS+1] << 8 | payload[CMD_ID_POS];
-
     uint8_t optionFlagsPos = 0;
     switch (pkctx->_mlPayloadCtx._cmdId) {
         case CMD_REQ_SET_LORA_CONFIG:

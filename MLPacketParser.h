@@ -66,8 +66,7 @@ typedef struct MLPacketContext {
     uint8_t _receiverFlag;
     uint8_t _packetType;
     uint8_t _direction;
-    uint8_t _receiverID[ML_PK_ID_SIZE];
-    uint8_t _senderID[ML_PK_ID_SIZE];
+    uint8_t _id[ML_PK_ID_SIZE];
     MLPayloadCtx _mlPayloadCtx;
 
     MLPacketContext() {
@@ -76,8 +75,7 @@ typedef struct MLPacketContext {
         _receiverFlag = 0;
         _packetType = 0;
         _direction = 0;
-        memset(_receiverID, 0, ML_PK_ID_SIZE);
-        memset(_senderID, 0, ML_PK_ID_SIZE);
+        memset(_id, 0, ML_PK_ID_SIZE);
     }
 } MLPacketCtx;
 
