@@ -391,17 +391,15 @@ int MOSTLora::parsePacket(byte *data, int szData)
       MLDownlink header;
       const int szHeader = sizeof(MLDownlink);
       if (szData > szHeader) {
-         /* MLPacketCtx pkctx;
+          MLPacketCtx pkctx;
           MLPacketParser pkParser;
           
           pkParser.mostloraPacketParse(&pkctx, data);
-          byte *pMac = (byte*)&pkctx._receiverID;
+          byte *pMac = (byte*)&pkctx._id;
           debugSerial.print((int)pkctx._mlPayloadCtx._dataLen, 10);
-          debugSerial.print(": ");
-          debugSerial.print((long)pkctx._receiverID, 16);
           debugSerial.print(")pkParser Mac:");
           printBinary(pMac, 8);
-          */
+          
           memcpy(&header, data, szHeader);
           
           debugSerial.print("rece ID: ");
@@ -470,7 +468,7 @@ void MOSTLora::sendPacketResData2(float h, float t)
     uint8_t mlpacket[99];
     uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
     uint8_t *pSenderID = (uint8_t*)getMacAddress();
-    MLPacketGen mlPacketGen(0,0,0,1,pReceiverID, pSenderID);
+    MLPacketGen mlPacketGen(0,0,0,1,pReceiverID);
     MLPayloadGen *pPayload = MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
@@ -536,7 +534,7 @@ void MOSTLora::sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, f
     uint8_t mlpacket[99];
     uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
     uint8_t *pSenderID = (uint8_t*)getMacAddress();
-    MLPacketGen mlPacketGen(0,0,0,1,pReceiverID, pSenderID);
+    MLPacketGen mlPacketGen(0,0,0,1,pReceiverID);
     MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);

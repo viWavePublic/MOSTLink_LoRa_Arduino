@@ -3,6 +3,7 @@ const int pinLedRece = 9;
 
 #include "MOSTLora.h"
 #include "DHT.h"
+#include "MLPacketParser.h"
 
 int count = 0;
 const int pinTouch = 8;  // 12;
@@ -24,6 +25,13 @@ boolean bLedRun = HIGH;
 
 String strHi = "";
 
+const uint8_t REQ_DATA_PK[] = {
+0xFB,0xFC,0x0B,0x1A,0x01,0x9B,0x66,0x7C,0x0F,0x17,0x00,0x03,0x00,0x8D,0x0A,0x04,
+0x00,0x0A,0x00,0x04,0x74,0x65,0x73,0x74,0x00,0x16 };
+
+const uint8_t RES_DATA_PK[] = {
+0xFB,0xFC,0x0B,0x1D,0x08,0x9B,0x66,0x7C,0x0F,0x17,0x00,0x03,0x00,0x83,0x0A,0x02,
+0x02,0x00,0x08,0x00,0x00,0x2E,0x42,0x33,0x33,0xC3,0x41,0x00,0xEC };
 void setup() {
   // put your setup code here, to run once:
   pinMode(pinTouch, INPUT);
@@ -35,12 +43,23 @@ void setup() {
   // Serial for log monitor
   Serial.begin(9600);  // use serial port
 
- 
+  // test
+  MLPacketCtx pkctx;
+  MLPacketParser pkParser;
+
+  pkParser.mostloraPacketParse(&pkctx, RES_DATA_PK);
+  Serial.print((int)pkctx._mlPayloadCtx._dataLen, 10);
+  Serial.print(") payload REQ_DATA_PK, cmdID:0x");
+  Serial.print((int)pkctx._mlPayloadCtx._cmdId, 16);
+  Serial.print(" ,ver: ");
+  Serial.println((int)pkctx._mlPayloadCtx._cmdVersion, 10);
+  
   dht.begin();
   lora.begin();
   lora.setReceiverID("FFFFFFFF00112233");
 
 //  lora.writeConfig(868000, 22, 0, 7, 5);
+  lora.setMode(E_LORA_WAKEUP);
   #if defined(__LINKIT_ONE__)
     strHi += "[LinkitOne]";
   #else
@@ -142,13 +161,13 @@ boolean readSensorDHT(float &h, float &t)
 
 void inputBySerial()
 {
-  int countBuf = 0;
-  while (Serial.available()) {
-    int c = Serial.read();
-    buf[countBuf] = c;
-
-    countBuf++;    
-    delay(20);
+  // serial command to send
+  int countBuf = MLutility::readSerial(buf);
+  if (countBuf > 0) {
+    buf[countBuf] = 0;
+    Serial.print("chat> ");
+    Serial.println((char*)buf);
+    lora.sendData((char*)buf);
   }
   if (countBuf > 0) {
     buf[countBuf] = 0;
