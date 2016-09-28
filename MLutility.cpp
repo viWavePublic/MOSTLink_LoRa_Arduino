@@ -100,10 +100,20 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng
         sprintf(buff, "UTC timer %2d-%2d-%2d", hour, minute, second);
         Serial.println(buff);
         
+        // latitude
         tmp = getComma(2, GPGGAstr);
         latitude = getDoubleNumber(&GPGGAstr[tmp]);
+        tmp = getComma(3, GPGGAstr);
+        if (GPGGAstr[tmp] != 'N')
+            latitude = -latitude;
+        
+        // longitude
         tmp = getComma(4, GPGGAstr);
         longitude = getDoubleNumber(&GPGGAstr[tmp]);
+        tmp = getComma(5, GPGGAstr);
+        if (GPGGAstr[tmp] != 'E')
+            longitude = -longitude;
+
         sprintf(buff, "latitude = %10.4f, longitude = %10.4f", latitude, longitude);
         Serial.println(buff);
         
@@ -113,8 +123,12 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng
         Serial.println(buff);
         
         // get latitude, longitude data
-        dbLat = latitude;
-        dbLng = longitude;
+        dbLat = latitude / 100;
+        dbLng = longitude / 100;
+        int nLat = dbLat;
+        int nLng = dbLng;
+        dbLat = nLat + (dbLat - nLat) * 100.0 / 60.0;
+        dbLng = nLng + (dbLng - nLng) * 100.0 / 60.0;
         bRet = true;
     }
     else
