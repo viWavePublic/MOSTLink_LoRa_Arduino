@@ -34,7 +34,7 @@ struct MLUplink {
     unsigned char sender_id[8];
     unsigned char headerCrc;
 
-    MLUplink();
+    MLUplink(unsigned char ver, unsigned char len, unsigned char flg, unsigned char *s_id, unsigned char *r_id);
 };
 
 #endif // __MLpacket_h

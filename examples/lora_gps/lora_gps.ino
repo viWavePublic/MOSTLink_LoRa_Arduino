@@ -54,7 +54,7 @@ void loop() {
     Serial.println(strGPS); 
     
     char strOut[255];
-    sprintf(strOut, "GPS(%8.6f, %8.6f)", dbLat / 100.0, dbLng / 100.0); 
+    sprintf(strOut, "GPS(%8.6f, %8.6f)", dbLat, dbLng); 
     lora.sendData((char*)strOut);
   }
 

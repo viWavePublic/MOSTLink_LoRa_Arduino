@@ -27,7 +27,7 @@ void setup() {
 
   delay(1000);
   // test to vinduino.io
-  lora.sendPacketVinduino(loraApiKey, 1501, 2622, 381, 456, 500, 660, 770, 800);
+  lora.sendPacketVinduino(loraApiKey, 121, 202, 301, 406, 500, 606, 707, 880);
 }
 
 void loop() {
@@ -37,7 +37,7 @@ void loop() {
     szBuf = lora.receData((unsigned char*)buf, 255);
     // reply to vinduino.io when receive "reply" message
     if (strcmp("reply", buf) == 0) {
-      lora.sendPacketVinduino(loraApiKey, 130, 2522, 300, 406, 550, 600, 700, 820);
+      lora.sendPacketVinduino(loraApiKey, 150, 252, 350, 456, 590, 650, 750, 850);
       delay(10000);
     }
   }

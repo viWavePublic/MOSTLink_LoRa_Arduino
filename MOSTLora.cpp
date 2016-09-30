@@ -45,7 +45,7 @@
 class DummySerial {
     
 };
-#define debugSerial DummySerial
+//#define debugSerial DummySerial
 
 #endif
 
@@ -380,6 +380,20 @@ int MOSTLora::receData(byte *data, int szData)
   return nCountBuf;
 }
 
+// 1: set normal mode, 2: send data 3: recover original mode
+int MOSTLora::sendPacket(byte *pPacket, int szPacket)
+{
+    int nModeBackup = getMode();
+    setMode(E_LORA_NORMAL);
+    /////////////////////
+    // send data is ready
+    int nRet = sendData(pPacket, szPacket);
+    
+    setMode(nModeBackup);
+    return nRet;
+}
+
+
 int MOSTLora::parsePacket(byte *data, int szData)
 {
   int nRet = -1;
@@ -396,21 +410,25 @@ int MOSTLora::parsePacket(byte *data, int szData)
           
           pkParser.mostloraPacketParse(&pkctx, data);
           byte *pMac = (byte*)&pkctx._id;
+          
+#ifdef DEBUG_LORA
+          debugSerial.print("*** cmdID: ");
+          debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
+          debugSerial.print(", length: ");
           debugSerial.print((int)pkctx._mlPayloadCtx._dataLen, 10);
-          debugSerial.print(")pkParser Mac:");
+
+          debugSerial.print(") pkParser Mac:");
           printBinary(pMac, 8);
+#endif // DEBUG_LORA
           
           memcpy(&header, data, szHeader);
-          
-          debugSerial.print("rece ID: ");
-          printBinary(header.receiver_id, 8);
-          printBinary(_data.mac_addr, 8);
           if (memcmp(header.receiver_id, _data.mac_addr, 8) == 0) // packet for me
           {
 #ifdef DEBUG_LORA
-              short *pCmd = (short*)(data + 15);
-              debugSerial.print(") rece packet cmd: 0x");
-              debugSerial.println(*pCmd, 16);
+              short cmd;
+              memcpy(&cmd, data + 15, 2);//[15] + (data[16] << 8);
+//              debugSerial.print("=== payload cmdID: 0x");
+              debugSerial.println(cmd, 16);
 #endif // DEBUG_LORA
 
               nRet = 0;
@@ -474,25 +492,16 @@ void MOSTLora::sendPacketResData2(float h, float t)
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(mlpacket);
     
-    int nModeBackup = getMode();
-    setMode(E_LORA_NORMAL);
     /////////////////////
-    // send data is ready
-    sendData(mlpacket, packetLen);
-    
-    setMode(nModeBackup);
+    // send packet is ready
+    sendPacket(mlpacket, packetLen);
 }
 
 // RES_DATA command for humidity & temperature
 void MOSTLora::sendPacketResData(float h, float t)
 {
     byte buf[99];
-    MLUplink headUplink;
-    headUplink.length = 22 + 15;
-    memcpy(headUplink.sender_id, getMacAddress(), 8);
-    memcpy(headUplink.receiver_id, _receiverID, 8);
-    // prepare uplink header
-    memcpy(buf, &headUplink, 22);
+    MLUplink headUplink(0x0A, 22 + 15, 0, getMacAddress(), _receiverID);
     
     // prapare payload chunk
     byte payload[15], *ptr;
@@ -501,32 +510,60 @@ void MOSTLora::sendPacketResData(float h, float t)
     payload[3] = 0;       // error code: 0 - success
     payload[4] = 8;       // data length
     // humidity (4 bytes)
-//    ptr = (byte*)&h;
-//    payload[5] = ptr[3];
-//    payload[6] = ptr[2];
-//    payload[7] = ptr[1];
-//    payload[8] = ptr[0];
     memcpy(payload + 5, &h, 4);
     
     // temperature (4 bytes)
-//    ptr = (byte*)&t;
-//    payload[9] = ptr[3];
-//    payload[10] = ptr[2];
-//    payload[11] = ptr[1];
-//    payload[12] = ptr[0];
     memcpy(payload + 9, &t, 4);
     
     payload[13] = 0;      // option flag
     payload[14] = 0;      // payload CRC
     
-    int nModeBackup = getMode();
-    setMode(E_LORA_NORMAL);
-    /////////////////////
-    // send data is ready
+    // fill packet: header and payload
+    memcpy(buf, &headUplink, 22);
     memcpy(buf + 22, payload, 15);
-    sendData(buf, 37);
     
-    setMode(nModeBackup);
+    /////////////////////
+    // send packet is ready
+    sendPacket(buf, 37);
+}
+
+void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng)
+{
+    byte buf[99];
+    MLUplink headUplink(0x0A, 22 + 15, 0, getMacAddress(), _receiverID);
+    
+    // prapare payload chunk
+    byte payload[15], *ptr;
+    payload[0] = 0x0A;    // version
+    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA commandID
+    payload[3] = 0;       // error code: 0 - success
+    payload[4] = 8;       // data length
+    // humidity (4 bytes)
+    //    ptr = (byte*)&h;
+    //    payload[5] = ptr[3];
+    //    payload[6] = ptr[2];
+    //    payload[7] = ptr[1];
+    //    payload[8] = ptr[0];
+    memcpy(payload + 5, &lat, 4);
+    
+    // temperature (4 bytes)
+    //    ptr = (byte*)&t;
+    //    payload[9] = ptr[3];
+    //    payload[10] = ptr[2];
+    //    payload[11] = ptr[1];
+    //    payload[12] = ptr[0];
+    memcpy(payload + 9, &lng, 4);
+    
+    payload[13] = 0;      // option flag
+    payload[14] = 0;      // payload CRC
+    
+    // fill packet: header and payload
+    memcpy(buf, &headUplink, 22);
+    memcpy(buf + 22, payload, 15);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(buf, 37);
 }
 
 void MOSTLora::sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
@@ -540,54 +577,43 @@ void MOSTLora::sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, f
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(mlpacket);
     
-    int nModeBackup = getMode();
-    setMode(E_LORA_NORMAL);
     /////////////////////
-    // send data is ready
-    sendData(mlpacket, packetLen);
-    
-    setMode(nModeBackup);
+    // send packet is ready
+    sendPacket(mlpacket, packetLen);
 }
 
 // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
 void MOSTLora::sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     byte buf[99];
-    MLUplink headUplink;
-    headUplink.length = 22 + 53;
-    memcpy(headUplink.sender_id, getMacAddress(), 8);
-    // prepare uplink header
-    memcpy(buf, &headUplink, 22);
+    MLUplink headUplink(0x0A, 22 + 53, 0, getMacAddress(), _receiverID);
     
     // prapare payload chunk
     const float arrF[8] = {f0, f1, f2, f3, f4, f5, f6, f7};
     byte payload[53], *ptr;
     payload[0] = 0x0A;    // version
-    payload[1] = 0x10;    payload[2] = 0x02;  // 0x1002 NTF_UPLOAD_VINDUINO_FIELD commandID
+    // 0x1002 NTF_UPLOAD_VINDUINO_FIELD commandID
+    payload[1] = 0x02;    payload[2] = 0x10;
     memcpy(payload + 3, apiKey, 16);
     
     // 8 floats (4 bytes)
     int i, index = 3 + 16;
     for (i = 0; i < 8; i++) {
         ptr = (byte*)(arrF + i);
-        payload[index] = ptr[3];
-        payload[index + 1] = ptr[2];
-        payload[index + 2] = ptr[1];
-        payload[index + 3] = ptr[0];
+        memcpy(payload + index, ptr, 4);
         index += 4;
     }
     
     payload[index] = 0;      // option flag
     payload[index + 1] = 0;  // payload CRC
     
-    int nModeBackup = getMode();
-    setMode(E_LORA_NORMAL);
-    /////////////////////
-    // send data is ready
+    // fill packet: header and payload
+    memcpy(buf, &headUplink, 22);
     memcpy(buf + 22, payload, 53);
-    sendData(buf, 75);
     
-    setMode(nModeBackup);
+    /////////////////////
+    // send packet is ready
+    sendPacket(buf, 75);
 }
 
 

@@ -17,14 +17,9 @@
 
 #include <Arduino.h>
 
-#define DEBUG_LORA     // debug by Serial Monitor
-
 #if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_NANO)
 
-#elif defined(ARDUINO_AVR_MINI) // for Vinduino project
-
-#define USE_VINDUINO        // for Vinduino project
-#undef DEBUG_LORA           // don't monitor in Vinduino
+#elif defined(ARDUINO_AVR_MINI) //
 
 #elif defined(__LINKIT_ONE__)   // for LinkIt ONE
 
@@ -35,6 +30,13 @@
 
 #endif
 
+
+//#define USE_VINDUINO  // for Vinduino project (unmark the line)
+#ifdef USE_VINDUINO     // for Vinduino project
+
+#else // USE_VINDUINO
+#define DEBUG_LORA     // debug by Serial Monitor
+#endif // USE_VINDUINO
 
 //#define USE_PIN_LED_LORA     9   // pin-LED for LoRa receive data
 
@@ -73,6 +75,7 @@ private:
   int _eMode;
   DataLora _data;
   unsigned char _receiverID[8];   // receiver ID
+    
 public:
   MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
 
@@ -112,10 +115,14 @@ public:
   /////////////////////////////////////////
   // command packet for MOST Link protocol
   /////////////////////////////////////////
+  int sendPacket(byte *pPacket, int szPacket);
     
   // RES_DATA command for humidity & temperature
   void sendPacketResData(float h, float t);
   void sendPacketResData2(float h, float t);
+
+  // NOTIFY_LOCATION
+  void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);
     
   // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
   void sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);

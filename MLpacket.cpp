@@ -6,6 +6,7 @@
  */
 
 #include "MLpacket.h"
+#include <Arduino.h>
 
 MLDownlink::MLDownlink() {
     preamble[0] = 0xFB;
@@ -20,17 +21,18 @@ MLDownlink::MLDownlink() {
     headerCrc = 0;
 }
 
-MLUplink::MLUplink()
+MLUplink::MLUplink(unsigned char ver, unsigned char len, unsigned char flg, unsigned char *s_id, unsigned char *r_id)
 {
     preamble[0] = 0xFB;
     preamble[1] = 0xFC;
-    version = 0x0A;
-    length = 22;
-    flag = 0;
-    int i;
-    for (i = 0; i < 8; i++) {
-        sender_id[i] = 0xFF;
-        receiver_id[i] = 0xFF;
-    }
+    version = ver;
+    length = len;
+    flag = flg;
+    memcpy(sender_id, s_id, 8);
+    if (r_id != NULL)
+        memcpy(receiver_id, r_id, 8);
+    else
+        memset(receiver_id, 0xFF, 8);
+    
     headerCrc = 0;
 }

@@ -184,6 +184,15 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     payload[pos++] = _cmdId >> 8;
     memcpy(&payload[pos], _apiKey, VINDUNO_API_KEY_LEN);
     pos += VINDUNO_API_KEY_LEN;
+    
+    // assign 8 data to payload
+    float arrDat[8] = {_soil_1, _soil_2, _soil_3, _soil_4, _sysVoltage, _humidity, _temperature, _reserved};
+    int i = 0;
+    for (i = 0; i < 8; i++) {
+        memcpy(payload + pos, arrDat + i, 4);
+        pos = pos + 4;
+    }
+/*
     payload[pos++] = ((uint32_t)_soil_1 & 0x000000FF);
     payload[pos++] = ((uint32_t)_soil_1 & 0x0000FF00) >> 8;
     payload[pos++] = ((uint32_t)_soil_1 & 0x00FF0000) >> 16;
@@ -216,6 +225,7 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     payload[pos++] = ((uint32_t)_reserved & 0x0000FF00) >> 8;
     payload[pos++] = ((uint32_t)_reserved & 0x00FF0000) >> 16;
     payload[pos++] = ((uint32_t)_reserved & 0xFF000000) >> 24;
+ */
     payload[pos++] = _optionFlags;
     if (_optionDataLen > 0)
         memcpy(&payload[pos], _optionData, _optionDataLen);
