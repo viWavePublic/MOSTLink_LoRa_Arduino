@@ -504,7 +504,7 @@ void MOSTLora::sendPacketResData(float h, float t)
     MLUplink headUplink(0x0A, 22 + 15, 0, getMacAddress(), _receiverID);
     
     // prapare payload chunk
-    byte payload[15], *ptr;
+    byte payload[15];
     payload[0] = 0x0A;    // version
     payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA commandID
     payload[3] = 0;       // error code: 0 - success
@@ -525,6 +525,36 @@ void MOSTLora::sendPacketResData(float h, float t)
     /////////////////////
     // send packet is ready
     sendPacket(buf, 37);
+}
+// REQ_SOS command for request SOS
+void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery)
+{
+    byte buf[99];
+    int szPacket = 22 + 19;
+    MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);
+    
+    // prapare payload chunk
+    byte payload[19];
+    payload[0] = 0x0A;    // version
+    payload[1] = 0x30;    payload[2] = 0x03;    // 0x0330 REQ_SOS commandID
+    memcpy(payload + 3, &datetime, 4);          // datetime
+    payload[7] = statusGPS;
+    long outLat = lat * 1000000;
+    long outLng = lng * 1000000;
+    memcpy(payload + 8, &outLng, 4);
+    memcpy(payload + 12, &outLat, 4);
+    payload[16] = battery;
+    
+    payload[17] = 0;      // option flag
+    payload[18] = 0;      // payload CRC
+    
+    // fill packet: header and payload
+    memcpy(buf, &headUplink, 22);
+    memcpy(buf + 22, payload, 19);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(buf, szPacket);
 }
 
 void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng)

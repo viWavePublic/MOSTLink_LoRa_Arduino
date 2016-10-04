@@ -120,6 +120,9 @@ public:
   // RES_DATA command for humidity & temperature
   void sendPacketResData(float h, float t);
   void sendPacketResData2(float h, float t);
+  
+  // REQ_SOS command for request SOS
+  void sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery);
 
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);
