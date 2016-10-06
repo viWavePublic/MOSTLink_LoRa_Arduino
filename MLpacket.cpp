@@ -5,8 +5,9 @@
 	
  */
 
-#include "MLpacket.h"
 #include <Arduino.h>
+#include "MLpacket.h"
+#include "MLPacketComm.h"
 
 MLDownlink::MLDownlink() {
     preamble[0] = 0xFB;
@@ -34,5 +35,5 @@ MLUplink::MLUplink(unsigned char ver, unsigned char len, unsigned char flg, unsi
     else
         memset(receiver_id, 0xFF, 8);
     
-    headerCrc = 0;
+    headerCrc = getCrc((byte*)this, sizeof(MLUplink) - 1);      // header CRC
 }

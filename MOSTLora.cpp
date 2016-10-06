@@ -190,7 +190,7 @@ boolean MOSTLora::printConfig(DataLora &data)
 boolean MOSTLora::printInfo()
 {
     boolean bRet = MOSTLora::printConfig(_data);
-    char *strMode = "* Unknown Mode *";
+    const char *strMode = "* Unknown Mode *";
     switch (_eMode) {
         case E_LORA_NORMAL:
             strMode = "[ Normal Mode ]";
@@ -282,8 +282,9 @@ boolean MOSTLora::receConfig(DataLora &data)
 {
   boolean bRet = false;
   int szData = sizeof(DataLora);
-  int szRece = receData((uint8_t*)&data, szData);
+  int szRece = receData();
   if (szData == szRece) {
+    memcpy(&data, _buf, szData);
     bRet = true;
     printConfig(data);
   }
@@ -303,7 +304,7 @@ int MOSTLora::sendData(char *strData)
   delay(100);
 #ifdef DEBUG_LORA
   debugSerial.print(nRet);
-  debugSerial.print(") Send String: ");
+  debugSerial.print(") Send String >>> ");
   debugSerial.println(strData);
 #endif // DEBUG_LORA
   return nRet;
@@ -315,33 +316,33 @@ int MOSTLora::sendData(byte *data, int szData)
   int nRet = loraSerial.write(data, szData);
   delay(100);
 #ifdef DEBUG_LORA
-  debugSerial.print(nRet);
-  debugSerial.print(") Send: ");
+  debugSerial.print("Send >>> ");
   printBinary(data, szData);
 #endif // DEBUG_LORA
   return nRet;
 }
 
-int MOSTLora::receData(byte *data, int szData)
+int MOSTLora::receData()
 {
+  _szBuf = 0;
   int nRssi = 0;
   if (!loraSerial.available())
     return 0;
-  int i, nCountBuf = 0;
-//  while (loraSerial.available() && (nCountBuf < szData)) {
+  int i;
+//  while (loraSerial.available() && (_szBuf < MAX_SIZE_BUF)) {
   for (i = 0; i < 6; i++) {
       int nCharRead = 0;
-      while (loraSerial.available() && (nCountBuf < szData)) {
-        if (0 == nCountBuf) {
+      while (loraSerial.available() && (_szBuf < MAX_SIZE_BUF)) {
+        if (0 == _szBuf) {
 #ifdef USE_PIN_LED_LORA
           digitalWrite(pinLedLora, HIGH);   // turn the LED on (HIGH is the voltage level)
 #endif // USE_PIN_LED_LORA
         }
        
         int c = loraSerial.read();
-        data[nCountBuf] = c;
+        _buf[_szBuf] = c;
 
-        nCountBuf++;
+        _szBuf++;
         nCharRead++;
         delay(1);
       }
@@ -353,31 +354,40 @@ int MOSTLora::receData(byte *data, int szData)
           debugSerial.print(") ");
 #endif // DEBUG_LORA
           if (E_LORA_WAKEUP == _eMode) {      // get RSSI at last character
-              nCountBuf--;
+              _szBuf--;
 #ifdef DEBUG_LORA
-              nRssi = data[nCountBuf];
+              nRssi = _buf[_szBuf];
               debugSerial.print(nRssi);
               debugSerial.print(" rssi. ");
 #endif // DEBUG_LORA
           }
       }
   }
-  if (nCountBuf > 0) {
-    data[nCountBuf] = 0;
+  if (_szBuf > 0) {
+    _buf[_szBuf] = 0;
 #ifdef USE_PIN_LED_LORA
     digitalWrite(pinLedLora, LOW);    // turn the LED off by making the voltage LOW
 #endif // USE_PIN_LED_LORA
       
 #ifdef DEBUG_LORA
-    debugSerial.print("\nRece: ");
-    printBinary(data, nCountBuf);
-    debugSerial.println((char*)data);
+    debugSerial.print("\nRece <<< ");
+    printBinary(_buf, _szBuf);
+    debugSerial.println((char*)_buf);
 #endif // DEBUG_LORA
-
+      
+      if (_buf[0] == '/') {  // ack message
+          char *strBuf = (char*)_buf;
+          strBuf[0] = '>';
+          sendData((byte*)_buf, _szBuf);
+#ifdef DEBUG_LORA
+          debugSerial.println("--- Echo ---");
+#endif // DEBUG_LORA
+      }
+      // parse downlink packet
+//      parsePacket(_buf, szData);  // parse Packet by your code
   }
-  // parse downlink packet
-//  parsePacket(data, szData);  // parse Packet by your code
-  return nCountBuf;
+
+  return _szBuf;
 }
 
 // 1: set normal mode, 2: send data 3: recover original mode
@@ -394,43 +404,40 @@ int MOSTLora::sendPacket(byte *pPacket, int szPacket)
 }
 
 
-int MOSTLora::parsePacket(byte *data, int szData)
+int MOSTLora::parsePacket()
 {
   int nRet = -1;
-  if (data[0] == '$') {     // for LT200 protocol
+  if (_buf[0] == '$') {     // for LT200 protocol
     
   }
-  else if (data[0] == 0xFB && data[1] == 0xFC) {    // for MOST Link protocol
-    // downlink header
+  else if (_buf[0] == 0xFB && _buf[1] == 0xFC) {    // for MOST Link protocol
+      // downlink header
       MLDownlink header;
       const int szHeader = sizeof(MLDownlink);
-      if (szData > szHeader) {
-          MLPacketCtx pkctx;
-          MLPacketParser pkParser;
+      MLPacketCtx pkctx;
+      MLPacketParser pkParser;
           
-          pkParser.mostloraPacketParse(&pkctx, data);
-          byte *pMac = (byte*)&pkctx._id;
-          
+      int nResult = pkParser.mostloraPacketParse(&pkctx, _buf);
+      if (nResult == 0) {
 #ifdef DEBUG_LORA
-          debugSerial.print("*** cmdID: ");
+          if (pkctx._direction == 0)
+              debugSerial.print("*** downlink ");
+          else
+              debugSerial.print("*** uplink ");
+
+          debugSerial.print("cmdID: ");
           debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
           debugSerial.print(", length: ");
           debugSerial.print((int)pkctx._mlPayloadCtx._dataLen, 10);
 
           debugSerial.print(") pkParser Mac:");
+          byte *pMac = (byte*)&pkctx._id;
           printBinary(pMac, 8);
 #endif // DEBUG_LORA
           
-          memcpy(&header, data, szHeader);
+          memcpy(&header, _buf, szHeader);
           if (memcmp(header.receiver_id, _data.mac_addr, 8) == 0) // packet for me
           {
-#ifdef DEBUG_LORA
-              short cmd;
-              memcpy(&cmd, data + 15, 2);//[15] + (data[16] << 8);
-//              debugSerial.print("=== payload cmdID: 0x");
-              debugSerial.println(cmd, 16);
-#endif // DEBUG_LORA
-
               nRet = 0;
           }
       }
@@ -500,8 +507,8 @@ void MOSTLora::sendPacketResData2(float h, float t)
 // RES_DATA command for humidity & temperature
 void MOSTLora::sendPacketResData(float h, float t)
 {
-    byte buf[99];
-    MLUplink headUplink(0x0A, 22 + 15, 0, getMacAddress(), _receiverID);
+    int szPacket = 22 + 15;
+    MLUplink headUplink(0x0A, 22 + 15, 0x08, getMacAddress(), _receiverID);
     
     // prapare payload chunk
     byte payload[15];
@@ -516,22 +523,21 @@ void MOSTLora::sendPacketResData(float h, float t)
     memcpy(payload + 9, &t, 4);
     
     payload[13] = 0;      // option flag
-    payload[14] = 0;      // payload CRC
     
     // fill packet: header and payload
-    memcpy(buf, &headUplink, 22);
-    memcpy(buf + 22, payload, 15);
+    memcpy(_buf, &headUplink, 22);
+    memcpy(_buf + 22, payload, 15);
+    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
     
     /////////////////////
     // send packet is ready
-    sendPacket(buf, 37);
+    sendPacket(_buf, 37);
 }
 // REQ_SOS command for request SOS
 void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery)
 {
-    byte buf[99];
     int szPacket = 22 + 19;
-    MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);
+    MLUplink headUplink(0x0A, szPacket, 0x08, getMacAddress(), _receiverID);
     
     // prapare payload chunk
     byte payload[19];
@@ -546,21 +552,21 @@ void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, doubl
     payload[16] = battery;
     
     payload[17] = 0;      // option flag
-    payload[18] = 0;      // payload CRC
-    
+
     // fill packet: header and payload
-    memcpy(buf, &headUplink, 22);
-    memcpy(buf + 22, payload, 19);
+    memcpy(_buf, &headUplink, 22);
+    memcpy(_buf + 22, payload, 19);
+    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
     
     /////////////////////
     // send packet is ready
-    sendPacket(buf, szPacket);
+    sendPacket(_buf, szPacket);
 }
 
 void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng)
 {
-    byte buf[99];
-    MLUplink headUplink(0x0A, 22 + 15, 0, getMacAddress(), _receiverID);
+    int szPacket = 22 + 15;
+    MLUplink headUplink(0x0A, szPacket, 0x08, getMacAddress(), _receiverID);
     
     // prapare payload chunk
     byte payload[15], *ptr;
@@ -568,35 +574,23 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA commandID
     payload[3] = 0;       // error code: 0 - success
     payload[4] = 8;       // data length
-    // humidity (4 bytes)
-    //    ptr = (byte*)&h;
-    //    payload[5] = ptr[3];
-    //    payload[6] = ptr[2];
-    //    payload[7] = ptr[1];
-    //    payload[8] = ptr[0];
+
     memcpy(payload + 5, &lat, 4);
-    
-    // temperature (4 bytes)
-    //    ptr = (byte*)&t;
-    //    payload[9] = ptr[3];
-    //    payload[10] = ptr[2];
-    //    payload[11] = ptr[1];
-    //    payload[12] = ptr[0];
     memcpy(payload + 9, &lng, 4);
     
     payload[13] = 0;      // option flag
-    payload[14] = 0;      // payload CRC
     
     // fill packet: header and payload
-    memcpy(buf, &headUplink, 22);
-    memcpy(buf + 22, payload, 15);
+    memcpy(_buf, &headUplink, 22);
+    memcpy(_buf + 22, payload, 15);
+    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
     
     /////////////////////
     // send packet is ready
-    sendPacket(buf, 37);
+    sendPacket(_buf, szPacket);
 }
 
-void MOSTLora::sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+void MOSTLora::sendPacketVinduino2(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     uint8_t mlpacket[99];
     uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
@@ -613,10 +607,10 @@ void MOSTLora::sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, f
 }
 
 // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
-void MOSTLora::sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
-    byte buf[99];
-    MLUplink headUplink(0x0A, 22 + 53, 0, getMacAddress(), _receiverID);
+    int szPacket = 22 + 53;
+    MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);
     
     // prapare payload chunk
     const float arrF[8] = {f0, f1, f2, f3, f4, f5, f6, f7};
@@ -638,12 +632,13 @@ void MOSTLora::sendPacketVinduino(char *apiKey, float f0, float f1, float f2, fl
     payload[index + 1] = 0;  // payload CRC
     
     // fill packet: header and payload
-    memcpy(buf, &headUplink, 22);
-    memcpy(buf + 22, payload, 53);
+    memcpy(_buf, &headUplink, 22);
+    memcpy(_buf + 22, payload, 53);
+    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
     
     /////////////////////
     // send packet is ready
-    sendPacket(buf, 75);
+    sendPacket(_buf, szPacket);
 }
 
 

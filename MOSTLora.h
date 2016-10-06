@@ -70,12 +70,15 @@ struct DataLora {
 
 class MOSTLora
 {
+#define MAX_SIZE_BUF        99
 private:
   int _pinP1, _pinP2, _pinBZ;   // p1, p2, busy
   int _eMode;
   DataLora _data;
   unsigned char _receiverID[8];   // receiver ID
-    
+  
+  int _szBuf;
+  unsigned char _buf[MAX_SIZE_BUF + 1];
 public:
   MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
 
@@ -103,8 +106,8 @@ public:
   // send/rece data via LoRa
   int sendData(char *strData);
   int sendData(byte *data, int szData);
-  int receData(byte *data, int szData);
-  int parsePacket(byte *data, int szData);
+  int receData();
+  int parsePacket();
 
   // LoRa busy state
   boolean isBusy();
@@ -128,8 +131,8 @@ public:
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);
     
   // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
-  void sendPacketVinduino(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
-  void sendPacketVinduino2(char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
+  void sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
+  void sendPacketVinduino2(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
 };
 
 #endif // __MOSTLora_h

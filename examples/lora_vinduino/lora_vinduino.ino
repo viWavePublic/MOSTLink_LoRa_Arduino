@@ -16,7 +16,7 @@ MOSTLora lora(3, 4, A7);
 MOSTLora lora;
 #endif
 
-char *loraApiKey = "0GFUGE371WNPMMJE";    // ThingSpeak API-key for vinduino.io
+const char *loraApiKey = "0GFUGE371WNPMMJE";    // ThingSpeak API-key for vinduino.io
 
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
@@ -31,14 +31,11 @@ void setup() {
 }
 
 void loop() {
-  int szBuf = 0;
-  char buf[256] = {0};
   if (lora.available()) {
-    szBuf = lora.receData((unsigned char*)buf, 255);
-    // reply to vinduino.io when receive "reply" message
-    if (strcmp("reply", buf) == 0) {
+    int szRece = lora.receData();
+    // reply to vinduino.io when receive "REQ_DATA" by MOSTLink-protocol
+    if (lora.parsePacket() >= 0) {
       lora.sendPacketVinduino(loraApiKey, 150, 252, 350, 456, 590, 650, 750, 850);
-      delay(10000);
     }
   }
   delay(100);

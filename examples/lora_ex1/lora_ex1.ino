@@ -76,26 +76,15 @@ void loop() {
   }
   */
   if (lora.available()) {
-    szBuf = lora.receData(buf, 255);
+    szBuf = lora.receData();
     if (szBuf >= 2) {
       Serial.print(szBuf);  // use serial port
       Serial.println(") Parse rece <<<");  // use serial port
-      if (lora.parsePacket(buf, szBuf) >= 0) {
+      if (lora.parsePacket() >= 0) {
         readSensorDHT(fHumidity, fTemperature);
         lora.sendPacketResData(fHumidity, fTemperature);
 //        lora.sendPacketResData2(fHumidity, fTemperature);
 //        lora.sendPacketVinduino2("0GFUGE371WNPMMJE", 0, 0, 0, 0, 0, 0, 0, 0);
-      }
-      else if ('/' == buf[0]) {
-        char *strBuf = (char*)buf;
-        strBuf[0] = '>';
-        strcat(strBuf, strHi.c_str());
-        szBuf = strlen(strBuf);
-        
-        int modeBak = lora.getMode();
-        lora.setMode(E_LORA_NORMAL);
-        lora.sendData(buf, szBuf);
-        lora.setMode(modeBak);
       }
     }
   }
