@@ -6,13 +6,23 @@
 #include <string.h>
 #include "MLPacketComm.h"
 
+typedef struct MLLocation {
+    uint32_t longtitude;
+    uint32_t latitude;
+} mllocation;
+
 class MLPayloadGen {
     public:
         virtual int getPayload(uint8_t *payload) = 0;
         static MLPayloadGen *createReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version);
+        static MLPayloadGen *createNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createReqLocation(int32_t resInterval, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createSetGeoFenceConfig(uint16_t geofRadius, uint16_t resInterval, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createGetGeoFenceConfig(uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
+        static MLPayloadGen *createRetConfigGeof(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
                 float sysVoltage, float humidity, float teamerature, float resvered, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
     protected:
@@ -45,6 +55,40 @@ class MLReqDataPayloadGen : public MLPayloadGen {
         uint8_t _data[ML_MAX_DATA_SIZE];
 };
 
+class MLNotifyLocationGen : public MLPayloadGen {
+    public:
+        MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t option, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+    private:
+        uint32_t _dateTime;
+        mllocation _location;
+        uint8_t _notifyType;
+        uint8_t _gpsStatus;
+};
+
+class MLReqLocationGen : public MLPayloadGen {
+    public:
+        MLReqLocationGen(int32_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+    private:
+        int32_t _resInterval;
+};
+
+class MLSetGeoFenceConfigGen : public MLPayloadGen {
+    public:
+        MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+    private:
+        uint16_t _geofRadius;
+        uint16_t _resInterval;
+};
+
+class MLGetGeoFenceConfigGen : public MLPayloadGen {
+    public:
+        MLGetGeoFenceConfigGen(uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+};
+
 class MLResSetLoraConfigGen : public MLPayloadGen {
     public:
         MLResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version);
@@ -61,6 +105,16 @@ class MLResDataPayloadGen : public MLPayloadGen {
         uint8_t _errorCode;
         uint8_t _dataLen;
         uint8_t _data[ML_MAX_DATA_SIZE];
+};
+
+class MLRetConfigGeofGen : public MLPayloadGen {
+    public:
+        MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        int getPayload(uint8_t *payload);
+    private:
+        uint16_t _geofRadius;
+        uint16_t _resInterval;
+        mllocation _location;
 };
 
 class MLNotifyVindunoPayloadGen : public MLPayloadGen {

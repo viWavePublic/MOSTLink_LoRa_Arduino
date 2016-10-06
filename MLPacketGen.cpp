@@ -11,9 +11,34 @@ MLPayloadGen* MLPayloadGen::createReqDataPayloadGen(uint16_t resInterval, uint8_
     return req;
 }
 
-MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+MLPayloadGen* MLPayloadGen::createNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLNotifyLocationGen *notifyLocation = new MLNotifyLocationGen(dateTime, location, notifyType, gpsStatus, optionFlags, optionData, version);
+    return notifyLocation;
+}
+
+MLPayloadGen* MLPayloadGen::createReqLocation(int32_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLReqLocationGen *reqLocation = new MLReqLocationGen(resInterval, optionFlags, optionData, version);
+    return reqLocation;
+}
+
+MLPayloadGen* MLPayloadGen::createSetGeoFenceConfig(uint16_t geofRadius, uint16_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLSetGeoFenceConfigGen *setGeofConf = new MLSetGeoFenceConfigGen(geofRadius, resInterval, optionFlags, optionData, version);
+    return setGeofConf;
+}
+
+MLPayloadGen* MLPayloadGen::createGetGeoFenceConfig(uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLGetGeoFenceConfigGen *getGeofConf = new MLGetGeoFenceConfigGen(optionFlags, optionData, version);
+    return getGeofConf;
+}
+
+MLPayloadGen* MLPayloadGen::createResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
     MLResSetLoraConfigGen *res = new MLResSetLoraConfigGen(errorCode, optionFlags, optionData, version);
     return res;
+}
+
+MLPayloadGen* MLPayloadGen::createRetConfigGeof(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    MLRetConfigGeofGen *ret = new MLRetConfigGeofGen(geofRadius, resInterval, location, optionFlags, optionData, version);
+    return ret;
 }
 
 MLPayloadGen* MLPayloadGen::createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
@@ -96,6 +121,125 @@ int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_NOTIFY_LOCATION;
+    _dateTime = dateTime;
+    _location.longtitude = location.longtitude;
+    _location.latitude = location.latitude;
+    _gpsStatus = gpsStatus;
+    _optionFlags = optionFlags;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLNotifyLocationGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
+    payload[pos++] = _cmdId >> 8;
+    memcpy(payload + pos, &_dateTime, 4);
+    pos = pos + 4;
+    memcpy(payload + pos, &_location, 8);
+    pos = pos + 8;
+    payload[pos++] = _notifyType;
+    payload[pos++] = _gpsStatus;
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[++pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+
+    return pos;
+}
+
+MLReqLocationGen::MLReqLocationGen(int32_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_REQ_LOCATION;
+    _resInterval = resInterval;
+    _optionFlags = optionFlags;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLReqLocationGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
+    payload[pos++] = _cmdId >> 8;
+    memcpy(payload + pos, &_resInterval, 4);
+    pos = pos + 4;
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[++pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+
+    return pos;
+}
+
+MLSetGeoFenceConfigGen::MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_SET_CONFIG_GEOF;
+    _geofRadius = geofRadius;
+    _resInterval = resInterval;
+    _optionFlags = optionFlags;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLSetGeoFenceConfigGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
+    payload[pos++] = _cmdId >> 8;
+    payload[pos++] = _geofRadius & 0xFF;
+    payload[pos++] = _geofRadius >> 8;
+    payload[pos++] = _resInterval & 0xFF;
+    payload[pos++] = _resInterval >> 8;
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[++pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+
+    return pos;
+}
+
+MLGetGeoFenceConfigGen::MLGetGeoFenceConfigGen(uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_GET_CONFIG_GEOF;
+    _optionFlags = optionFlags;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLGetGeoFenceConfigGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
+    payload[pos++] = _cmdId >> 8;
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[++pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+
+    return pos;
+}
+
 MLResSetLoraConfigGen::MLResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
     _version = version;
     _cmdId = CMD_RES_SET_LORA_CONFIG;
@@ -155,6 +299,41 @@ int MLResDataPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
+    _version = version;
+    _cmdId = CMD_RET_CONFIG_GEOF;
+    _geofRadius = geofRadius;
+    _resInterval = resInterval;
+    _location.longtitude = location.longtitude;
+    _location.latitude = location.latitude;
+    _optionFlags = optionFlags;
+    if (_optionFlags & 0x01) {
+        _optionDataLen = 3;
+        memcpy(_optionData, optionData, _optionDataLen);
+    } else {
+        _optionDataLen = 0;
+    }
+}
+
+int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
+    uint8_t pos = 0;
+    payload[pos++] = _version;
+    payload[pos++] = _cmdId & 0xFF;
+    payload[pos++] = _cmdId >> 8;
+    payload[pos++] = _geofRadius & 0xFF;
+    payload[pos++] = _geofRadius >> 8;
+    payload[pos++] = _resInterval & 0xFF;
+    payload[pos++] = _resInterval >> 8;
+    memcpy(payload + pos, &_location, 8);
+    pos = pos + 8;
+
+    payload[pos++] = _optionFlags;
+    if (_optionDataLen > 0)
+        memcpy(&payload[pos], _optionData, _optionDataLen);
+    pos += _optionDataLen;
+    return pos;
+}
+
 MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
                 float sysVoltage, float humidity, float temperature, float reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
     _version = version;
@@ -192,40 +371,7 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
         memcpy(payload + pos, arrDat + i, 4);
         pos = pos + 4;
     }
-/*
-    payload[pos++] = ((uint32_t)_soil_1 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_1 & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_soil_1 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_1 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_2 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_2 & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_soil_2 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_2 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_3 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_3 & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_soil_3 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_3 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_soil_4 & 0x000000FF);
-    payload[pos++] = ((uint32_t)_soil_4 & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_soil_4 & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_soil_4 & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_sysVoltage & 0x000000FF);
-    payload[pos++] = ((uint32_t)_sysVoltage & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_sysVoltage & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_sysVoltage & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_humidity & 0x000000FF);
-    payload[pos++] = ((uint32_t)_humidity & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_humidity & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_humidity & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_temperature & 0x000000FF);
-    payload[pos++] = ((uint32_t)_temperature & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_temperature & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_temperature & 0xFF000000) >> 24;
-    payload[pos++] = ((uint32_t)_reserved & 0x000000FF);
-    payload[pos++] = ((uint32_t)_reserved & 0x0000FF00) >> 8;
-    payload[pos++] = ((uint32_t)_reserved & 0x00FF0000) >> 16;
-    payload[pos++] = ((uint32_t)_reserved & 0xFF000000) >> 24;
- */
+    
     payload[pos++] = _optionFlags;
     if (_optionDataLen > 0)
         memcpy(&payload[pos], _optionData, _optionDataLen);
