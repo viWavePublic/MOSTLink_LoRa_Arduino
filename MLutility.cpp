@@ -59,7 +59,7 @@ static double getIntNumber(const char *s)
 // get GPS data by NMEA code: gpsSentenceInfoStruct info;
 //    LGPS.getData(&info);
 
-boolean MLutility::parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng)
+boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus)
 {
     /* Refer to http://www.gpsinformation.org/dale/nmea.htm#GGA
      * Sample data: $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
@@ -92,7 +92,9 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng
     int tmp, hour, minute, second, num ;
     if(GPGGAstr[0] == '$')
     {
+        // UTC time
         tmp = getComma(1, GPGGAstr);
+        ts = getIntNumber(&GPGGAstr[tmp]);
         hour     = (GPGGAstr[tmp + 0] - '0') * 10 + (GPGGAstr[tmp + 1] - '0');
         minute   = (GPGGAstr[tmp + 2] - '0') * 10 + (GPGGAstr[tmp + 3] - '0');
         second    = (GPGGAstr[tmp + 4] - '0') * 10 + (GPGGAstr[tmp + 5] - '0');
@@ -114,12 +116,15 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng
         if (GPGGAstr[tmp] != 'E')
             longitude = -longitude;
 
-        sprintf(buff, "latitude = %10.4f, longitude = %10.4f", latitude, longitude);
-        Serial.println(buff);
+        // GPS location status
+        tmp = getComma(6, GPGGAstr);
+        gpsStatus = getIntNumber(&GPGGAstr[tmp]);
         
+        // satellite number
         tmp = getComma(7, GPGGAstr);
         num = getIntNumber(&GPGGAstr[tmp]);
-        sprintf(buff, "satellites number = %d", num);
+        
+        sprintf(buff, "latitude = %10.4f, longitude = %10.4f, satellites(%d), GPS status:%d", latitude, longitude, num, gpsStatus);
         Serial.println(buff);
         
         // get latitude, longitude data
@@ -130,10 +135,6 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng
         dbLat = nLat + (dbLat - nLat) * 100.0 / 60.0;
         dbLng = nLng + (dbLng - nLng) * 100.0 / 60.0;
         bRet = true;
-    }
-    else
-    {
-        Serial.println("Not get data");
     }
     return bRet;
 }

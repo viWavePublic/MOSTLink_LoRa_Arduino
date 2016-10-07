@@ -124,8 +124,9 @@ public:
   void sendPacketResData(float h, float t);
   void sendPacketResData2(float h, float t);
   
-  // REQ_SOS command for request SOS
+  // REQ_SOS/RES_SOS for Lt300 tracker node
   void sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery);
+  void sendPacketResSOS();
 
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);

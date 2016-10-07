@@ -9,17 +9,16 @@
 #include "MLpacket.h"
 #include "MLPacketComm.h"
 
-MLDownlink::MLDownlink() {
+MLDownlink::MLDownlink(unsigned char ver, unsigned char len, unsigned char flg, unsigned char *r_id)
+{
     preamble[0] = 0xFB;
     preamble[1] = 0xFC;
-    version = 0x0A;
-    length = 14;
-    flag = 0;
-    int i;
-    for (i = 0; i < 8; i++) {
-        receiver_id[i] = 0xFF;
-    }
-    headerCrc = 0;
+    version = ver;
+    length = len;
+    flag = flg;
+    memcpy(receiver_id, r_id, 8);
+
+    headerCrc = getCrc((byte*)this, sizeof(MLDownlink) - 1);      // header CRC
 }
 
 MLUplink::MLUplink(unsigned char ver, unsigned char len, unsigned char flg, unsigned char *s_id, unsigned char *r_id)

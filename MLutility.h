@@ -14,7 +14,7 @@
 // common utility
 class MLutility {
 public:
-    static boolean parseGPGGA(const char *GPGGAstr, double &dbLat, double &dbLng);
+    static boolean parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus);
     
     static int readSerial(char *buf);
 };

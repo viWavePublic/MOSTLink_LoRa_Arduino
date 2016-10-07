@@ -20,7 +20,7 @@ struct MLDownlink {
     unsigned char receiver_id[8];
     unsigned char headerCrc;
     
-    MLDownlink();
+    MLDownlink(unsigned char ver, unsigned char len, unsigned char flg, unsigned char *r_id);
 };
 
 // uplink packet header for MOST Link (22 bytes)

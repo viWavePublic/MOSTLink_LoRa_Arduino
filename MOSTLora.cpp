@@ -412,7 +412,7 @@ int MOSTLora::parsePacket()
   }
   else if (_buf[0] == 0xFB && _buf[1] == 0xFC) {    // for MOST Link protocol
       // downlink header
-      MLDownlink header;
+//      MLDownlink header;
       const int szHeader = sizeof(MLDownlink);
       MLPacketCtx pkctx;
       MLPacketParser pkParser;
@@ -427,18 +427,15 @@ int MOSTLora::parsePacket()
 
           debugSerial.print("cmdID: ");
           debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
-          debugSerial.print(", length: ");
-          debugSerial.print((int)pkctx._mlPayloadCtx._dataLen, 10);
 
-          debugSerial.print(") pkParser Mac:");
+          debugSerial.print(", pkParser Mac:");
           byte *pMac = (byte*)&pkctx._id;
           printBinary(pMac, 8);
 #endif // DEBUG_LORA
           
-          memcpy(&header, _buf, szHeader);
-          if (memcmp(header.receiver_id, _data.mac_addr, 8) == 0) // packet for me
+          if (memcmp(pMac, _data.mac_addr, 8) == 0) // packet for me
           {
-              nRet = 0;
+              nRet = pkctx._mlPayloadCtx._cmdId;
           }
       }
   }
@@ -479,7 +476,7 @@ void MOSTLora::sendPacketResData2(float h, float t)
     byte dataHT[8], *ptr;
     // humidity (4 bytes)
     ptr = (byte*)&h;
-    dataHT[0] = ptr[0];
+/*    dataHT[0] = ptr[0];
     dataHT[1] = ptr[1];
     dataHT[2] = ptr[2];
     dataHT[3] = ptr[3];
@@ -488,20 +485,19 @@ void MOSTLora::sendPacketResData2(float h, float t)
     dataHT[4] = ptr[0];
     dataHT[5] = ptr[1];
     dataHT[6] = ptr[2];
-    dataHT[7] = ptr[3];
+    dataHT[7] = ptr[3]; */
+    memcpy(dataHT, &h, 4);
+    memcpy(dataHT + 4, &t, 4);
     
-    uint8_t mlpacket[99];
-    uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
-    uint8_t *pSenderID = (uint8_t*)getMacAddress();
-    MLPacketGen mlPacketGen(0,0,0,1,pReceiverID);
+    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
-    uint8_t packetLen = mlPacketGen.getMLPacket(mlpacket);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
     /////////////////////
     // send packet is ready
-    sendPacket(mlpacket, packetLen);
+    sendPacket(_buf, packetLen);
 }
 
 // RES_DATA command for humidity & temperature
@@ -533,7 +529,7 @@ void MOSTLora::sendPacketResData(float h, float t)
     // send packet is ready
     sendPacket(_buf, 37);
 }
-// REQ_SOS command for request SOS
+// REQ_SOS (Uplink) for request SOS
 void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery)
 {
     int szPacket = 22 + 19;
@@ -563,26 +559,23 @@ void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, doubl
     sendPacket(_buf, szPacket);
 }
 
-void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng)
+// RES_SOS (Downlink) for response SOS
+void MOSTLora::sendPacketResSOS()
 {
-    int szPacket = 22 + 15;
-    MLUplink headUplink(0x0A, szPacket, 0x08, getMacAddress(), _receiverID);
+    int szPacket = 14 + 13;
+    MLDownlink headDownlink(0x0A, szPacket, 0, _receiverID);
     
     // prapare payload chunk
-    byte payload[15], *ptr;
+    byte payload[13];
     payload[0] = 0x0A;    // version
-    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA commandID
-    payload[3] = 0;       // error code: 0 - success
-    payload[4] = 8;       // data length
+    payload[1] = 0x84;    payload[2] = 0x03;    // 0x0384 RES_SOS commandID
+    memcpy(payload + 3, getMacAddress(), 8);
 
-    memcpy(payload + 5, &lat, 4);
-    memcpy(payload + 9, &lng, 4);
-    
-    payload[13] = 0;      // option flag
+    payload[11] = 0;      // option flag
     
     // fill packet: header and payload
-    memcpy(_buf, &headUplink, 22);
-    memcpy(_buf + 22, payload, 15);
+    memcpy(_buf, &headDownlink, 14);
+    memcpy(_buf + 14, payload, 13);
     _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
     
     /////////////////////
@@ -590,12 +583,29 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     sendPacket(_buf, szPacket);
 }
 
+void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng)
+{
+    mllocation loc;
+    loc.latitude = lat;
+    loc.longtitude = lng;
+    
+    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
+    MLPayloadGen *pPayload = MLPayloadGen::createNotifyLocationGen(date_time, loc, 0, 1, 0, NULL);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}
+
 void MOSTLora::sendPacketVinduino2(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     uint8_t mlpacket[99];
     uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
     uint8_t *pSenderID = (uint8_t*)getMacAddress();
-    MLPacketGen mlPacketGen(0,0,0,1,pReceiverID);
+    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
@@ -640,5 +650,4 @@ void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float 
     // send packet is ready
     sendPacket(_buf, szPacket);
 }
-
 
