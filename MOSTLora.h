@@ -80,7 +80,7 @@ private:
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
 public:
-  MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
+  MOSTLora(int pinP1 = 6, int pinP2 = 7, int pinBusy = A2);
 
   void begin();
 
