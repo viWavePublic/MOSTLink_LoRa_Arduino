@@ -38,7 +38,7 @@
 #define DEBUG_LORA     // debug by Serial Monitor
 #endif // USE_VINDUINO
 
-//#define USE_PIN_LED_LORA     9   // pin-LED for LoRa receive data
+#define USE_PIN_LED_LORA     13   // pin-LED for LoRa receive data
 
 
 //
@@ -66,6 +66,10 @@ struct DataLora {
   char wakeup_time;   // (0)50ms, 100ms, 200ms, 400ms, 600ms, (_5_)1s, 1.5s, 2s, 2.5s, 3s, 4s, (0xb)5s
   // --------
   char tagEnd;        // 0x21
+    
+    boolean isValid() const {      // begin(0x24), end(0x21)
+        return (tagBegin == 0x24 && tagEnd == 0x21);
+    }
 };
 
 class MOSTLora
@@ -80,7 +84,8 @@ private:
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
 public:
-  MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
+//    MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
+    MOSTLora(int pinP1 = 7, int pinP2 = 6, int pinBusy = 5);
 
   void begin();
 
@@ -99,8 +104,8 @@ public:
   boolean printInfo();
 
   // config setting: drequency, group, data-rate, power, wakeup-time
-  void readConfig();
-  void writeConfig(long freq, unsigned char group_id = 0, char data_rate = 0, char power = 7, char wakeup_time = 5);
+  boolean readConfig();
+  boolean writeConfig(long freq, unsigned char group_id = 0, char data_rate = 0, char power = 7, char wakeup_time = 5);
   boolean receConfig(DataLora &data);
     
   // send/rece data via LoRa

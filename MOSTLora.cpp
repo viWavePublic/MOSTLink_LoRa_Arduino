@@ -79,7 +79,14 @@ void MOSTLora::begin()
 
   loraSerial.begin(9600);
 
-  readConfig();
+    // read setting in lora shield
+    int i;
+    for (i = 0; i < 5; i++) {
+       setMode(E_LORA_NORMAL);    // E_LORA_NORMAL
+       if (readConfig()) {
+            break;
+        }
+    }
     
   setMode(E_LORA_NORMAL);   // E_LORA_NORMAL
 }
@@ -144,8 +151,9 @@ boolean MOSTLora::printConfig(DataLora &data)
   boolean bRet = false;
 #ifdef DEBUG_LORA
   int i;
-  if (data.tagBegin != 0x24 || data.tagEnd != 0x21) {
-    debugSerial.print("++++++ incorrect config");
+  if (!data.isValid()) {
+    debugSerial.print("++++++ invalid config");
+    return bRet;
   }
   bRet = true;
   debugSerial.print("*** Module:");
@@ -155,11 +163,9 @@ boolean MOSTLora::printConfig(DataLora &data)
   debugSerial.write(data.ver_no, 7);
 
   debugSerial.print(", MAC:");
-  for (i = 0; i < 8; i++) {
-    debugSerial.print(data.mac_addr[i], HEX);
-  }
+  printBinary(data.mac_addr, 8);
 
-  debugSerial.print("\n    group:");
+  debugSerial.print("    group:");
   debugSerial.print(data.group_id, DEC);
 
   long nFrequency;
@@ -242,20 +248,18 @@ boolean MOSTLora::setReceiverID(const char *strID)
 /////////////////////////
 // config setting 
 /////////////////////////
-void MOSTLora::readConfig()
+boolean MOSTLora::readConfig()
 {
-  waitUntilReady(5000);
   setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
   
   uint8_t cmdRead[] = {0xFF,0x4C,0xCF,0x52,0xA1,0x52,0xF0};
   sendData(cmdRead, 7);
 
   // receive setting
-  delay(1000);
-  receConfig(_data);
+  return receConfig(_data);
 }
 
-void MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, char power, char wakeup_time)
+boolean MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, char power, char wakeup_time)
 {
   waitUntilReady(5000);
   setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
@@ -274,26 +278,29 @@ void MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, ch
   sendData(cmdWrite, 16);
   
   // receive setting
-  delay(2000);
-  receConfig(_data);  
+  return receConfig(_data);
 }
 
 boolean MOSTLora::receConfig(DataLora &data)
 {
+  delay(300);
+    
   boolean bRet = false;
   int szData = sizeof(DataLora);
   int szRece = receData();
-  if (szData == szRece) {
+  if (szData <= szRece) {
     memcpy(&data, _buf, szData);
-    bRet = true;
-    printConfig(data);
+      if (data.isValid()) {
+        bRet = true;
+        printConfig(data);
+      }
   }
-  else {
 #ifdef DEBUG_LORA
+  if (!bRet) {
     debugSerial.print(szRece);
     debugSerial.println(") ------ Fail to get config!");
-#endif // DEBUG_LORA
   }
+#endif // DEBUG_LORA
   return bRet;
 }
 
@@ -329,7 +336,6 @@ int MOSTLora::receData()
   if (!loraSerial.available())
     return 0;
   int i;
-//  while (loraSerial.available() && (_szBuf < MAX_SIZE_BUF)) {
   for (i = 0; i < 6; i++) {
       int nCharRead = 0;
       while (loraSerial.available() && (_szBuf < MAX_SIZE_BUF)) {
@@ -444,12 +450,22 @@ int MOSTLora::parsePacket()
 
 boolean MOSTLora::isBusy()
 {
-  int nBusy = analogRead(_pinBZ);
-/*  debugSerial.print("busy:");
-  debugSerial.print(nBusy, DEC);
-  debugSerial.println(".");
+    // analog BZ
+//    const int nBusy = analogRead(_pinBZ);
+//    const boolean bRet = (nBusy < 512);
+    
+    const int nBusy = digitalRead(_pinBZ);
+    const boolean bRet = (nBusy < 1);
+  
+/*    if (bRet) {
+#ifdef DEBUG_LORA
+       const char *strBZ = " busy ...";
+        debugSerial.print(nBusy, DEC);
+        debugSerial.println(strBZ);
+#endif // DEBUG_LORA
+    }
   */
-  return (nBusy < 512);
+    return bRet;
 }
 
 boolean MOSTLora::waitUntilReady(unsigned long timeout)
@@ -473,21 +489,10 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
 // RES_DATA command for humidity & temperature
 void MOSTLora::sendPacketResData2(float h, float t)
 {
-    byte dataHT[8], *ptr;
-    // humidity (4 bytes)
-    ptr = (byte*)&h;
-/*    dataHT[0] = ptr[0];
-    dataHT[1] = ptr[1];
-    dataHT[2] = ptr[2];
-    dataHT[3] = ptr[3];
-    // temperature (4 bytes)
-    ptr = (byte*)&t;
-    dataHT[4] = ptr[0];
-    dataHT[5] = ptr[1];
-    dataHT[6] = ptr[2];
-    dataHT[7] = ptr[3]; */
-    memcpy(dataHT, &h, 4);
-    memcpy(dataHT + 4, &t, 4);
+    byte dataHT[8];
+
+    memcpy(dataHT, &h, 4);          // humidity (4 bytes)
+    memcpy(dataHT + 4, &t, 4);      // temperature (4 bytes)
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);

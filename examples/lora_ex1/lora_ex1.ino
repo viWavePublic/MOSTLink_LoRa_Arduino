@@ -11,7 +11,8 @@ const int pinTouch = 8;  // 12;
 bool bPressTouch = false;
 //Grove_LED_Bar bar(7, 6, false);
 
-MOSTLora lora;
+//MOSTLora lora(13,12,A2);    // LM-230 (old)
+MOSTLora lora(7, 6, 5);       // LM-130 (new)
 DHT dht(2, DHT22);
 
 float fTemperature, fHumidity;
@@ -24,7 +25,7 @@ long tsCurr = millis();
 long countRun = 0;
 boolean bLedRun = HIGH;
 
-String strHi = "";
+String strHi = ""; 
 
 void setup() {
   // put your setup code here, to run once:
@@ -36,12 +37,14 @@ void setup() {
 
   // Serial for log monitor
   Serial.begin(9600);  // use serial port
+  
+  Serial.println("--- App begin ---");  // use serial port
 
   dht.begin();
   lora.begin();
   lora.setReceiverID("FFFFFFFF00112233");
 
-//  lora.writeConfig(915000, 0, 0, 7, 5);
+  lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
   
   #if defined(__LINKIT_ONE__)
@@ -80,20 +83,20 @@ void loop() {
     if (szBuf >= 2) {
       Serial.print(szBuf);  // use serial port
       Serial.println(") Parse rece <<<");  // use serial port
-      if (lora.parsePacket() >= 0) {
+      if (lora.parsePacket() == 0x0004) {  // REQ_DATA
         readSensorDHT(fHumidity, fTemperature);
-        lora.sendPacketResData(fHumidity, fTemperature);
-//        lora.sendPacketResData2(fHumidity, fTemperature);
+//        lora.sendPacketResData(fHumidity, fTemperature);
+        lora.sendPacketResData2(fHumidity, fTemperature);
 //        lora.sendPacketVinduino2("0GFUGE371WNPMMJE", 0, 0, 0, 0, 0, 0, 0, 0);
       }
     }
   }
-//  lora.isBusy();
-  delay(10);
+  lora.isBusy();
+  delay(2);
 
   // led builtin
   countRun++;
-  if (countRun > 50) {
+  if (countRun > 10) {
     bLedRun = !bLedRun;
     digitalWrite(pinLedRece, bLedRun);
     countRun = 0;
@@ -136,12 +139,6 @@ void inputBySerial()
 {
   // serial command to send
   int countBuf = MLutility::readSerial((char*)buf);
-  if (countBuf > 0) {
-    buf[countBuf] = 0;
-    Serial.print("chat> ");
-    Serial.println((char*)buf);
-    lora.sendData((char*)buf);
-  }
   if (countBuf > 0) {
     buf[countBuf] = 0;
     Serial.print("Command> ");
