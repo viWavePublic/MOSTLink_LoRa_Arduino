@@ -28,8 +28,7 @@
         const int pinLoraRX = 10;
         const int pinLoraTX = 11;
         SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);    // RX, TX
-//    pinMode(pinLoraRX, INPUT);
-//    pinMode(pinLoraTX, OUTPUT);
+
     #else // DEBUG_LORA
 
         #define loraSerial Serial       // for Vinduino
@@ -60,13 +59,29 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
     _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
 }
-
+/*
+void blink13()
+{
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
+    int i;
+    for (i = 0; i < 5; i++) {
+        delay(100);
+        digitalWrite(13, LOW);
+        delay(100);
+        digitalWrite(13, HIGH);
+    }
+}
+*/
 void MOSTLora::begin()
 {
 #ifdef DEBUG_LORA
   debugSerial.println("=== MOSTLink LoRa v1.0 ===");
   debugSerial.print("CPU clock: ");
   debugSerial.println(F_CPU);
+    
+  pinMode(pinLoraRX, INPUT);
+  pinMode(pinLoraTX, OUTPUT);
 #endif // DEBUG_LORA
     
 #ifdef USE_PIN_LED_LORA
@@ -425,6 +440,7 @@ int MOSTLora::parsePacket()
           
       int nResult = pkParser.mostloraPacketParse(&pkctx, _buf);
       if (nResult == 0) {
+          byte *pMac = (byte*)&pkctx._id;
 #ifdef DEBUG_LORA
           if (pkctx._direction == 0)
               debugSerial.print("*** downlink ");
@@ -435,7 +451,6 @@ int MOSTLora::parsePacket()
           debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
 
           debugSerial.print(", pkParser Mac:");
-          byte *pMac = (byte*)&pkctx._id;
           printBinary(pMac, 8);
 #endif // DEBUG_LORA
           
