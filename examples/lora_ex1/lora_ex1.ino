@@ -1,5 +1,5 @@
 
-const int pinLedRece = 9;
+const int pinLedRece = 13;
 
 #include "MOSTLora.h"
 #include "DHT.h"
@@ -7,7 +7,7 @@ const int pinLedRece = 9;
 #include "MLutility.h"
 
 int count = 0;
-const int pinTouch = 8;  // 12;
+const int pinTouch = A0;  // 12;
 bool bPressTouch = false;
 //Grove_LED_Bar bar(7, 6, false);
 
@@ -96,9 +96,10 @@ void loop() {
 
   // led builtin
   countRun++;
-  if (countRun > 10) {
+  if (countRun > 2000) {
+//    lora.sendPacketResData2(fHumidity, fTemperature);
     bLedRun = !bLedRun;
-    digitalWrite(pinLedRece, bLedRun);
+//    digitalWrite(pinLedRece, bLedRun);
     countRun = 0;
   }
 
@@ -106,7 +107,7 @@ void loop() {
   if (Serial.available())
     inputBySerial();
 
-//  checkTouch();
+  checkTouch();
   //digitalWrite(pinLedRece, bPressTouch);   // turn the LED on (HIGH is the voltage level)
 }
 
@@ -239,9 +240,11 @@ boolean parseCommand(char *strCmd)
 
 void checkTouch()
 {
-  const int nSensorTouch = digitalRead(pinTouch);
+//  const int nTouchVal = digitalRead(pinTouch);
+  const int nTouchVal = analogRead(pinTouch);
+
   if (!bPressTouch) {
-    if (nSensorTouch > 0) {   // key-down
+    if (nTouchVal > 512) {   // key-down
       Serial.println("touch-DOWN");
       bPressTouch = true;
       count = (count + 1) % 11;
@@ -249,11 +252,12 @@ void checkTouch()
 
       const char *strData = "ABC...123";
 //      const char *strData = "Hello Hello Hello 0123456789!!!";
-      lora.sendData((byte*)strData, strlen(strData));
+//      lora.sendData((byte*)strData, strlen(strData));
+      lora.sendPacketResData2(99.9, -10.1);
     }
   }
   else {
-    if (nSensorTouch == 0) {  // key-up
+    if (nTouchVal == 0) {  // key-up
       Serial.println("touch-UP");
       bPressTouch = false; 
     }   

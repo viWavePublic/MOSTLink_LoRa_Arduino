@@ -500,6 +500,7 @@ void MOSTLora::sendPacketResData2(float h, float t)
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
+    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
@@ -600,6 +601,7 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
+    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
@@ -607,18 +609,18 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
 
 void MOSTLora::sendPacketVinduino2(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
-    uint8_t mlpacket[99];
     uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
     uint8_t *pSenderID = (uint8_t*)getMacAddress();
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
-    uint8_t packetLen = mlPacketGen.getMLPacket(mlpacket);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
+    delete pPayload;
     /////////////////////
     // send packet is ready
-    sendPacket(mlpacket, packetLen);
+    sendPacket(_buf, packetLen);
 }
 
 // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
@@ -633,6 +635,41 @@ void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float 
     payload[0] = 0x0A;    // version
     // 0x1002 NTF_UPLOAD_VINDUINO_FIELD commandID
     payload[1] = 0x02;    payload[2] = 0x10;
+    memcpy(payload + 3, apiKey, 16);
+    
+    // 8 floats (4 bytes)
+    int i, index = 3 + 16;
+    for (i = 0; i < 8; i++) {
+        ptr = (byte*)(arrF + i);
+        memcpy(payload + index, ptr, 4);
+        index += 4;
+    }
+    
+    payload[index] = 0;      // option flag
+    payload[index + 1] = 0;  // payload CRC
+    
+    // fill packet: header and payload
+    memcpy(_buf, &headUplink, 22);
+    memcpy(_buf + 22, payload, 53);
+    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, szPacket);
+}
+
+// NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
+void MOSTLora::sendPacketThingSpeak(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+{
+    int szPacket = 22 + 53;
+    MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);
+    
+    // prapare payload chunk
+    const float arrF[8] = {f0, f1, f2, f3, f4, f5, f6, f7};
+    byte payload[53], *ptr;
+    payload[0] = 0x0A;    // version
+    // 0x02A1 NTF_UPLOAD_THINKSPEAK_FIELD commandID
+    payload[1] = 0xA1;    payload[2] = 0x02;
     memcpy(payload + 3, apiKey, 16);
     
     // 8 floats (4 bytes)

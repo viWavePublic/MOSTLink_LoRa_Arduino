@@ -9,6 +9,7 @@
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
+#include "MLPacketComm.h"
 
 #ifdef USE_VINDUINO       
 MOSTLora lora(3, 4, A7);
@@ -23,21 +24,34 @@ void setup() {
   
   lora.begin();
   // custom LoRa config by your environment setting
-//  lora.writeConfig(915000, 0, 0, 7, 5);
-
+  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.setMode(E_LORA_WAKEUP);
+  
   delay(1000);
   // test to vinduino.io
-  lora.sendPacketVinduino(loraApiKey, 121, 202, 301, 406, 500, 606, 707, 880);
+  testUploadVinduino();
 }
 
 void loop() {
   if (lora.available()) {
     int szRece = lora.receData();
     // reply to vinduino.io when receive "REQ_DATA" by MOSTLink-protocol
-    if (lora.parsePacket() >= 0) {
-      lora.sendPacketVinduino(loraApiKey, 150, 252, 350, 456, 590, 650, 750, 850);
+    if (lora.parsePacket() == CMD_REQ_DATA) {
+      testUploadVinduino();
     }
   }
   delay(100);
+}
+
+// prepare random value for upload to vinduino.io
+void testUploadVinduino()
+{
+  int i;
+  float arr[8];
+  for (i = 0; i < 8; i++) {
+    arr[i] = rand() % 50 + (i + 1) * 100;        
+  }
+// ps: custom your sensor info here
+  lora.sendPacketVinduino(loraApiKey, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7]);
 }
 
