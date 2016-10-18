@@ -79,16 +79,16 @@ void MOSTLora::begin()
 
   loraSerial.begin(9600);
 
+    setMode(E_LORA_SETUP);          // E_LORA_SETUP
     // read setting in lora shield
     int i;
     for (i = 0; i < 5; i++) {
-       setMode(E_LORA_NORMAL);    // E_LORA_NORMAL
-       if (readConfig()) {
+        setMode(E_LORA_NORMAL);     // E_LORA_NORMAL
+        if (readConfig()) {
             break;
         }
     }
-    
-  setMode(E_LORA_NORMAL);   // E_LORA_NORMAL
+    setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
 }
 
 void MOSTLora::setMode(int mode)
