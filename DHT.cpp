@@ -5,7 +5,7 @@ written by Adafruit Industries
 */
 
 #include "DHT.h"
-#define NAN 0
+//#define NAN 0
 
 DHT::DHT(uint8_t pin, uint8_t type, uint8_t count) {
   _pin = pin;

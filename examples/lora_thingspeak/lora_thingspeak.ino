@@ -10,27 +10,36 @@
 
 #include "MOSTLora.h"
 #include "MLPacketComm.h"
-#include "DHT.h"
+#include <LDHT.h>
 
 MOSTLora lora;
-DHT dht(2, DHT22);
+LDHT dht(2, DHT22);
 float fTemperature, fHumidity;
 
 const char *thinkSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
 
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
+  Serial.println("--- App: lora_thingspeak ---");  // use serial port
   
   lora.begin();
   // custom LoRa config by your environment setting
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
 
-  readSensorDHT(fHumidity, fTemperature);
-
-  delay(1000);
+  delay(3000);
   // test to vinduino.io
 //  lora.sendPacketThingSpeak(thinkSpeakApiKey, 11, 22, 32, 46, 59, 60, 70, 85);
+
+  // init sensor for humidity & temperature
+  dht.begin();
+  int i = 0;
+  boolean bReadDHT = false;
+  while (!bReadDHT && i < 20) {
+    bReadDHT = readSensorDHT(fHumidity, fTemperature);
+    delay(200);
+    i++;
+  }
 }
 
 void loop() {
@@ -42,31 +51,31 @@ void loop() {
       lora.sendPacketThingSpeak(thinkSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
     }
   }
+//  readSensorDHT(fHumidity, fTemperature);
+      
   delay(100);
 }
 
 boolean readSensorDHT(float &h, float &t)
 {
     boolean bRet = false;
-    h = dht.readHumidity();
-    t = dht.readTemperature();
-//dht.readHT(&t, &h)
-    // check if returns are valid, if they are NaN (not a number) then something went wrong!
-    if (isnan(t) || isnan(h)) 
-    {
-        Serial.println("Failed to read from DHT");
-    } 
-    else 
-    {
-        bRet = true;            
+    if (dht.read()) {
+        h = dht.readHumidity();
+        t = dht.readTemperature();    
+    }
+    if (h > 0)
+      bRet = true;
+
+    if (bRet) {
         Serial.print("Humidity: "); 
         Serial.print(h);
         Serial.print(" %\t");
         Serial.print("Temperature: "); 
         Serial.print(t);
-        Serial.println(" *C");
+        Serial.println(" *C");      
     }
-    delay(2000);
+    else {
+        Serial.println("DHT Read Fail.");    
+    }
     return bRet;
 }
-

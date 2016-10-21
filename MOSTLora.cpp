@@ -27,6 +27,8 @@
         #include <SoftwareSerial.h>
         const int pinLoraRX = 10;
         const int pinLoraTX = 11;
+//      pinMode(pinLoraRX, INPUT);
+//      pinMode(pinLoraTX, OUTPUT);
         SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);    // RX, TX
 
     #else // DEBUG_LORA
@@ -80,8 +82,6 @@ void MOSTLora::begin()
   debugSerial.print("CPU clock: ");
   debugSerial.println(F_CPU);
     
-  pinMode(pinLoraRX, INPUT);
-  pinMode(pinLoraTX, OUTPUT);
 #endif // DEBUG_LORA
     
 #ifdef USE_PIN_LED_LORA

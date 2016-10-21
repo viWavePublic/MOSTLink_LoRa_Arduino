@@ -2,7 +2,8 @@
 const int pinLedRece = 13;
 
 #include "MOSTLora.h"
-#include "DHT.h"
+#include <LDHT.h>
+//#include "DHT.h"
 #include "MLPacketParser.h"
 #include "MLutility.h"
 
@@ -13,7 +14,7 @@ bool bPressTouch = false;
 
 //MOSTLora lora(13,12,A2);    // LM-230 (old)
 MOSTLora lora(7, 6, 5);       // LM-130 (new)
-DHT dht(2, DHT22);
+LDHT dht(2, DHT22);
 
 float fTemperature, fHumidity;
 int szBuf = 0;
@@ -38,7 +39,7 @@ void setup() {
   // Serial for log monitor
   Serial.begin(9600);  // use serial port
   
-  Serial.println("--- App begin ---");  // use serial port
+  Serial.println("--- App: lora_ex1 ---");  // use serial port
 
   dht.begin();
   lora.begin();
@@ -54,30 +55,27 @@ void setup() {
   #endif
 
   Serial.println(strHi);  // use serial port
-  // init sensor for humidity & temperature
-  readSensorDHT(fHumidity, fTemperature);
 
   int szHi = strHi.length();
   delay(3000);
   lora.waitUntilReady(5000);
 //  lora.sendData((unsigned char*)strHello, szHello);
   lora.sendData((byte*)strHi.c_str(), szHi);
+
+  // init sensor for humidity & temperature
+  int i = 0;
+  boolean bReadDHT = false;
+  while (!bReadDHT && i < 20) {
+    bReadDHT = readSensorDHT(fHumidity, fTemperature);
+    delay(200);
+    i++;
+  }
 }
 
 
 void loop() {
   long tsNow = millis();
-/*  if (tsNow - tsCurr > (60000))
-  {
-    count++; 
-    tsCurr = tsNow;
-    char *strBuf = (char*)buf;
-    sprintf(strBuf, "Timer: %d\n", count);
-    lora.sendData(strBuf);
-    readSensorDHT(fHumidity, fTemperature);
-    lora.sendPacketResData(fHumidity, fTemperature);
-  }
-  */
+
   if (lora.available()) {
     szBuf = lora.receData();
     if (szBuf >= 2) {
@@ -114,25 +112,24 @@ void loop() {
 boolean readSensorDHT(float &h, float &t)
 {
     boolean bRet = false;
-    h = dht.readHumidity();
-    t = dht.readTemperature();
-//dht.readHT(&t, &h)
-    // check if returns are valid, if they are NaN (not a number) then something went wrong!
-    if (isnan(t) || isnan(h)) 
-    {
-        Serial.println("Failed to read from DHT");
-    } 
-    else 
-    {
-        bRet = true;            
+    if(dht.read()) {
+        h = dht.readHumidity();
+        t = dht.readTemperature();    
+    }
+    if (h > 0)
+      bRet = true;
+
+    if (bRet) {
         Serial.print("Humidity: "); 
         Serial.print(h);
         Serial.print(" %\t");
         Serial.print("Temperature: "); 
         Serial.print(t);
-        Serial.println(" *C");
+        Serial.println(" *C");      
     }
-    delay(2000);
+    else {
+        Serial.println("DHT Read Fail.");    
+    }
     return bRet;
 }
 
