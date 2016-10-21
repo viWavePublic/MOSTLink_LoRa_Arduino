@@ -10,14 +10,16 @@
 
 MOSTLora lora;
 
-const int pinTouch = 8;  // 12;
+const int pinTouch = A0;  // 12;
 bool bPressTouch = false;
 void checkTouch()
 {
-  const int nSensorTouch = digitalRead(pinTouch);
+//  const int nTouchVal = digitalRead(pinTouch);
+  const int nTouchVal = analogRead(pinTouch);
   if (!bPressTouch) {
-    if (nSensorTouch > 0) {   // key-down
-      Serial.println("touch-DOWN");
+    if (nTouchVal >= 512) {   // key-down
+      Serial.print(nTouchVal, DEC);
+      Serial.println(") touch-DOWN");
       bPressTouch = true;
 //      count = (count + 1) % 11;
 //      bar.setLevel(count);
@@ -25,11 +27,11 @@ void checkTouch()
       const char *strData = "ABC...123";
 //      const char *strData = "Hello Hello Hello 0123456789!!!";
 //      lora.sendData((byte*)strData, strlen(strData));
-      sendGPS();
+//      sendGPS();
     }
   }
   else {
-    if (nSensorTouch == 0) {  // key-up
+    if (nTouchVal == 0) {  // key-up
       Serial.println("touch-UP");
       bPressTouch = false; 
     }   
@@ -64,8 +66,9 @@ void loop() {
     if (szBuf >= 2) {
       Serial.print(szBuf);  // use serial port
       Serial.println(") Parse rece <<<");  // use serial port
-      if (lora.parsePacket() >= 0) {
-//        sendGPS();
+      if (lora.parsePacket() == 0x0004) {  // REQ_DATA
+      Serial.println("---> this node");  // use serial port
+        sendGPS();
       }
     }
   }
@@ -95,12 +98,15 @@ void sendGPS()
     LGPS.getData(&info);
 
     const char* strGPS = (const char*)info.GPGGA;
+    unsigned long ts;
+    char gpsStatus;
     double dbLat, dbLng;
-    MLutility::parseGPGGA(strGPS, dbLat, dbLng);
+
+    MLutility::parseGPGGA(strGPS, ts, dbLat, dbLng, gpsStatus);
     Serial.println(strGPS); 
     
     char strOut[255];
-    sprintf(strOut, "GPS(%8.6f, %8.6f)", dbLat, dbLng); 
+    sprintf(strOut, "ts: %d, GPS(%8.6f, %8.6f)", ts, dbLat, dbLng); 
     Serial.println(strOut); 
 //    lora.sendData((char*)strOut);  
 

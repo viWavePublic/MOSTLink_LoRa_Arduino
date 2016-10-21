@@ -41,7 +41,6 @@ void setup() {
   
   Serial.println("--- App: lora_ex1 ---");  // use serial port
 
-  dht.begin();
   lora.begin();
   lora.setReceiverID("FFFFFFFF00112233");
 
@@ -63,6 +62,7 @@ void setup() {
   lora.sendData((byte*)strHi.c_str(), szHi);
 
   // init sensor for humidity & temperature
+  dht.begin();
   int i = 0;
   boolean bReadDHT = false;
   while (!bReadDHT && i < 20) {
@@ -112,7 +112,7 @@ void loop() {
 boolean readSensorDHT(float &h, float &t)
 {
     boolean bRet = false;
-    if(dht.read()) {
+    if (dht.read()) {
         h = dht.readHumidity();
         t = dht.readTemperature();    
     }
