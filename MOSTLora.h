@@ -17,7 +17,11 @@
 
 #include <Arduino.h>
 
-#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_NANO)
+#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)
+
+#elif defined(ARDUINO_AVR_PRO)  // vinduino pro mini
+
+#define USE_VINDUINO  // for Vinduino project (unmark the line)
 
 #elif defined(ARDUINO_AVR_MINI) //
 
@@ -38,10 +42,10 @@
 #define DEBUG_LORA     // debug by Serial Monitor
 #endif // USE_VINDUINO
 
-#define USE_PIN_LED_LORA     13   // pin-LED for LoRa receive data
+//#define USE_PIN_LED_LORA     13   // pin-LED for LoRa receive data
 
 
-//
+// 4 mode: normal, wakeup, powersaving, setup
 enum E_LORA_MODE {
   E_UNKNOWN_LORA_MODE = -1,
   E_LORA_NORMAL = 0,
@@ -109,7 +113,7 @@ public:
   boolean receConfig(DataLora &data);
     
   // send/rece data via LoRa
-  int sendData(char *strData);
+  int sendData(const char *strData);
   int sendData(byte *data, int szData);
   int receData();
   int parsePacket();

@@ -67,7 +67,7 @@ void setup() {
   boolean bReadDHT = false;
   while (!bReadDHT && i < 20) {
     bReadDHT = readSensorDHT(fHumidity, fTemperature);
-    delay(200);
+    delay(1000);
     i++;
   }
 }

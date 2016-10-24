@@ -319,7 +319,7 @@ boolean MOSTLora::receConfig(DataLora &data)
   return bRet;
 }
 
-int MOSTLora::sendData(char *strData)
+int MOSTLora::sendData(const char *strData)
 {
   waitUntilReady(3000);
   int nRet = loraSerial.print(strData);
@@ -465,12 +465,17 @@ int MOSTLora::parsePacket()
 
 boolean MOSTLora::isBusy()
 {
-    // analog BZ
-//    const int nBusy = analogRead(_pinBZ);
-//    const boolean bRet = (nBusy < 512);
+    boolean bRet = true;
+    int nBusy = 0;
     
-    const int nBusy = digitalRead(_pinBZ);
-    const boolean bRet = (nBusy < 1);
+    if (_pinBZ >= 14) {     // analog BZ
+        nBusy = analogRead(_pinBZ);
+        bRet = (nBusy < 512);
+    }
+    else {                  // digital BZ
+        const int nBusy = digitalRead(_pinBZ);
+        bRet = (nBusy < 1);
+    }
   
 /*    if (bRet) {
 #ifdef DEBUG_LORA

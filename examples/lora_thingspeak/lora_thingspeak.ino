@@ -19,27 +19,35 @@ float fTemperature, fHumidity;
 const char *thinkSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
 
 void setup() {
+#ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
   Serial.println("--- App: lora_thingspeak ---");  // use serial port
+#endif // DEBUG_LORA
   
   lora.begin();
   // custom LoRa config by your environment setting
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
 
-  delay(3000);
-  // test to vinduino.io
-//  lora.sendPacketThingSpeak(thinkSpeakApiKey, 11, 22, 32, 46, 59, 60, 70, 85);
-
+  delay(1000);
+  
   // init sensor for humidity & temperature
   dht.begin();
   int i = 0;
   boolean bReadDHT = false;
   while (!bReadDHT && i < 20) {
     bReadDHT = readSensorDHT(fHumidity, fTemperature);
-    delay(200);
+    delay(1000);
     i++;
   }
+  int pinA = A0;
+  Serial.println(pinA, 10);
+  Serial.println(A5, 10);
+  Serial.println(A7, 10);
+
+  // test to gateway
+  const char *strTest = "Hello LORA.";
+  lora.sendData(strTest); 
 }
 
 void loop() {
@@ -65,7 +73,7 @@ boolean readSensorDHT(float &h, float &t)
     }
     if (h > 0)
       bRet = true;
-
+#ifdef DEBUG_LORA
     if (bRet) {
         Serial.print("Humidity: "); 
         Serial.print(h);
@@ -77,5 +85,6 @@ boolean readSensorDHT(float &h, float &t)
     else {
         Serial.println("DHT Read Fail.");    
     }
+#endif // DEBUG_LORA
     return bRet;
 }
