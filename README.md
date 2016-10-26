@@ -23,7 +23,8 @@ Building and using the example by Arduino IDE
     
 2.  Vinduino project example:  
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_vinduino]      
-        USE_VINDUINO, Digit pin for RX/TX, and P1/P2 would be specified correctly.  
+        USE_VINDUINO, Digit pin for RX/TX, and P1/P2 would be specified correctly.
+            D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)
 
 
 Reference

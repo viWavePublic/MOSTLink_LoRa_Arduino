@@ -35,7 +35,7 @@ void setup() {
   // custom LoRa config: freq(915555kHz), groupid(0), data_rate(0), power(7), wakeup_time(5)
   lora.writeConfig(915555, 0, 0, 7, 5);
   
-  lora.setMode(E_LORA_WAKEUP);    // lora module: wakeup-mode 
+  lora.setMode(E_LORA_POWERSAVING);    // module mode: power-saving
 
   // test data to Vinduino.io
   lora.sendPacketVinduino(loraApiKey, 10, 20, 30, 40, 50, 60, 70, 80);
