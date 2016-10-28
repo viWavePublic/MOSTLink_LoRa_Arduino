@@ -92,6 +92,7 @@ public:
     MOSTLora(int pinP1 = 7, int pinP2 = 6, int pinBusy = 5);
 
   void begin();
+  unsigned char *getBuffer() { return _buf; }
 
 private:
   // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)

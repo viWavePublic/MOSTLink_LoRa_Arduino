@@ -10,10 +10,10 @@
 
 #include "MOSTLora.h"
 #include "MLPacketComm.h"
-#include <LDHT.h>
+#include <DHT.h>
 
 MOSTLora lora;
-LDHT dht(2, DHT22);
+DHT dht(2, DHT22);
 float fTemperature, fHumidity;
 
 const char *thinkSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
@@ -40,10 +40,6 @@ void setup() {
     delay(1000);
     i++;
   }
-  int pinA = A0;
-  Serial.println(pinA, 10);
-  Serial.println(A5, 10);
-  Serial.println(A7, 10);
 
   // test to gateway
   const char *strTest = "Hello LORA.";
@@ -70,6 +66,10 @@ boolean readSensorDHT(float &h, float &t)
     if (dht.read()) {
         h = dht.readHumidity();
         t = dht.readTemperature();    
+    }
+    else {
+      h = 0;
+      t = 0;
     }
     if (h > 0)
       bRet = true;

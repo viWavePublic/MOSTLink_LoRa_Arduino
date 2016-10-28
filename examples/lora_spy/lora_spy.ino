@@ -10,6 +10,7 @@
 MOSTLora lora;
 
 int szBuf = 0;
+byte bufLora[99] = {0};
 byte buf[256] = {0};
 
 void setup() {
@@ -21,13 +22,13 @@ void setup() {
   lora.setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
 
   delay(1000);
-  lora.sendData("Hi, how are you.");
+  lora.sendData("Hi, I am spy.");
 }
 
 void loop() {
   if (lora.available()) {
     szBuf = lora.receData();
-
+    memcpy(bufLora, lora.getBuffer(), szBuf);
   }
   delay(10);
 
@@ -40,9 +41,18 @@ void inputBySerial()
 {
   int countBuf = MLutility::readSerial((char*)buf);
   if (countBuf > 0) {
-    buf[countBuf] = 0;
-    Serial.print("chat> ");
-    Serial.println((char*)buf);
-    lora.sendData((char*)buf);
+    if (buf[0] == '/')
+    {
+      if (buf[1] == 'd') {
+        lora.sendData(bufLora, szBuf);
+      }
+      
+    }
+    else {
+      buf[countBuf] = 0;
+      Serial.print("chat> ");
+      Serial.println((char*)buf);
+      lora.sendData((char*)buf);
+    }
   }  
 }

@@ -35,13 +35,13 @@ class DHT {
  private:
   uint8_t data[6];
   uint8_t _pin, _type, _count;
-  boolean read(void);
   unsigned long _lastreadtime;
   boolean firstreading;
 
  public:
   DHT(uint8_t pin, uint8_t type, uint8_t count=COUNT);
   void begin(void);
+  boolean read(void);
   float readTemperature(bool S=false);
   float convertCtoF(float);
   float readHumidity(void);

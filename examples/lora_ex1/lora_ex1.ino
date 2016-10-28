@@ -2,8 +2,8 @@
 const int pinLedRece = 13;
 
 #include "MOSTLora.h"
-#include <LDHT.h>
-//#include "DHT.h"
+//#include <LDHT.h>
+#include "DHT.h"
 #include "MLPacketParser.h"
 #include "MLutility.h"
 
@@ -14,7 +14,7 @@ bool bPressTouch = false;
 
 //MOSTLora lora(13,12,A2);    // LM-230 (old)
 MOSTLora lora(7, 6, 5);       // LM-130 (new)
-LDHT dht(2, DHT22);
+DHT dht(2, DHT22);
 
 float fTemperature, fHumidity;
 int szBuf = 0;
@@ -44,7 +44,7 @@ void setup() {
   lora.begin();
   lora.setReceiverID("FFFFFFFF00112233");
 
-  lora.writeConfig(915555, 0, 0, 7, 5);
+//  lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
   
   #if defined(__LINKIT_ONE__)
@@ -81,7 +81,7 @@ void loop() {
     if (szBuf >= 2) {
       Serial.print(szBuf);  // use serial port
       Serial.println(") Parse rece <<<");  // use serial port
-      if (lora.parsePacket() == 0x0004) {  // REQ_DATA
+      if (lora.parsePacket() == CMD_REQ_DATA) {  // REQ_DATA
         readSensorDHT(fHumidity, fTemperature);
 //        lora.sendPacketResData(fHumidity, fTemperature);
         lora.sendPacketResData2(fHumidity, fTemperature);
@@ -116,9 +116,13 @@ boolean readSensorDHT(float &h, float &t)
         h = dht.readHumidity();
         t = dht.readTemperature();    
     }
+    else {
+      h = 0;
+      t = 0;
+    }
     if (h > 0)
       bRet = true;
-
+#ifdef DEBUG_LORA
     if (bRet) {
         Serial.print("Humidity: "); 
         Serial.print(h);
@@ -130,6 +134,7 @@ boolean readSensorDHT(float &h, float &t)
     else {
         Serial.println("DHT Read Fail.");    
     }
+#endif // DEBUG_LORA
     return bRet;
 }
 
