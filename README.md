@@ -26,6 +26,17 @@ Building and using the example by Arduino IDE
         USE_VINDUINO, Digit pin for RX/TX, and P1/P2 would be specified correctly.
             D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)
 
+3.  thingspeak project example:  
+        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_thingspeak]      
+
+4.  chat project example:  
+        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_chat]      
+
+5.  fake project example:  
+        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_fake]
+
+6.  GPS project example:  
+        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_gps]      
 
 Reference
 ----
