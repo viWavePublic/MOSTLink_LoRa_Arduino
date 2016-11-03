@@ -38,6 +38,9 @@ Building and using the example by Arduino IDE
 6.  GPS project example:  
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_gps]      
 
+7.  debug configure project example:  
+        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_debug]      
+
 Reference
 ----
 * Arduino: https://www.arduino.cc
