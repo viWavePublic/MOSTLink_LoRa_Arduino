@@ -13,6 +13,7 @@
  */
 
 #include "MOSTLora.h"
+#include "MLutility.h"
 #include "MLpacket.h"
 #include "MLPacketGen.h"
 #include "MLPacketParser.h"
@@ -39,16 +40,6 @@
 
 #endif // __LINKIT_ONE__
 
-#ifdef DEBUG_LORA
-#define debugSerial Serial
-#else
-// not ready yet
-class DummySerial {
-    
-};
-//#define debugSerial DummySerial
-
-#endif
 
 #ifdef USE_PIN_LED_LORA
 const int pinLedLora = USE_PIN_LED_LORA;
@@ -145,22 +136,6 @@ boolean MOSTLora::available()
   return loraSerial.available();
 }
 
-void MOSTLora::printBinary(const byte *data, const int szData)
-{
-#ifdef DEBUG_LORA
-  int i;
-  for (i = 0; i < szData; i++) {
-    if (data[i] < 16)
-      debugSerial.print("0"); 
-    
-    debugSerial.print(data[i], HEX); 
-  }
-  debugSerial.print(" (");
-  debugSerial.print(szData, DEC);
-  debugSerial.print(" bytes)\n");
-#endif // DEBUG_LORA
-}
-
 boolean MOSTLora::printConfig(DataLora &data)
 {
   boolean bRet = false;
@@ -178,7 +153,7 @@ boolean MOSTLora::printConfig(DataLora &data)
   debugSerial.write(data.ver_no, 7);
 
   debugSerial.print(", MAC:");
-  printBinary(data.mac_addr, 8);
+  MLutility::printBinary(data.mac_addr, 8);
 
   debugSerial.print("    group:");
   debugSerial.print(data.group_id, DEC);
@@ -339,7 +314,7 @@ int MOSTLora::sendData(byte *data, int szData)
   delay(100);
 #ifdef DEBUG_LORA
   debugSerial.print("Send >>> ");
-  printBinary(data, szData);
+  MLutility::printBinary(data, szData);
 #endif // DEBUG_LORA
   return nRet;
 }
@@ -392,7 +367,7 @@ int MOSTLora::receData()
       
 #ifdef DEBUG_LORA
     debugSerial.print("\nRece <<< ");
-    printBinary(_buf, _szBuf);
+    MLutility::printBinary(_buf, _szBuf);
     debugSerial.println((char*)_buf);
 #endif // DEBUG_LORA
       
@@ -451,7 +426,7 @@ int MOSTLora::parsePacket()
           debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
 
           debugSerial.print(", pkParser Mac:");
-          printBinary(pMac, 8);
+          MLutility::printBinary(pMac, 8);
 #endif // DEBUG_LORA
           
           if (memcmp(pMac, _data.mac_addr, 8) == 0) // packet for me

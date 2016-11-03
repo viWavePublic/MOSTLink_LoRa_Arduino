@@ -139,6 +139,20 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
     return bRet;
 }
 
+void MLutility::printBinary(const byte *data, const int szData)
+{
+    int i;
+    for (i = 0; i < szData; i++) {
+        if (data[i] < 16)
+            Serial.print("0");
+        
+        Serial.print(data[i], HEX);
+    }
+    Serial.print(" (");
+    Serial.print(szData, DEC);
+    Serial.print(" bytes)\n");
+}
+
 int MLutility::readSerial(char *buf)
 {
     int countBuf = 0;

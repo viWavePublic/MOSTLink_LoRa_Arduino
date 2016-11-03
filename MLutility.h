@@ -17,6 +17,7 @@ public:
     static boolean parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus);
     
     static int readSerial(char *buf);
+    static void printBinary(const byte *data, const int szData);
 };
 
 

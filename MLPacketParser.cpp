@@ -6,7 +6,7 @@ int MLPacketParser::mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packe
     
     if(packet[ML_PK_PREAMBLE_1_POS] == 0xFB && packet[ML_PK_PREAMBLE_2_POS] == 0xFC){
         if (packet[ML_PK_HEADER_CRC_POS] != getCrc(packet, ML_PK_HEADER_SIZE-ML_PK_HEADER_CRC_SIZE-ML_PK_CRC_SIZE)) {
-            printf("CRC error 1\n");
+//            printf("CRC error 1\n");
             return ML_PK_PARSE_HEADER_CRC_ERR;
         } else {
             nPacketLen = packet[ML_PK_LENGTH_POS];
@@ -18,12 +18,12 @@ int MLPacketParser::mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packe
             memcpy(pkctx->_id, &packet[ML_PK_ID_POS], ML_PK_ID_SIZE);
             uint8_t packetCRCPos = nPacketLen - 1;
             uint8_t payloadLen = nPacketLen-ML_PK_HEADER_SIZE;
-            //printf("packetLen:%d, payloadLen:%d\n", nPacketLen, payloadLen);
+            printf("packetLen:%d, payloadLen:%d\n", nPacketLen, payloadLen);
             if (packet[packetCRCPos] == getCrc(packet, nPacketLen-1)) {
                 memcpy(payload, packet+ML_PK_PAYLOAD_START_POS, payloadLen);
                 mostloraPayloadParse(pkctx, payload);
             } else {
-                printf("CRC error 2\n");
+//                printf("CRC error 2\n");
                 return ML_PK_PARSE_PACKET_CRC_ERR;
             }
             return 0;

@@ -39,12 +39,13 @@ void setup() {
   // Serial for log monitor
   Serial.begin(9600);  // use serial port
   
-  Serial.println("--- App: lora_ex1 ---");  // use serial port
+//  Serial.println("--- App: lora_ex1 ---");  // use serial port
 
   lora.begin();
   lora.setReceiverID("FFFFFFFF00112233");
 
-//  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915555, 0, 0, 7, 5);
+//  lora.writeConfig(915000, 0, 3, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
   
   #if defined(__LINKIT_ONE__)
@@ -53,7 +54,7 @@ void setup() {
     strHi += "[ArduinoUno]";
   #endif
 
-  Serial.println(strHi);  // use serial port
+//  Serial.println(strHi);  // use serial port
 
   int szHi = strHi.length();
   delay(3000);
@@ -198,7 +199,7 @@ boolean parseCommand(char *strCmd)
       }
       break;
     case 't':
-      lora.writeConfig(913000, 0, 0, 7, 5);
+      lora.writeConfig(915555, 0, 5, 7, 5);
       break;
     case 'f':
       {

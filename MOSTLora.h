@@ -42,6 +42,19 @@
 #define DEBUG_LORA     // debug by Serial Monitor
 #endif // USE_VINDUINO
 
+// debug LoRa to serial-monitor
+#ifdef DEBUG_LORA
+#define debugSerial Serial
+#else
+// not ready yet
+class DummySerial {
+    
+};
+//#define debugSerial DummySerial
+
+#endif
+
+
 //#define USE_PIN_LED_LORA     13   // pin-LED for LoRa receive data
 
 
@@ -104,7 +117,6 @@ public:
   boolean available();
   boolean setReceiverID(const char *strID);
   
-  static void printBinary(const byte *data, const int szData);
   boolean printConfig(DataLora &data);
   boolean printInfo();
 
