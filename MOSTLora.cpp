@@ -40,10 +40,6 @@
 #endif // __LINKIT_ONE__
 
 
-#ifdef USE_PIN_LED_LORA
-const int pinLedLora = USE_PIN_LED_LORA;
-#endif // USE_PIN_LED_LORA
-
 MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 {
     _pinP1 = pinP1;
@@ -73,10 +69,6 @@ void MOSTLora::begin()
   debugSerial.println(F_CPU);
     
 #endif // DEBUG_LORA
-    
-#ifdef USE_PIN_LED_LORA
-  pinMode(pinLedLora, OUTPUT);
-#endif // USE_PIN_LED_LORA
     
   pinMode(_pinP1, OUTPUT);
   pinMode(_pinP2, OUTPUT);
@@ -328,12 +320,6 @@ int MOSTLora::receData()
   for (i = 0; i < 6; i++) {
       int nCharRead = 0;
       while (loraSerial.available() && (_szBuf < MAX_SIZE_BUF)) {
-        if (0 == _szBuf) {
-#ifdef USE_PIN_LED_LORA
-          digitalWrite(pinLedLora, HIGH);   // turn the LED on (HIGH is the voltage level)
-#endif // USE_PIN_LED_LORA
-        }
-       
         int c = loraSerial.read();
         _buf[_szBuf] = c;
 
@@ -360,9 +346,6 @@ int MOSTLora::receData()
   }
   if (_szBuf > 0) {
     _buf[_szBuf] = 0;
-#ifdef USE_PIN_LED_LORA
-    digitalWrite(pinLedLora, LOW);    // turn the LED off by making the voltage LOW
-#endif // USE_PIN_LED_LORA
       
 #ifdef DEBUG_LORA
     debugSerial.print("\nRece <<< ");

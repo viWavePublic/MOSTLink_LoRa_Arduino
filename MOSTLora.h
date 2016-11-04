@@ -55,9 +55,6 @@ class DummySerial {
 #endif
 
 
-//#define USE_PIN_LED_LORA     13   // pin-LED for LoRa receive data
-
-
 // 4 mode: normal, wakeup, powersaving, setup
 enum E_LORA_MODE {
   E_UNKNOWN_LORA_MODE = -1,
