@@ -4,7 +4,7 @@ const int pinLedRece = 13;
 #include "MOSTLora.h"
 //#include <LDHT.h>
 #include "DHT.h"
-#include "MLPacketParser.h"
+#include "MLPacketComm.h"
 #include "MLutility.h"
 
 int count = 0;
@@ -84,8 +84,7 @@ void loop() {
       Serial.println(") Parse rece <<<");  // use serial port
       if (lora.parsePacket() == CMD_REQ_DATA) {  // REQ_DATA
         readSensorDHT(fHumidity, fTemperature);
-//        lora.sendPacketResData(fHumidity, fTemperature);
-        lora.sendPacketResData2(fHumidity, fTemperature);
+        lora.sendPacketResData(fHumidity, fTemperature);
 //        lora.sendPacketVinduino2("0GFUGE371WNPMMJE", 0, 0, 0, 0, 0, 0, 0, 0);
       }
     }
@@ -172,12 +171,6 @@ boolean parseCommand(char *strCmd)
     case '2':
       lora.writeConfig(915000, 0, 2, 7, 5);
       break;
-    case '3':
-      lora.writeConfig(868000, 0, 0, 7, 5);
-      break;
-    case '4':
-      lora.writeConfig(868000, 0, 2, 7, 5);
-      break;
     case 'R':
     case 'r':
       lora.readConfig();
@@ -233,7 +226,6 @@ boolean parseCommand(char *strCmd)
       }
       break;
     default:
-      lora.writeConfig(913000, 0, 0, 7, 5);
       break;
   }
   
@@ -256,7 +248,11 @@ void checkTouch()
       const char *strData = "ABC...123";
 //      const char *strData = "Hello Hello Hello 0123456789!!!";
 //      lora.sendData((byte*)strData, strlen(strData));
-      lora.sendPacketResData2(99.9, -10.1);
+      int nTemp = rand() % 30;
+//      lora.sendPacketResData(99.9, nTemp);
+
+
+//      lora.sendPacketReqAuthJoin();
     }
   }
   else {
