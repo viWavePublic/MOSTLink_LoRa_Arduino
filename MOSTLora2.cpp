@@ -18,6 +18,10 @@
 #include "MLPacketGen.h"
 #include "MLPacketParser.h"
 
+// crypto
+#include <Crypto.h>
+#include <SHA256.h>
+
 int MOSTLora::parsePacket()
 {
     int nRet = -1;
