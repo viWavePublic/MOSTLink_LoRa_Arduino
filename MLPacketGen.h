@@ -13,6 +13,18 @@ typedef struct MLLocation {
 
 class MLPayloadGen {
     public:
+    MLPayloadGen(uint16_t cmdId = 0, uint8_t optionFlags = 0, uint8_t *optionData = NULL, uint8_t version = 0x0A) {
+        _version = version;
+        _cmdId = cmdId;
+        _optionFlags = optionFlags;
+        if (_optionFlags & 0x01 && optionData != NULL) {
+            _optionDataLen = 3;
+            memcpy(_optionData, optionData, _optionDataLen);
+        } else {
+            _optionDataLen = 0;
+        }
+    }
+    
         virtual int getPayload(uint8_t *payload) = 0;
         static MLPayloadGen *createReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
         static MLPayloadGen *createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
@@ -133,6 +145,60 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
         float _temperature;
         float _reserved;
 };
+
+//////////////////////////////////////////////////////////////////////////////////
+
+class MLReqAuthJoinPayloadGen : public MLPayloadGen {
+public:
+    MLReqAuthJoinPayloadGen() : MLPayloadGen(CMD_REQ_AUTH_JOIN) {}
+    
+    int getPayload(uint8_t *payload)
+    {
+        // prefix
+        payload[0] = _version;
+        payload[1] = _cmdId & 0xFF;
+        payload[2] = _cmdId >> 8;
+        
+        // postfix
+        payload[3] = _optionFlags;
+        if (_optionDataLen > 0)
+            memcpy(&payload[4], _optionData, _optionDataLen);
+        
+        return (4 + _optionDataLen);
+    }
+};
+
+#define SIZE_RES_AUTH_RESPONSE_HMAC     16
+class MLResAuthResponsePayloadGen : public MLPayloadGen {
+public:
+    MLResAuthResponsePayloadGen(uint8_t *dataHMAC) : MLPayloadGen(CMD_RES_AUTH_RESPONSE)
+    {
+        memcpy(_dataHMAC, dataHMAC, SIZE_RES_AUTH_RESPONSE_HMAC);
+    }
+    
+    int getPayload(uint8_t *payload)
+    {
+        // prefix
+        payload[0] = _version;
+        payload[1] = _cmdId & 0xFF;
+        payload[2] = _cmdId >> 8;
+        
+        memcpy(&payload[3], _dataHMAC, SIZE_RES_AUTH_RESPONSE_HMAC);
+        // postfix
+        int pos = 3 + SIZE_RES_AUTH_RESPONSE_HMAC;
+        payload[pos++] = _optionFlags;
+        if (_optionDataLen > 0) {
+            memcpy(&payload[pos], _optionData, _optionDataLen);
+            pos += _optionDataLen;
+        }
+        
+        return pos;
+    }
+private:
+    uint8_t _dataHMAC[SIZE_RES_AUTH_RESPONSE_HMAC];
+};
+
+//////////////////////////////////////////////////////////////////////////////////
 
 class MLPacketGen {
     public:

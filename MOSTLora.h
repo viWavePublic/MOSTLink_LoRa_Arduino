@@ -144,18 +144,23 @@ public:
     
   // RES_DATA command for humidity & temperature
   void sendPacketResData(float h, float t);
-  void sendPacketResData2(float h, float t);
+  void sendPacketResData_old(float h, float t);
   
   // REQ_SOS/RES_SOS for Lt300 tracker node
   void sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery);
   void sendPacketResSOS();
 
+    // auth related: challenge-reponse
+    void sendPacketReqAuthJoin();       // send REQ_AUTH_JOIN to gateway, then will receive REQ_AUTH_CHALLENGE
+    void sendPacketResAuthResponse(uint8_t *data, int szData);   // received REQ_AUTH_CHALLENGE, then RES_AUTH_RESPONSE
+    
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);
     
+    
   // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
   void sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
-  void sendPacketVinduino2(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
+  void sendPacketVinduino_old(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
     
   void sendPacketThingSpeak(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
 };

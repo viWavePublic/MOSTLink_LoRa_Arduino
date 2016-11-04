@@ -16,7 +16,6 @@
 #include "MLutility.h"
 #include "MLpacket.h"
 #include "MLPacketGen.h"
-#include "MLPacketParser.h"
 
 #if defined(__LINKIT_ONE__)
     #define loraSerial Serial1       // for LinkIt ONE
@@ -399,45 +398,6 @@ int MOSTLora::sendPacket(byte *pPacket, int szPacket)
     return nRet;
 }
 
-
-int MOSTLora::parsePacket()
-{
-  int nRet = -1;
-  if (_buf[0] == '$') {     // for LT200 protocol
-    
-  }
-  else if (_buf[0] == 0xFB && _buf[1] == 0xFC) {    // for MOST Link protocol
-      // downlink header
-//      MLDownlink header;
-      const int szHeader = sizeof(MLDownlink);
-      MLPacketCtx pkctx;
-      MLPacketParser pkParser;
-          
-      int nResult = pkParser.mostloraPacketParse(&pkctx, _buf);
-      if (nResult == 0) {
-          byte *pMac = (byte*)&pkctx._id;
-#ifdef DEBUG_LORA
-          if (pkctx._direction == 0)
-              debugSerial.print("*** downlink ");
-          else
-              debugSerial.print("*** uplink ");
-
-          debugSerial.print("cmdID: ");
-          debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
-
-          debugSerial.print(", pkParser Mac:");
-          MLutility::printBinary(pMac, 8);
-#endif // DEBUG_LORA
-          
-          if (memcmp(pMac, _data.mac_addr, 8) == 0) // packet for me
-          {
-              nRet = pkctx._mlPayloadCtx._cmdId;
-          }
-      }
-  }
-  return nRet;
-}
-
 boolean MOSTLora::isBusy()
 {
     boolean bRet = true;
@@ -482,7 +442,7 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
 }
 
 // RES_DATA command for humidity & temperature
-void MOSTLora::sendPacketResData2(float h, float t)
+void MOSTLora::sendPacketResData(float h, float t)
 {
     byte dataHT[8];
 
@@ -502,7 +462,7 @@ void MOSTLora::sendPacketResData2(float h, float t)
 }
 
 // RES_DATA command for humidity & temperature
-void MOSTLora::sendPacketResData(float h, float t)
+void MOSTLora::sendPacketResData_old(float h, float t)
 {
     int szPacket = 22 + 15;
     MLUplink headUplink(0x0A, 22 + 15, 0x08, getMacAddress(), _receiverID);
@@ -584,6 +544,8 @@ void MOSTLora::sendPacketResSOS()
     sendPacket(_buf, szPacket);
 }
 
+/////////////////////////////////////////
+
 void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng)
 {
     mllocation loc;
@@ -602,10 +564,9 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     sendPacket(_buf, packetLen);
 }
 
-void MOSTLora::sendPacketVinduino2(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
-    uint8_t *pSenderID = (uint8_t*)getMacAddress();
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
     
@@ -619,7 +580,7 @@ void MOSTLora::sendPacketVinduino2(const char *apiKey, float f0, float f1, float
 }
 
 // NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
-void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+void MOSTLora::sendPacketVinduino_old(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     int szPacket = 22 + 53;
     MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);

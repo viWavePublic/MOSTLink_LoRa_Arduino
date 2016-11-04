@@ -32,16 +32,17 @@ Building and using the example by Arduino IDE
 4.  chat project example:  
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_chat]      
 
-5.  fake project example:  
+5.  fake project example
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_fake]
 
-6.  GPS project example:  
+6.  GPS project example (for Linkit One)
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_gps]      
 
-7.  debug configure project example:  
+7.  debug configure project example (for GlobalSat debug):  
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_debug]      
 
 Reference
 ----
 * Arduino: https://www.arduino.cc
 * MOSTLink: http://mostlink.viwave.com
+* Cryptographic Library: http://rweather.github.io/arduinolibs/crypto.html
