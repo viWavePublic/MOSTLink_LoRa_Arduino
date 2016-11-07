@@ -64,8 +64,8 @@ void blink13()
 void MOSTLora::begin()
 {
 #ifdef DEBUG_LORA
-  debugSerial.println("=== MOSTLink LoRa v1.0 ===");
-  debugSerial.print("CPU clock: ");
+  debugSerial.println("= MOSTLink LoRa v1.0 =");
+  debugSerial.print("CPU: ");
   debugSerial.println(F_CPU);
     
 #endif // DEBUG_LORA
@@ -133,42 +133,41 @@ boolean MOSTLora::printConfig(DataLora &data)
 #ifdef DEBUG_LORA
   int i;
   if (!data.isValid()) {
-    debugSerial.print("++++++ invalid config");
+    debugSerial.print("+++ invalid config");
     return bRet;
   }
   bRet = true;
-  debugSerial.print("*** Module:");
+  debugSerial.print("*** LoRa:");
   debugSerial.write(data.module_no, 4);
 
-  debugSerial.print(", Version:");
+  debugSerial.print(", Ver:");
   debugSerial.write(data.ver_no, 7);
 
   debugSerial.print(", MAC:");
   MLutility::printBinary(data.mac_addr, 8);
 
-  debugSerial.print("    group:");
+  debugSerial.print("  g_id:");
   debugSerial.print(data.group_id, DEC);
 
   long nFrequency;
   nFrequency = ((long)data.freq[0] << 16) + ((long)data.freq[1] << 8) + data.freq[2];
-  debugSerial.print(", frequency:");
+  debugSerial.print(", freq:");
   debugSerial.print(nFrequency);
   
-  debugSerial.print(", data rate:");
+  debugSerial.print(", datarate:");
   debugSerial.print(data.data_rate, DEC);
   
-  debugSerial.print(", power:");
+  debugSerial.print(", pwr:");
   debugSerial.print(data.power, DEC);
 
-  debugSerial.print(", \n    uart baud:");
+  debugSerial.print(", UART baud:");
   debugSerial.print(data.uart_baud, DEC);
-  debugSerial.print(", uart check:");
+  debugSerial.print(", chk:");
   debugSerial.print(data.uart_check, DEC);
   
-  debugSerial.print(", wakeup time:");
+  debugSerial.print("; wakeup time:");
   debugSerial.print(data.wakeup_time, DEC);
 
-  char *pData = (char*)&data;
   debugSerial.println("\n");
 #endif // DEBUG_LORA
   return bRet;
@@ -177,19 +176,19 @@ boolean MOSTLora::printConfig(DataLora &data)
 boolean MOSTLora::printInfo()
 {
     boolean bRet = MOSTLora::printConfig(_data);
-    const char *strMode = "* Unknown Mode *";
+    const char *strMode = "*Unknown*";
     switch (_eMode) {
         case E_LORA_NORMAL:
-            strMode = "[ Normal Mode ]";
+            strMode = "[Normal]";
             break;
         case E_LORA_WAKEUP:
-            strMode = "[ Wakeup Mode ]";
+            strMode = "[Wakeup]";
             break;
         case E_LORA_POWERSAVING:
-            strMode = "[ Power Saving Mode ]";
+            strMode = "[Pwr Saving]";
             break;
         case E_LORA_SETUP:
-            strMode = "[ Setup Mode ]";
+            strMode = "[Setup]";
             break;
     }
 #ifdef DEBUG_LORA
@@ -279,7 +278,7 @@ boolean MOSTLora::receConfig(DataLora &data)
 #ifdef DEBUG_LORA
   if (!bRet) {
     debugSerial.print(szRece);
-    debugSerial.println(") ------ Fail to get config!");
+    debugSerial.println(") - ERR: rece config!");
   }
 #endif // DEBUG_LORA
   return bRet;
@@ -292,7 +291,7 @@ int MOSTLora::sendData(const char *strData)
   delay(100);
 #ifdef DEBUG_LORA
   debugSerial.print(nRet);
-  debugSerial.print(") Send String >>> ");
+  debugSerial.print(") Send str > ");
   debugSerial.println(strData);
 #endif // DEBUG_LORA
   return nRet;
@@ -304,7 +303,7 @@ int MOSTLora::sendData(byte *data, int szData)
   int nRet = loraSerial.write(data, szData);
   delay(100);
 #ifdef DEBUG_LORA
-  debugSerial.print("Send >>> ");
+  debugSerial.print("Send > ");
   MLutility::printBinary(data, szData);
 #endif // DEBUG_LORA
   return nRet;
@@ -348,7 +347,7 @@ int MOSTLora::receData()
     _buf[_szBuf] = 0;
       
 #ifdef DEBUG_LORA
-    debugSerial.print("\nRece <<< ");
+    debugSerial.print("\nRece < ");
     MLutility::printBinary(_buf, _szBuf);
     debugSerial.println((char*)_buf);
 #endif // DEBUG_LORA
@@ -358,7 +357,7 @@ int MOSTLora::receData()
           strBuf[0] = '>';
           sendData((byte*)_buf, _szBuf);
 #ifdef DEBUG_LORA
-          debugSerial.println("--- Echo ---");
+          debugSerial.println("< Echo >");
 #endif // DEBUG_LORA
       }
       // parse downlink packet
@@ -549,7 +548,6 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
 
 void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
-    uint8_t pReceiverID[8] = {0x00, 0x00, 0x00, 0x00, 0x11, 0x22, 0x33, 0x44};
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
     

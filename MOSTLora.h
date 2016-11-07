@@ -94,6 +94,8 @@ private:
   int _eMode;
   DataLora _data;
   unsigned char _receiverID[8];   // receiver ID
+//  String _keyHMAC;   // key of HMAC (challenge-response)
+  const char *_keyHMAC = "PublicKey";
   
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
@@ -133,6 +135,8 @@ public:
   boolean waitUntilReady(unsigned long timeout);
 
   void run();
+    
+  void setKeyHMAC(const char *strKey);
     
   /////////////////////////////////////////
   // command packet for MOST Link protocol
