@@ -46,6 +46,8 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
     _pinP2 = pinP2;
     _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
+    
+    _cbReceData = NULL;
 }
 /*
 void blink13()
@@ -361,6 +363,9 @@ int MOSTLora::receData()
 #endif // DEBUG_LORA
       }
       // parse downlink packet
+      if (_cbReceData) {
+          _cbReceData(_buf, _szBuf);
+      }
 //      parsePacket(_buf, szData);  // parse Packet by your code
   }
 

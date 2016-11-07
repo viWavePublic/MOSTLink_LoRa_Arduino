@@ -54,6 +54,9 @@ class DummySerial {
 
 #endif
 
+// callback function
+typedef int (* CALLBACK_ReceData) (unsigned char *data, int szData);
+
 
 // 4 mode: normal, wakeup, powersaving, setup
 enum E_LORA_MODE {
@@ -99,6 +102,9 @@ private:
   
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
+    
+    // callback
+    CALLBACK_ReceData _cbReceData;
 public:
 //    MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
     MOSTLora(int pinP1 = 7, int pinP2 = 6, int pinBusy = 5);
@@ -135,6 +141,8 @@ public:
   boolean waitUntilReady(unsigned long timeout);
 
   void run();
+  void setCallbackReceData(CALLBACK_ReceData funcRece);
+
     
   void setKeyHMAC(const char *strKey);
     

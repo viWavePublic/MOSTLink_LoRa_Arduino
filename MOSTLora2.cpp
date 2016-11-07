@@ -22,6 +22,21 @@
 #include <Crypto.h>
 #include <SHA256.h>
 
+/////////////////////////////////////////
+
+void MOSTLora::run()
+{
+    if (available()) {
+        receData();
+    }
+}
+
+void MOSTLora::setCallbackReceData(CALLBACK_ReceData funcRece)
+{
+    _cbReceData = funcRece;
+}
+/////////////////////////////////////////
+
 int MOSTLora::parsePacket()
 {
     int nRet = -1;
