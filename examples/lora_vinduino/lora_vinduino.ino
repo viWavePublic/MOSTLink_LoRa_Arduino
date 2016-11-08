@@ -22,6 +22,13 @@ MOSTLora lora;
 
 const char *loraApiKey = "0GFUGE371WNPMMJE";    // ThingSpeak API-key for vinduino.io
 
+// callback for REQ_DATA
+void funcCustomPacketReqData(unsigned char *data, int szData)
+{
+  debugSerial.println("ReqData= sendPacketVinduino");
+  lora.sendPacketVinduino(loraApiKey, 11, 22, 33, 44, 55, 66, 77, 88);
+}
+
 void setup() {
 #ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
@@ -39,21 +46,14 @@ void setup() {
 
   // test data to Vinduino.io
   lora.sendPacketVinduino(loraApiKey, 10, 20, 30, 40, 50, 60, 70, 80);
+
+  // custom callback
+  lora.setCallbackPacketReqData(funcCustomPacketReqData);  
 }
 
 void loop() {
-  // check lora RX: receive something
-  if (lora.available())
-  {
-    int szRece = lora.receData();   // read receive data to buffer
-    
-    // reply to vinduino.io when receive "REQ_DATA" by MOSTLink-protocol
-    if (lora.parsePacket() == CMD_REQ_DATA)
-    {
-      // TODO: fill the collected values by sensors, then send to Vinduino.io (with api-key, and 8 fields)
-      lora.sendPacketVinduino(loraApiKey, 11, 22, 33, 44, 55, 66, 77, 88);
-    }
-  }
+  lora.run();
+
   delay(100);     // wait a moment for next loop
 }
 

@@ -22,7 +22,7 @@
 #include <Crypto.h>
 #include <SHA256.h>
 
-/////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 
 void MOSTLora::run()
 {
@@ -31,11 +31,17 @@ void MOSTLora::run()
     }
 }
 
-void MOSTLora::setCallbackReceData(CALLBACK_ReceData funcRece)
+void MOSTLora::setCallbackReceData(CALLBACK_ReceData cbFunc)
 {
-    _cbReceData = funcRece;
+    _cbReceData = cbFunc;
 }
-/////////////////////////////////////////
+
+void MOSTLora::setCallbackPacketReqData(CALLBACK_ReceData cbFunc)
+{
+    _cbPacketReqData = cbFunc;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 
 int MOSTLora::parsePacket()
 {
@@ -62,14 +68,19 @@ int MOSTLora::parsePacket()
             debugSerial.print(") 0x");
             debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 16);
             
-            debugSerial.print(", node-ID:");
+            debugSerial.print(", nodeID:");
             MLutility::printBinary(pMac, 8);
 #endif // DEBUG_LORA
             
             if (memcmp(pMac, _data.mac_addr, 8) == 0) // packet for me
             {
                 nRet = pkctx._mlPayloadCtx._cmdId;
-                if (nRet == CMD_REQ_AUTH_CHALLENGE) {
+                if (nRet == CMD_REQ_DATA) {
+                    if (_cbPacketReqData) {
+                        _cbPacketReqData(_buf + 20, _buf[19]);
+                    }
+                }
+                else if (nRet == CMD_REQ_AUTH_CHALLENGE) {
                     byte *pData = &_buf[17];
 #ifdef DEBUG_LORA
                     debugSerial.print("HMAC key: ");
@@ -82,6 +93,7 @@ int MOSTLora::parsePacket()
                     debugSerial.println("AUTH_TOKEN");
 #endif // DEBUG_LORA
                 }
+
             }
         }
     }

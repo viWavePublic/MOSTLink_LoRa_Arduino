@@ -18,10 +18,18 @@ float fTemperature, fHumidity;
 
 const char *thinkSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
 
+// callback for REQ_DATA
+void funcCustomPacketReqData(unsigned char *data, int szData)
+{
+  debugSerial.println("ReqData= sendPacketThingSpeak");
+  readSensorDHT(fHumidity, fTemperature);
+  lora.sendPacketThingSpeak(thinkSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
+}
+
 void setup() {
 #ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
-  Serial.println("--- App: lora_thingspeak ---");  // use serial port
+  Serial.println("--- ThingSpeak ---");  // app title
 #endif // DEBUG_LORA
   
   lora.begin();
@@ -42,21 +50,16 @@ void setup() {
   }
 
   // test to gateway
-  const char *strTest = "Hello LORA.";
+  const char *strTest = "Hi, ThingSpeak.";
   lora.sendData(strTest); 
+
+  // custom callback
+  lora.setCallbackPacketReqData(funcCustomPacketReqData);
 }
 
 void loop() {
-  if (lora.available()) {
-    int szRece = lora.receData();
-    // reply to vinduino.io when receive "REQ_DATA" by MOSTLink-protocol
-    if (lora.parsePacket() == CMD_REQ_DATA) {
-      readSensorDHT(fHumidity, fTemperature);
-      lora.sendPacketThingSpeak(thinkSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
-    }
-  }
-//  readSensorDHT(fHumidity, fTemperature);
-      
+  lora.run();
+  
   delay(100);
 }
 

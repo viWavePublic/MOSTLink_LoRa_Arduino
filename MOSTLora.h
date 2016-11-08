@@ -55,7 +55,7 @@ class DummySerial {
 #endif
 
 // callback function
-typedef int (* CALLBACK_ReceData) (unsigned char *data, int szData);
+typedef void (* CALLBACK_ReceData) (unsigned char *data, int szData);
 
 
 // 4 mode: normal, wakeup, powersaving, setup
@@ -104,7 +104,10 @@ private:
   unsigned char _buf[MAX_SIZE_BUF + 1];
     
     // callback
-    CALLBACK_ReceData _cbReceData;
+    CALLBACK_ReceData _cbReceData;        // common rece data
+    CALLBACK_ReceData _cbPacketReqData;   // REQ_DATA
+    CALLBACK_ReceData _cbPacketReqAuthChallenge;   // REQ_AUTH_CHALLENGE
+    
 public:
 //    MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
     MOSTLora(int pinP1 = 7, int pinP2 = 6, int pinBusy = 5);
@@ -140,8 +143,9 @@ public:
   boolean isBusy();
   boolean waitUntilReady(unsigned long timeout);
 
-  void run();
-  void setCallbackReceData(CALLBACK_ReceData funcRece);
+    void run();
+    void setCallbackReceData(CALLBACK_ReceData cbFunc);
+    void setCallbackPacketReqData(CALLBACK_ReceData cbFunc);
 
     
   void setKeyHMAC(const char *strKey);

@@ -11,7 +11,9 @@
 MOSTLora lora;
 
 int szBuf = 0;
-byte buf[256] = {0};
+byte buf[99] = {0};
+
+#define KEY_PUBLIC_CHALLENGE   "PublicKey"
 
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
@@ -20,6 +22,7 @@ void setup() {
   // custom LoRa config by your environment setting
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_NORMAL
+  lora.setKeyHMAC(KEY_PUBLIC_CHALLENGE);
 
   delay(1000);
   Serial.println("REQ_AUTH_JOIN");
@@ -27,18 +30,8 @@ void setup() {
 }
 
 void loop() {
-  if (lora.available()) {
-    szBuf = lora.receData();
-    if (szBuf >= 2) {
-      Serial.print(szBuf);  // use serial port
-      Serial.println(") Parse rece <<<");  // use serial port
-      const unsigned int nCmdID = lora.parsePacket();
-      if (nCmdID == CMD_REQ_DATA) {  // REQ_DATA
-      }
-      else if (nCmdID == CMD_REQ_AUTH_CHALLENGE) {  // REQ_AUTH_CHALLENGE
-      }
-    }
-  }  
+  lora.run();
+
   delay(10);
 
   // command to send

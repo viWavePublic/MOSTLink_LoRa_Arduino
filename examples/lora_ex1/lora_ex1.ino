@@ -18,7 +18,7 @@ DHT dht(2, DHT22);
 
 float fTemperature, fHumidity;
 int szBuf = 0;
-byte buf[256] = {0};
+byte buf[100] = {0};
 int tsLast;
 int tsIdle = 0;
 
@@ -27,6 +27,15 @@ long countRun = 0;
 boolean bLedRun = HIGH;
 
 String strHi = ""; 
+
+// callback for CMD_REQ_DATA
+void funcPacketReqData(unsigned char *data, int szData)
+{
+  debugSerial.print("ReqData= ");
+
+  readSensorDHT(fHumidity, fTemperature);
+  lora.sendPacketResData(fHumidity, fTemperature);
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -49,9 +58,9 @@ void setup() {
   lora.setMode(E_LORA_WAKEUP);
   
   #if defined(__LINKIT_ONE__)
-    strHi += "[LinkitOne]";
+    strHi += "[Linkit]";
   #else
-    strHi += "[ArduinoUno]";
+    strHi += "[Uno]";
   #endif
 
 //  Serial.println(strHi);  // use serial port
@@ -61,6 +70,9 @@ void setup() {
   lora.waitUntilReady(5000);
 //  lora.sendData((unsigned char*)strHello, szHello);
   lora.sendData((byte*)strHi.c_str(), szHi);
+
+  // custom callback
+  lora.setCallbackPacketReqData(funcPacketReqData);
 
   // init sensor for humidity & temperature
   dht.begin();
@@ -75,22 +87,11 @@ void setup() {
 
 
 void loop() {
-  long tsNow = millis();
-
-  if (lora.available()) {
-    szBuf = lora.receData();
-    if (szBuf >= 2) {
-      Serial.print(szBuf);  // use serial port
-      Serial.println(") Parse rece <<<");  // use serial port
-      if (lora.parsePacket() == CMD_REQ_DATA) {  // REQ_DATA
-        readSensorDHT(fHumidity, fTemperature);
-        lora.sendPacketResData(fHumidity, fTemperature);
-//        lora.sendPacketVinduino2("0GFUGE371WNPMMJE", 0, 0, 0, 0, 0, 0, 0, 0);
-      }
-    }
-  }
-  lora.isBusy();
-  delay(2);
+  lora.run();
+  
+//  long tsNow = millis();
+//  lora.isBusy();
+  delay(10);
 
   // led builtin
   countRun++;
@@ -203,7 +204,7 @@ boolean parseCommand(char *strCmd)
         while (strOut != NULL)
         {
           if (0 == i) {
-            Serial.print("frequency: ");
+            Serial.print("freq: ");
             freq = atol(strOut);
             Serial.print(freq);
           }

@@ -38,6 +38,13 @@ void checkTouch()
   }  
 }
 
+// callback for REQ_DATA
+void funcCustomPacketReqData(unsigned char *data, int szData)
+{
+  debugSerial.println("ReqData= sendGPS");
+  sendGPS();
+}
+
 void setup() {
   pinMode(pinTouch, INPUT);
   digitalWrite(pinTouch, LOW);
@@ -52,15 +59,19 @@ void setup() {
 
   delay(1000);
   lora.sendData("Hi, GPS!");
+
+  // custom callback
+  lora.setCallbackPacketReqData(funcCustomPacketReqData);
 }
 
-byte buf[256] = {0};
+byte buf[99] = {0};
 int szBuf = 0;
 long tsGPS = 0;
 long tsCurr = millis();
 gpsSentenceInfoStruct info;
 
 void loop() {
+  lora.run();
   if (lora.available()) {
     szBuf = lora.receData();
     if (szBuf >= 2) {

@@ -14,6 +14,14 @@ MOSTLora lora;
 int g_szBuf = 0;
 byte g_bufLora[99] = {0};
 
+// callback for rece data
+void funcCustomRece(unsigned char *data, int szData)
+{
+  debugSerial.print("funcCustomRece= ");
+  g_szBuf = szData;
+  memcpy(g_bufLora, data, szData);
+}
+
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
   
@@ -24,14 +32,15 @@ void setup() {
 
   delay(1000);
   lora.sendData("Hi, it's Fake.");
+
+  // custom callback
+  lora.setCallbackReceData(funcCustomRece);
 }
 
 void loop() {
-  if (lora.available()) {
-    g_szBuf = lora.receData();
-    memcpy(g_bufLora, lora.getBuffer(), g_szBuf);
-  }
-  delay(10);
+  lora.run();
+
+  delay(100);
 
   // command to send
   if (Serial.available())
@@ -49,6 +58,12 @@ void inputBySerial()
         lora.sendData(g_bufLora, g_szBuf);
       }
       else if (buf[1] == '2') {
+        modifyResData(g_bufLora, g_szBuf);  
+      }
+      else if (buf[1] == '3') {   // send join
+        modifyResData(g_bufLora, g_szBuf);  
+      }
+      else if (buf[1] == '4') {   // send response
         modifyResData(g_bufLora, g_szBuf);  
       }
       else if (buf[1] == '0') {
