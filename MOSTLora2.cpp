@@ -40,7 +40,14 @@ void MOSTLora::setCallbackPacketReqData(CALLBACK_ReceData cbFunc)
 {
     _cbPacketReqData = cbFunc;
 }
-
+void MOSTLora::setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc)
+{
+    _cbPacketReqAuthChallenge = cbFunc;
+}
+void MOSTLora::setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc)
+{
+    _cbParseMOSTLink = cbFunc;
+}
 //////////////////////////////////////////////////////////////////////////////////
 
 int MOSTLora::parsePacket()
@@ -56,7 +63,7 @@ int MOSTLora::parsePacket()
         // packet header
         int nResult = pkParser.mostloraPacketParse(&pkctx, _buf);
         if (nResult == 0) {     // packet CRC correct
-            byte *pMac = (byte*)&pkctx._id;
+            const byte *pNodeID = (byte*)&pkctx._id;
 #ifdef DEBUG_LORA
             if (pkctx._direction == 0)
                 debugSerial.print("Downlink");
@@ -69,12 +76,17 @@ int MOSTLora::parsePacket()
             debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 16);
             
             debugSerial.print(", nodeID:");
-            MLutility::printBinary(pMac, 8);
+            MLutility::printBinary(pNodeID, 8);
 #endif // DEBUG_LORA
             
-            if (memcmp(pMac, _data.mac_addr, 8) == 0) // packet for me
+            nRet = pkctx._mlPayloadCtx._cmdId;
+            const boolean bForMe = (memcmp(pNodeID, _data.mac_addr, 8) == 0);
+            // parse MOSTLink command
+            if (_cbParseMOSTLink) {
+                _cbParseMOSTLink(nRet);
+            }
+            if (bForMe) // packet for me
             {
-                nRet = pkctx._mlPayloadCtx._cmdId;
                 if (nRet == CMD_REQ_DATA) {
                     if (_cbPacketReqData) {
                         _cbPacketReqData(_buf + 20, _buf[19]);
@@ -86,7 +98,10 @@ int MOSTLora::parsePacket()
                     debugSerial.print("HMAC key: ");
                     MLutility::printBinary(pData, 4);
 #endif // DEBUG_LORA
-                    sendPacketResAuthResponse(pData, 4);
+                    if (_cbPacketReqAuthChallenge)
+                        _cbPacketReqAuthChallenge(pData, 4);
+                    else
+                        sendPacketResAuthResponse(pData, 4);
                 }
                 else if (nRet == CMD_RES_AUTH_TOKEN) {
 #ifdef DEBUG_LORA

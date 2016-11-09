@@ -4,7 +4,6 @@ const int pinLedRece = 13;
 #include "MOSTLora.h"
 //#include <LDHT.h>
 #include "DHT.h"
-#include "MLPacketComm.h"
 #include "MLutility.h"
 
 int count = 0;
@@ -33,7 +32,7 @@ void funcPacketReqData(unsigned char *data, int szData)
 {
   debugSerial.print("ReqData= ");
 
-  readSensorDHT(fHumidity, fTemperature);
+  dht.readSensor(fHumidity, fTemperature, true);
   lora.sendPacketResData(fHumidity, fTemperature);
 }
 
@@ -79,7 +78,7 @@ void setup() {
   int i = 0;
   boolean bReadDHT = false;
   while (!bReadDHT && i < 20) {
-    bReadDHT = readSensorDHT(fHumidity, fTemperature);
+    bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
     delay(1000);
     i++;
   }
@@ -108,35 +107,6 @@ void loop() {
 
   checkTouch();
   //digitalWrite(pinLedRece, bPressTouch);   // turn the LED on (HIGH is the voltage level)
-}
-
-boolean readSensorDHT(float &h, float &t)
-{
-    boolean bRet = false;
-    if (dht.read()) {
-        h = dht.readHumidity();
-        t = dht.readTemperature();    
-    }
-    else {
-      h = 0;
-      t = 0;
-    }
-    if (h > 0)
-      bRet = true;
-#ifdef DEBUG_LORA
-    if (bRet) {
-        Serial.print("Humidity: "); 
-        Serial.print(h);
-        Serial.print(" %\t");
-        Serial.print("Temperature: "); 
-        Serial.print(t);
-        Serial.println(" *C");      
-    }
-    else {
-        Serial.println("DHT Read Fail.");    
-    }
-#endif // DEBUG_LORA
-    return bRet;
 }
 
 void inputBySerial()
@@ -178,7 +148,7 @@ boolean parseCommand(char *strCmd)
       break;
     case 's':
     case 'S':
-      readSensorDHT(fHumidity, fTemperature);
+      dht.readSensor(fHumidity, fTemperature, true);
       break;
     case 'i':
     case 'I':

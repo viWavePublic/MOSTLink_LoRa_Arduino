@@ -56,6 +56,7 @@ class DummySerial {
 
 // callback function
 typedef void (* CALLBACK_ReceData) (unsigned char *data, int szData);
+typedef void (* CALLBACK_ParseCommand) (int cmdID);
 
 
 // 4 mode: normal, wakeup, powersaving, setup
@@ -107,6 +108,7 @@ private:
     CALLBACK_ReceData _cbReceData;        // common rece data
     CALLBACK_ReceData _cbPacketReqData;   // REQ_DATA
     CALLBACK_ReceData _cbPacketReqAuthChallenge;   // REQ_AUTH_CHALLENGE
+    CALLBACK_ParseCommand _cbParseMOSTLink;
     
 public:
 //    MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
@@ -146,6 +148,8 @@ public:
     void run();
     void setCallbackReceData(CALLBACK_ReceData cbFunc);
     void setCallbackPacketReqData(CALLBACK_ReceData cbFunc);
+    void setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc);
+    void setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc);
 
     
   void setKeyHMAC(const char *strKey);

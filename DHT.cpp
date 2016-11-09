@@ -159,3 +159,34 @@ boolean DHT::read(void) {
   return false;
 
 }
+
+//////////////////////////////////////////
+// read humidity and temperature by sensor
+boolean DHT::readSensor(float &h, float &t, boolean bShowResult)
+{
+    boolean bRet = false;
+    if (read()) {
+        h = readHumidity();
+        t = readTemperature();
+    }
+    else {
+        h = 0;
+        t = 0;
+    }
+    if (h > 0)
+        bRet = true;
+
+    if (bShowResult) {
+        if (bRet) {
+            Serial.print("Humidity: ");
+            Serial.print(h);
+            Serial.print(" %, Temperature: ");
+            Serial.print(t);
+            Serial.println(" *C");
+        }
+        else {
+            Serial.println("DHT Fail.");
+        }
+    }
+    return bRet;
+}

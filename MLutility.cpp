@@ -9,8 +9,6 @@
 
 #include "MLutility.h"
 
-char buff[256];
-
 static unsigned char getComma(unsigned char num,const char *str)
 {
     unsigned char i,j = 0;
@@ -86,6 +84,7 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
      *  (empty field) DGPS station ID number
      *  *47          the checksum data, always begins with *
      */
+    char buff[100];
     boolean bRet = false;
     double latitude;
     double longitude;

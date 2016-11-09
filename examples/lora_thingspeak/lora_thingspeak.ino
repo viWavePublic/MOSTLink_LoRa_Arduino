@@ -9,7 +9,6 @@
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
-#include "MLPacketComm.h"
 #include <DHT.h>
 
 MOSTLora lora;
@@ -19,10 +18,10 @@ float fTemperature, fHumidity;
 const char *thinkSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
 
 // callback for REQ_DATA
-void funcCustomPacketReqData(unsigned char *data, int szData)
+void funcPacketReqData(unsigned char *data, int szData)
 {
   debugSerial.println("ReqData= sendPacketThingSpeak");
-  readSensorDHT(fHumidity, fTemperature);
+  dht.readSensor(fHumidity, fTemperature, true);
   lora.sendPacketThingSpeak(thinkSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
 }
 
@@ -44,7 +43,7 @@ void setup() {
   int i = 0;
   boolean bReadDHT = false;
   while (!bReadDHT && i < 20) {
-    bReadDHT = readSensorDHT(fHumidity, fTemperature);
+    bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
     delay(1000);
     i++;
   }
@@ -54,7 +53,7 @@ void setup() {
   lora.sendData(strTest); 
 
   // custom callback
-  lora.setCallbackPacketReqData(funcCustomPacketReqData);
+  lora.setCallbackPacketReqData(funcPacketReqData);
 }
 
 void loop() {
@@ -63,31 +62,3 @@ void loop() {
   delay(100);
 }
 
-boolean readSensorDHT(float &h, float &t)
-{
-    boolean bRet = false;
-    if (dht.read()) {
-        h = dht.readHumidity();
-        t = dht.readTemperature();    
-    }
-    else {
-      h = 0;
-      t = 0;
-    }
-    if (h > 0)
-      bRet = true;
-#ifdef DEBUG_LORA
-    if (bRet) {
-        Serial.print("Humidity: "); 
-        Serial.print(h);
-        Serial.print(" %\t");
-        Serial.print("Temperature: "); 
-        Serial.print(t);
-        Serial.println(" *C");      
-    }
-    else {
-        Serial.println("DHT Read Fail.");    
-    }
-#endif // DEBUG_LORA
-    return bRet;
-}

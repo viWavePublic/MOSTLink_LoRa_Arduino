@@ -50,6 +50,7 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
     _cbReceData = NULL;
     _cbPacketReqData = NULL;
     _cbPacketReqAuthChallenge = NULL;
+    _cbParseMOSTLink = NULL;
 }
 /*
 void blink13()
@@ -65,6 +66,8 @@ void blink13()
     }
 }
 */
+/////////////////////////////////////////
+
 void MOSTLora::begin()
 {
 #ifdef DEBUG_LORA
@@ -118,6 +121,7 @@ void MOSTLora::setMode(int mode)
   _eMode = mode;
 }
 
+/////////////////////////////////////////
 // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
 void MOSTLora::setMode(int p1, int p2)
 {
@@ -229,9 +233,9 @@ boolean MOSTLora::setReceiverID(const char *strID)
   return bRet;
 }
 
-/////////////////////////
-// config setting 
-/////////////////////////
+/////////////////////////////////////////
+// config setting
+/////////////////////////////////////////
 boolean MOSTLora::readConfig()
 {
   setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
@@ -288,6 +292,8 @@ boolean MOSTLora::receConfig(DataLora &data)
   return bRet;
 }
 
+/////////////////////////////////////////
+// send data via LoRa
 int MOSTLora::sendData(const char *strData)
 {
   waitUntilReady(3000);
@@ -313,6 +319,8 @@ int MOSTLora::sendData(byte *data, int szData)
   return nRet;
 }
 
+/////////////////////////////////////////
+// receive data via LoRa
 int MOSTLora::receData()
 {
   _szBuf = 0;
@@ -374,6 +382,7 @@ int MOSTLora::receData()
   return _szBuf;
 }
 
+/////////////////////////////////////////
 // 1: set normal mode, 2: send data 3: recover original mode
 int MOSTLora::sendPacket(byte *pPacket, int szPacket)
 {
