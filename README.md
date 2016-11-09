@@ -12,7 +12,7 @@ Requirements
 
 Install MOSTLora to Arduino IDE
 ----
-[MOSTLora]: https://github.com/MOSTLinkDev/arduino_MOSTLora  "MOSTLora lib"
+[MOSTLora]: https://github.com/viWavePublic/MOSTLink_LoRa_Arduino  "MOSTLora lib"
 * here [GitHub][MOSTLora]: [Clone or download] -> [Download ZIP]
 * Arduino IDE install library: [Sketch] -> [Include Library] -> [Add .ZIP Library] 
 
