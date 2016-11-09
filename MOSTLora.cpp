@@ -47,25 +47,14 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
     _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
     
+    setKeyHMAC("PublicKey");
+
     _cbReceData = NULL;
     _cbPacketReqData = NULL;
     _cbPacketReqAuthChallenge = NULL;
     _cbParseMOSTLink = NULL;
 }
-/*
-void blink13()
-{
-    pinMode(13, OUTPUT);
-    digitalWrite(13, HIGH);
-    int i;
-    for (i = 0; i < 5; i++) {
-        delay(100);
-        digitalWrite(13, LOW);
-        delay(100);
-        digitalWrite(13, HIGH);
-    }
-}
-*/
+
 /////////////////////////////////////////
 
 void MOSTLora::begin()

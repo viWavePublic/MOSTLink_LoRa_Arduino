@@ -53,7 +53,7 @@ void setup() {
   lora.setReceiverID("FFFFFFFF00112233");
 
   lora.writeConfig(915555, 0, 0, 7, 5);
-//  lora.writeConfig(915000, 0, 3, 7, 5);
+
   lora.setMode(E_LORA_WAKEUP);
   
   #if defined(__LINKIT_ONE__)
@@ -137,10 +137,7 @@ boolean parseCommand(char *strCmd)
       lora.writeConfig(915000, 0, 0, 7, 5);
       break;
     case '1':
-      lora.writeConfig(915000, 0, 1, 7, 5);
-      break;
-    case '2':
-      lora.writeConfig(915000, 0, 2, 7, 5);
+      lora.writeConfig(915555, 0, 5, 7, 5);
       break;
     case 'R':
     case 'r':
@@ -161,9 +158,6 @@ boolean parseCommand(char *strCmd)
         lora.setMode(nMode);
         lora.printInfo();
       }
-      break;
-    case 't':
-      lora.writeConfig(915555, 0, 5, 7, 5);
       break;
     case 'f':
       {
@@ -216,13 +210,8 @@ void checkTouch()
       count = (count + 1) % 11;
 //      bar.setLevel(count);
 
-      const char *strData = "ABC...123";
-//      const char *strData = "Hello Hello Hello 0123456789!!!";
-//      lora.sendData((byte*)strData, strlen(strData));
       int nTemp = rand() % 30;
 //      lora.sendPacketResData(99.9, nTemp);
-
-
 //      lora.sendPacketReqAuthJoin();
     }
   }

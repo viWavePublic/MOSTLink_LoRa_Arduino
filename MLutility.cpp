@@ -50,6 +50,20 @@ static double getIntNumber(const char *s)
     rev=atoi(buf);
     return rev;
 }
+/*
+ void blink13()
+ {
+     pinMode(13, OUTPUT);
+     digitalWrite(13, HIGH);
+     int i;
+     for (i = 0; i < 5; i++) {
+         delay(100);
+         digitalWrite(13, LOW);
+         delay(100);
+         digitalWrite(13, HIGH);
+     }
+ }
+ */
 
 // Linkit GPS library
 // init GPS

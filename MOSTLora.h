@@ -99,7 +99,7 @@ private:
   DataLora _data;
   unsigned char _receiverID[8];   // receiver ID
 //  String _keyHMAC;   // key of HMAC (challenge-response)
-  const char *_keyHMAC = "PublicKey";
+  const char *_keyHMAC;
   
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
@@ -107,8 +107,8 @@ private:
     // callback
     CALLBACK_ReceData _cbReceData;        // common rece data
     CALLBACK_ReceData _cbPacketReqData;   // REQ_DATA
-    CALLBACK_ReceData _cbPacketReqAuthChallenge;   // REQ_AUTH_CHALLENGE
-    CALLBACK_ParseCommand _cbParseMOSTLink;
+    CALLBACK_ReceData _cbPacketReqAuthChallenge;    // REQ_AUTH_CHALLENGE
+    CALLBACK_ParseCommand _cbParseMOSTLink;         // MOSTLink cmdID
     
 public:
 //    MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);

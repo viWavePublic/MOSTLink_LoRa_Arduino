@@ -100,8 +100,10 @@ int MOSTLora::parsePacket()
 #endif // DEBUG_LORA
                     if (_cbPacketReqAuthChallenge)
                         _cbPacketReqAuthChallenge(pData, 4);
-                    else
+                    else {
+                        delay(200);
                         sendPacketResAuthResponse(pData, 4);
+                    }
                 }
                 else if (nRet == CMD_RES_AUTH_TOKEN) {
 #ifdef DEBUG_LORA

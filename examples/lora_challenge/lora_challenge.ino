@@ -6,14 +6,17 @@
 
 #include "MOSTLora.h"
 #include "MLutility.h"
-#include <DHT.h>
 
 MOSTLora lora;
-DHT dht(2, DHT22);
 
+//#define USE_DHT
+#ifdef USE_DHT
+#include <DHT.h>
+DHT dht(2, DHT22);
+#endif // USE_DHT
 int szBuf = 0;
 byte buf[100] = {0};
-float fTemperature, fHumidity;
+float fTemperature = 23.6, fHumidity = 51.5;
 
 #define KEY_PUBLIC_CHALLENGE   "PublicKey"
 
@@ -22,7 +25,10 @@ void funcPacketReqData(unsigned char *data, int szData)
 {
   debugSerial.print("ReqData= ");
 
-  dht.readSensor(fHumidity, fTemperature, true);
+#ifdef USE_DHT
+ dht.readSensor(fHumidity, fTemperature, true);
+#endif // USE_DHT
+
   lora.sendPacketResData(fHumidity, fTemperature);
 }
 
@@ -38,15 +44,17 @@ void setup() {
   // custom callback
   lora.setCallbackPacketReqData(funcPacketReqData);
   
+#ifdef USE_DHT
   // init sensor for humidity & temperature
   dht.begin();
   int i = 0;
   boolean bReadDHT = false;
   while (!bReadDHT && i < 20) {
     bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
-    delay(1000);
+    delay(600);
     i++;
   }
+#endif // USE_DHT
     
   Serial.println("REQ_AUTH_JOIN");
   lora.sendPacketReqAuthJoin();

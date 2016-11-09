@@ -34,17 +34,14 @@ DataUplink g_bufAuthResponse;
 // callback for rece data
 void funcCustomRece(unsigned char *data, int szData)
 {
-  debugSerial.print("funcRece= ");
-  
+  debugSerial.println("funcRece= cache latest message");
   g_bufLora.setData(data, szData);        // #1 cache: Any Rece-Data
-  // store only uplink data, for fake later
-//  storeUplink(data, szData);
 }
 
 // callback for CMD_REQ_AUTH_CHALLENGE
 void funcPacketReqAuthChallenge(unsigned char *data, int szData)
 {
-  debugSerial.print("ReqChallenge= ");
+  debugSerial.println("ReqChallenge= ");
 }
 
 // callback for Parse MOSTLink Command
@@ -55,6 +52,7 @@ void funcParseMOSTLink(int cmdID)
   // store specify command ID
   const byte *data = g_bufLora._data;
   int szData = g_bufLora._szData;
+  
   if (cmdID == CMD_RES_DATA)
   {
     float fTemp;
