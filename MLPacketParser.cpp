@@ -18,7 +18,7 @@ int MLPacketParser::mostloraPacketParse(MLPacketCtx *pkctx, const uint8_t *packe
             memcpy(pkctx->_id, &packet[ML_PK_ID_POS], ML_PK_ID_SIZE);
             uint8_t packetCRCPos = nPacketLen - 1;
             uint8_t payloadLen = nPacketLen-ML_PK_HEADER_SIZE;
-            printf("packetLen:%d, payloadLen:%d\n", nPacketLen, payloadLen);
+//            printf("packetLen:%d, payloadLen:%d\n", nPacketLen, payloadLen);
             if (packet[packetCRCPos] == getCrc(packet, nPacketLen-1)) {
                 memcpy(payload, packet+ML_PK_PAYLOAD_START_POS, payloadLen);
                 mostloraPayloadParse(pkctx, payload);
