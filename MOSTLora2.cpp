@@ -66,16 +66,16 @@ int MOSTLora::parsePacket()
             const byte *pNodeID = (byte*)&pkctx._id;
 #ifdef DEBUG_LORA
             if (pkctx._direction == 0)
-                debugSerial.print("Downlink");
+                debugSerial.print(F("DnLink"));
             else
-                debugSerial.print("Uplink");
+                debugSerial.print(F("UpLink"));
             
-            debugSerial.print(": cmd(");
+            debugSerial.print(F(": cmd("));
             debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
-            debugSerial.print(") 0x");
+            debugSerial.print(F(") 0x"));
             debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 16);
             
-            debugSerial.print(", nodeID:");
+            debugSerial.print(F(", nodeID:"));
             MLutility::printBinary(pNodeID, 8);
 #endif // DEBUG_LORA
             
@@ -95,7 +95,7 @@ int MOSTLora::parsePacket()
                 else if (nRet == CMD_REQ_AUTH_CHALLENGE) {
                     byte *pData = &_buf[17];
 #ifdef DEBUG_LORA
-                    debugSerial.print("HMAC key: ");
+                    debugSerial.print(F("HMAC key: "));
                     MLutility::printBinary(pData, 4);
 #endif // DEBUG_LORA
                     if (_cbPacketReqAuthChallenge)
@@ -107,7 +107,7 @@ int MOSTLora::parsePacket()
                 }
                 else if (nRet == CMD_RES_AUTH_TOKEN) {
 #ifdef DEBUG_LORA
-                    debugSerial.println("AUTH_TOKEN");
+                    debugSerial.println(F("AUTH_TOKEN"));
 #endif // DEBUG_LORA
                 }
 
@@ -149,7 +149,7 @@ void generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *dataSrc, int sz
     hash.update(dataSrc, szDataSrc);
     hash.finalizeHMAC(keySrc, strlen(keySrc), dataDst, 16);
 #ifdef DEBUG_LORA
-    debugSerial.print("HMAC data: ");
+    debugSerial.print(F("HMAC data: "));
     MLutility::printBinary(dataDst, 16);
 #endif // DEBUG_LORA
 }

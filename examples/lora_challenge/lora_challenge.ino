@@ -23,7 +23,7 @@ float fTemperature = 23.6, fHumidity = 51.5;
 // callback for CMD_REQ_DATA
 void funcPacketReqData(unsigned char *data, int szData)
 {
-  debugSerial.print("ReqData= ");
+  debugSerial.print("ReqDat= ");
 
 #ifdef USE_DHT
  dht.readSensor(fHumidity, fTemperature, true);
@@ -37,8 +37,8 @@ void setup() {
   
   lora.begin();
   // custom LoRa config by your environment setting
-  lora.writeConfig(915555, 0, 0, 7, 5);
-  lora.setMode(E_LORA_POWERSAVING);         // power saving mode
+//  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
   lora.setKeyHMAC(KEY_PUBLIC_CHALLENGE);
 
   // custom callback
@@ -55,7 +55,9 @@ void setup() {
     i++;
   }
 #endif // USE_DHT
-    
+
+  delay(1000);
+  
   Serial.println("REQ_AUTH_JOIN");
   lora.sendPacketReqAuthJoin();
 }

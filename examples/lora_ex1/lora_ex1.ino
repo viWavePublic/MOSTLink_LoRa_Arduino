@@ -77,7 +77,7 @@ void setup() {
   dht.begin();
   int i = 0;
   boolean bReadDHT = false;
-  while (!bReadDHT && i < 20) {
+  while (!bReadDHT && i < 5) {
     bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
     delay(1000);
     i++;
