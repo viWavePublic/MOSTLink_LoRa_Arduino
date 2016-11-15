@@ -1,7 +1,10 @@
 // MOSTLink LoRa
 #include "MOSTLora.h"
 #include "MLutility.h"
-//#include <MemoryFree.h>
+
+#if !defined(__LINKIT_ONE__)
+#include <MemoryFree.h>
+#endif // __LINKIT_ONE__
 
 MOSTLora lora;
 
@@ -12,22 +15,11 @@ MOSTLora lora;
 #include <GCM.h>
 #include <avr/pgmspace.h>
 
-#define KEY_SIZE 32
+#define KEY_SIZE 16
 #define IV_SIZE 4
 #define MAX_PLAINTEXT_LEN 64
 #define TAG_SIZE 16
-/*
-void printBytes(byte b[], int len) {
- int i;
- for (i=0; i<len; i++){
-   Serial.print("0x");
-   if (b[i] <= 16) Serial.print("0");
-   Serial.print(b[i], 16);
-   Serial.print(", ");
- }
- Serial.println();
-}
-*/
+
 struct TestVector {
     byte key[KEY_SIZE];
     byte text[MAX_PLAINTEXT_LEN];
@@ -67,46 +59,29 @@ static TestVector const testDecryptVectorGCM PROGMEM = {
 
 TestVector testVector;
 
-GCM<AES128> *gcmaes128 = 0;
-
-byte buffer[MAX_PLAINTEXT_LEN];
-byte res_tag[TAG_SIZE];
-
-void crypt(AuthenticatedCipher *cipher, const struct TestVector *test, int control) {
-    memcpy_P(&testVector, test, sizeof(TestVector));
-    test = &testVector;
-    cipher->clear();
-    cipher->setKey(test->key, cipher->keySize());
-    cipher->setIV(test->iv, IV_SIZE);
-    memset(buffer, 0xBA, sizeof(buffer));
-    if (control == 1) {
-        cipher->encrypt(buffer, test->text, test->datasize);
-        cipher->computeTag(res_tag, sizeof(res_tag));
-//        printBytes(buffer,test->datasize);
-//        printBytes(res_tag,TAG_SIZE);
-    }
-    if (control == 2) {
-        cipher->setKey(test->key, cipher->keySize());
-        cipher->setIV(test->iv, IV_SIZE);
-        cipher->decrypt(buffer, test->text, test->datasize);
-//        printBytes(buffer,test->datasize);
-    }
-}
-
 void setup()
 {
     Serial.begin(9600);
-    gcmaes128 = new GCM<AES128>();
-    crypt(gcmaes128, &testVectorGCM, 1);
-    crypt(gcmaes128, &testDecryptVectorGCM, 2);
 
+    memcpy_P(&testVector, &testVectorGCM, sizeof(TestVector));
+    MLutility::encryptAES(testVector.text, testVector.datasize, testVector.key, testVector.iv);
+    MLutility::decryptAES(testVector.text, testVector.datasize, testVector.key, testVector.iv);
+
+    MLutility::encryptAES(testVector.text, testVector.datasize, testVector.key, testVector.iv);
+    MLutility::decryptAES(testVector.text, testVector.datasize, testVector.key, testVector.iv);
+
+    
     lora.begin();
   // custom LoRa config by your environment setting
 //  lora.writeConfig(915555, 0, 0, 7, 5);
 //    Serial.println(F("REQ_AUTH_JOIN"));
     lora.sendPacketReqAuthJoin();
 
-//    Serial.println(freeMemory());
+//    Serial.print(gcmaes128->keySize());
+#if !defined(__LINKIT_ONE__)
+    Serial.print(F(" Free mem:"));
+    Serial.println(freeMemory());
+#endif // __LINKIT_ONE__
 }
 
 void loop()

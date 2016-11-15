@@ -18,10 +18,6 @@
 #include "MLPacketGen.h"
 #include "MLPacketParser.h"
 
-// crypto
-#include <Crypto.h>
-#include <SHA256.h>
-
 //////////////////////////////////////////////////////////////////////////////////
 
 void MOSTLora::run()
@@ -125,6 +121,16 @@ void MOSTLora::setKeyHMAC(const char *strKey)
     _keyHMAC = strKey;
 }
 
+void MOSTLora::setKeyAES(const char *strKey)
+{
+    _keyAES = strKey;
+}
+
+void MOSTLora::setIvAES(const char *strIv)
+{
+    _ivAES = strIv;
+}
+
 // send REQ_AUTH_JOIN to gateway, then will receive REQ_AUTH_CHALLENGE
 void MOSTLora::sendPacketReqAuthJoin()
 {
@@ -140,25 +146,11 @@ void MOSTLora::sendPacketReqAuthJoin()
     sendPacket(_buf, packetLen);
 }
 
-// hash
-void generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *dataSrc, int szDataSrc)
-{
-    SHA256 hash;
-    
-    hash.resetHMAC(keySrc, strlen(keySrc));
-    hash.update(dataSrc, szDataSrc);
-    hash.finalizeHMAC(keySrc, strlen(keySrc), dataDst, 16);
-#ifdef DEBUG_LORA
-    debugSerial.print(F("HMAC data: "));
-    MLutility::printBinary(dataDst, 16);
-#endif // DEBUG_LORA
-}
-
 // received REQ_AUTH_CHALLENGE, then RES_AUTH_RESPONSE
 void MOSTLora::sendPacketResAuthResponse(uint8_t *data, int szData)
 {
     uint8_t dataHMAC[16] = {0};
-    generateHMAC(dataHMAC, _keyHMAC, data, szData);
+    MLutility::generateHMAC(dataHMAC, _keyHMAC, data, szData);
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
     MLPayloadGen *pPayload = new MLResAuthResponsePayloadGen(dataHMAC);

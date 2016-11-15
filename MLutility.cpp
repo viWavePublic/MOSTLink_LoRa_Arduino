@@ -9,6 +9,10 @@
 
 #include "MLutility.h"
 
+// crypto
+#include <Crypto.h>
+#include <SHA256.h>
+
 static unsigned char getComma(unsigned char num,const char *str)
 {
     unsigned char i,j = 0;
@@ -179,3 +183,76 @@ int MLutility::readSerial(char *buf)
     return countBuf;
 }
 
+/////////////////////////////////////////
+// challenge-response: HMAC
+/////////////////////////////////////////
+#define HMAC_SIZE    16
+void MLutility::generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *dataSrc, int szDataSrc)
+{
+    SHA256 hash;
+    
+    hash.resetHMAC(keySrc, strlen(keySrc));
+    hash.update(dataSrc, szDataSrc);
+    hash.finalizeHMAC(keySrc, strlen(keySrc), dataDst, HMAC_SIZE);
+#ifdef DEBUG_LORA
+    debugSerial.print(F("HMAC data: "));
+    MLutility::printBinary(dataDst, HMAC_SIZE);
+#endif // DEBUG_LORA
+}
+
+/////////////////////////////////////////
+// AES encrypt, decrypt
+/////////////////////////////////////////
+#define AES_KEY_SIZE    16
+#define AES_IV_SIZE     4
+#define AES_TAG_SIZE    16
+
+#include <AES.h>
+#include <Speck.h>
+#include <SpeckTiny.h>
+#include <GCM.h>
+
+void MLutility::encryptAES(byte *srcData, int szData, const byte *srcKey, const byte *srcIV, byte *outTag) {
+    byte bufferAES[99];
+    byte tagAES[AES_TAG_SIZE];
+    
+    GCM<AES128> *gcmaes128 = new GCM<AES128>();
+    AuthenticatedCipher *cipher = gcmaes128;
+    
+    cipher->clear();
+    cipher->setKey(srcKey, cipher->keySize());
+    cipher->setIV(srcIV, AES_IV_SIZE);
+    memset(bufferAES, 0xBA, sizeof(bufferAES));
+    
+    cipher->encrypt(bufferAES, srcData, szData);
+    cipher->computeTag(tagAES, sizeof(tagAES));
+    
+    MLutility::printBinary(bufferAES,szData);
+    memcpy(srcData, bufferAES, szData);
+    if (outTag != NULL) {
+        memcpy(outTag, tagAES, AES_TAG_SIZE);
+    }
+    
+    cipher->clear();
+    delete gcmaes128;
+}
+
+void MLutility::decryptAES(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
+    byte bufferAES[99];
+    
+    GCM<AES128> *gcmaes128 = new GCM<AES128>();
+    AuthenticatedCipher *cipher = gcmaes128;
+    
+    cipher->clear();
+    cipher->setKey(srcKey, cipher->keySize());
+    cipher->setIV(srcIV, AES_IV_SIZE);
+    memset(bufferAES, 0xBA, sizeof(bufferAES));
+
+    cipher->decrypt(bufferAES, srcData, szData);
+    
+    MLutility::printBinary(bufferAES,szData);
+    memcpy(srcData, bufferAES, szData);
+    
+    cipher->clear();
+    delete gcmaes128;
+}

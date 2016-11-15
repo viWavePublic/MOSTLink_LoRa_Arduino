@@ -99,7 +99,9 @@ private:
   DataLora _data;
   unsigned char _receiverID[8];   // receiver ID
 //  String _keyHMAC;   // key of HMAC (challenge-response)
-  const char *_keyHMAC;
+    const char *_keyHMAC;     // 16 bytes
+    const char *_keyAES;      // 16 bytes
+    const char *_ivAES;       // 4 bytes
   
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
@@ -152,7 +154,9 @@ public:
     void setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc);
 
     
-  void setKeyHMAC(const char *strKey);
+    void setKeyHMAC(const char *strKey);
+    void setKeyAES(const char *strKey);
+    void setIvAES(const char *strIv);
     
   /////////////////////////////////////////
   // command packet for MOST Link protocol
