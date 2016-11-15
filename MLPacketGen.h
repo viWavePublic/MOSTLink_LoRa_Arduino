@@ -26,17 +26,6 @@ class MLPayloadGen {
     }
     
         virtual int getPayload(uint8_t *payload) = 0;
-        static MLPayloadGen *createReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createReqLocation(int32_t resInterval, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createSetGeoFenceConfig(uint16_t geofRadius, uint16_t resInterval, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createGetGeoFenceConfig(uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createRetConfigGeof(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
-        static MLPayloadGen *createNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
-                float sysVoltage, float humidity, float teamerature, float resvered, uint8_t option, uint8_t *optionData, uint8_t version=0x0A);
     protected:
         uint8_t _version;
         uint16_t _cmdId;
@@ -47,7 +36,7 @@ class MLPayloadGen {
 
 class MLReqSetLoraConfigGen : public MLPayloadGen {
     public:
-        MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId);
         int getPayload(uint8_t *payload);
     private:
         uint8_t _frequency[ML_FREQUENCY_LEN];
@@ -59,7 +48,7 @@ class MLReqSetLoraConfigGen : public MLPayloadGen {
 
 class MLReqDataPayloadGen : public MLPayloadGen {
     public:
-        MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version);
+        MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data);
         int getPayload(uint8_t *payload);
     private:
         uint16_t _resInterval;
@@ -69,7 +58,7 @@ class MLReqDataPayloadGen : public MLPayloadGen {
 
 class MLNotifyLocationGen : public MLPayloadGen {
     public:
-        MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t option, uint8_t *optionData, uint8_t version);
+        MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus);
         int getPayload(uint8_t *payload);
     private:
         uint32_t _dateTime;
@@ -80,7 +69,7 @@ class MLNotifyLocationGen : public MLPayloadGen {
 
 class MLReqLocationGen : public MLPayloadGen {
     public:
-        MLReqLocationGen(int32_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        MLReqLocationGen(int32_t resInterval);
         int getPayload(uint8_t *payload);
     private:
         int32_t _resInterval;
@@ -88,7 +77,7 @@ class MLReqLocationGen : public MLPayloadGen {
 
 class MLSetGeoFenceConfigGen : public MLPayloadGen {
     public:
-        MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval);
         int getPayload(uint8_t *payload);
     private:
         uint16_t _geofRadius;
@@ -97,13 +86,13 @@ class MLSetGeoFenceConfigGen : public MLPayloadGen {
 
 class MLGetGeoFenceConfigGen : public MLPayloadGen {
     public:
-        MLGetGeoFenceConfigGen(uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        MLGetGeoFenceConfigGen() : MLPayloadGen(CMD_GET_CONFIG_GEOF) {};
         int getPayload(uint8_t *payload);
 };
 
 class MLResSetLoraConfigGen : public MLPayloadGen {
     public:
-        MLResSetLoraConfigGen(uint8_t errorCode, uint8_t option, uint8_t *optionData, uint8_t version);
+        MLResSetLoraConfigGen(uint8_t errorCode);
         int getPayload(uint8_t *payload);
     private:
         uint8_t _errorCode;
@@ -111,7 +100,7 @@ class MLResSetLoraConfigGen : public MLPayloadGen {
 
 class MLResDataPayloadGen : public MLPayloadGen {
     public:
-        MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t option, uint8_t *optionData, uint8_t version);
+        MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data);
         int getPayload(uint8_t *payload);
     private:
         uint8_t _errorCode;
@@ -121,7 +110,7 @@ class MLResDataPayloadGen : public MLPayloadGen {
 
 class MLRetConfigGeofGen : public MLPayloadGen {
     public:
-        MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t optionFlags, uint8_t *optionData, uint8_t version);
+        MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location);
         int getPayload(uint8_t *payload);
     private:
         uint16_t _geofRadius;
@@ -132,7 +121,7 @@ class MLRetConfigGeofGen : public MLPayloadGen {
 class MLNotifyVindunoPayloadGen : public MLPayloadGen {
     public:
         MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
-                float sysVoltage, float humidity, float temperature, float reserved, uint8_t option, uint8_t *optionData, uint8_t version);
+                float sysVoltage, float humidity, float temperature, float reserved);
         int getPayload(uint8_t *payload);
     private:
         uint8_t _apiKey[VINDUNO_API_KEY_LEN]; 
