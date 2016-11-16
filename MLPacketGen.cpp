@@ -234,6 +234,16 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+MLPacketGen::MLPacketGen(uint8_t version) {
+    _ackBit = MAX_VAL_UINT8;
+    _receiverFlag = MAX_VAL_UINT8;
+    _packetType = MAX_VAL_UINT8;
+    _direction = MAX_VAL_UINT8;
+    memset(_id, 0, ML_PK_ID_SIZE);
+    _version = version;
+    _mlPayloadGen = NULL;
+}
+
 MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version) {
     _ackBit = ackBit;
     _receiverFlag = receiverFlag;
@@ -242,6 +252,15 @@ MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetTyp
     memcpy(_id, id, ML_PK_ID_SIZE);
     _version = version;
     _mlPayloadGen = NULL;
+}
+
+void MLPacketGen::setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version) {
+    _ackBit = ackBit;
+    _receiverFlag = receiverFlag;
+    _packetType = packetType;
+    _direction = direction;
+    memcpy(_id, id, ML_PK_ID_SIZE);
+    _version = version;
 }
 
 void MLPacketGen::setMLPayloadGen(MLPayloadGen *mlpayloadGen) {
@@ -275,3 +294,8 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     mlpacket[totalLen-1] = getCrc(mlpacket, totalLen-1);
     return totalLen;
 }
+
+MLPayloadGen* MLPacketGen::getMLPayload() {
+    return _mlPayloadGen;
+}
+

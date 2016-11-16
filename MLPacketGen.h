@@ -13,17 +13,27 @@ typedef struct MLLocation {
 
 class MLPayloadGen {
     public:
-    MLPayloadGen(uint16_t cmdId = 0, uint8_t optionFlags = 0, uint8_t *optionData = NULL, uint8_t version = 0x0A) {
-        _version = version;
-        _cmdId = cmdId;
-        _optionFlags = optionFlags;
-        if (_optionFlags & 0x01 && optionData != NULL) {
-            _optionDataLen = 3;
-            memcpy(_optionData, optionData, _optionDataLen);
-        } else {
-            _optionDataLen = 0;
+        MLPayloadGen(uint16_t cmdId = 0, uint8_t optionFlags = 0, uint8_t *optionData = NULL, uint8_t version = 0x0B) {
+            _version = version;
+            _cmdId = cmdId;
+            _optionFlags = optionFlags;
+            if (_optionFlags & 0x01 && optionData != NULL) {
+                _optionDataLen = 3;
+                memcpy(_optionData, optionData, _optionDataLen);
+            } else {
+                _optionDataLen = 0;
+            }
         }
-    }
+
+        void setMLPayloadOption(uint8_t optionFlags, uint8_t* optionData) {
+            _optionFlags = optionFlags;
+            if (_optionFlags & 0x01 && optionData != NULL) {
+                _optionDataLen = 3;
+                memcpy(_optionData, optionData, _optionDataLen);
+            } else {
+                _optionDataLen = 0;
+            }
+        }
     
         virtual int getPayload(uint8_t *payload) = 0;
     protected:
@@ -191,9 +201,12 @@ private:
 
 class MLPacketGen {
     public:
+        MLPacketGen(uint8_t version = 0x0B);
         MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version = 0x0B);
+        void setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version);
         void setMLPayloadGen(MLPayloadGen *mlpayloadGen);
         int getMLPacket(uint8_t *mlpacket);
+        MLPayloadGen* getMLPayload();
     private:
         int getMLPayload(uint8_t *payload);
     private:

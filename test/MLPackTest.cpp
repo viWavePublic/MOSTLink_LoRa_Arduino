@@ -31,12 +31,12 @@ int main() {
     resPacketGen.setMLPayloadGen(new MLResDataPayloadGen(0, 8, cmdD));
     resPacketGen.getMLPacket(resPacket);
 
-    MLPacketCtx pkctx;
     MLPacketParser pkParser;
-    pkParser.mostloraPacketParse(&pkctx, reqPacket);
-    pkParser.mostloraPacketParse(&pkctx, resPacket);
-    pkParser.mostloraPacketParse(&pkctx, REQ_DATA_PK);
-    pkParser.mostloraPacketParse(&pkctx, RES_DATA_PK);
+    MLPacketGen mlPacket;
+    pkParser.mostloraPacketParse(&mlPacket, reqPacket);
+    pkParser.mostloraPacketParse(&mlPacket, resPacket);
+    pkParser.mostloraPacketParse(&mlPacket, REQ_DATA_PK);
+    pkParser.mostloraPacketParse(&mlPacket, RES_DATA_PK);
  
     return 0;
 }
