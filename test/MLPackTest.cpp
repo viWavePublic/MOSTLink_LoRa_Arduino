@@ -33,7 +33,27 @@ int main() {
 
     MLPacketParser pkParser;
     MLPacketGen mlPacket;
+
     pkParser.mostloraPacketParse(&mlPacket, reqPacket);
+    printf("Version: %d\n", mlPacket.getVersion());
+    uint8_t id[8] = {0};
+    uint8_t* idP = mlPacket.getID();
+    memcpy(id, idP, 8);
+    for (int i =0; i<8; i++) {
+        printf("0x%02x ",id[i]);
+    }
+    printf("\n");
+    MLReqDataPayloadGen* reqPayload = dynamic_cast<MLReqDataPayloadGen*>(mlPacket.getMLPayload());
+    printf("ResInterval:%d", reqPayload->getResInterval());
+    printf("\n");
+    uint8_t dSize=0;
+    uint8_t* dataPtr;
+    dataPtr = reqPayload->getData(dSize);
+    for (int i = 0; i < dSize; i++) {
+        printf("0x%02x ", *(dataPtr+i));
+    }
+    printf("\n");
+
     pkParser.mostloraPacketParse(&mlPacket, resPacket);
     pkParser.mostloraPacketParse(&mlPacket, REQ_DATA_PK);
     pkParser.mostloraPacketParse(&mlPacket, RES_DATA_PK);

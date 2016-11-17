@@ -295,7 +295,3 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     return totalLen;
 }
 
-MLPayloadGen* MLPacketGen::getMLPayload() {
-    return _mlPayloadGen;
-}
-

@@ -36,6 +36,15 @@ class MLPayloadGen {
         }
     
         virtual int getPayload(uint8_t *payload) = 0;
+
+        uint8_t getVersion() { return _version; }
+        uint16_t getCmdId() { return _cmdId; }
+        uint8_t getOptionFlags() { return _optionFlags; }
+        uint8_t* getOptionData(uint8_t& optionDataLen) {
+            optionDataLen = _optionDataLen;
+            return _optionData;
+        }
+        uint8_t getOptionDataLen() { return _optionDataLen; }
     protected:
         uint8_t _version;
         uint16_t _cmdId;
@@ -48,6 +57,11 @@ class MLReqSetLoraConfigGen : public MLPayloadGen {
     public:
         MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId);
         int getPayload(uint8_t *payload);
+        uint8_t* getFrequency() { return _frequency; }
+        uint8_t getDataRate() { return _dataRate; }
+        uint8_t getPower() { return _power; }
+        uint8_t getWakeupInterval() { return _wakeupInterval; }
+        uint8_t getGroupId() { return _groupId; }
     private:
         uint8_t _frequency[ML_FREQUENCY_LEN];
         uint8_t _dataRate;
@@ -60,6 +74,12 @@ class MLReqDataPayloadGen : public MLPayloadGen {
     public:
         MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data);
         int getPayload(uint8_t *payload);
+        uint16_t getResInterval() { return _resInterval; }
+        uint8_t getDataLen() { return _dataLen; }
+        uint8_t* getData(uint8_t& dataLen) {
+            dataLen = _dataLen;
+            return _data;
+        }
     private:
         uint16_t _resInterval;
         uint8_t _dataLen;
@@ -70,6 +90,13 @@ class MLNotifyLocationGen : public MLPayloadGen {
     public:
         MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus);
         int getPayload(uint8_t *payload);
+        uint32_t getDataTime() { return _dateTime; }
+        void getLocation(mllocation& location) {
+            location.longtitude = _location.longtitude;
+            location.latitude = _location.latitude;
+        }
+        uint8_t getNotifyTYpe() { return _notifyType; }
+        uint8_t getGpsStatus() { return _gpsStatus; }
     private:
         uint32_t _dateTime;
         mllocation _location;
@@ -81,6 +108,7 @@ class MLReqLocationGen : public MLPayloadGen {
     public:
         MLReqLocationGen(int32_t resInterval);
         int getPayload(uint8_t *payload);
+        int32_t getResInterval() { return _resInterval; }
     private:
         int32_t _resInterval;
 };
@@ -89,6 +117,8 @@ class MLSetGeoFenceConfigGen : public MLPayloadGen {
     public:
         MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval);
         int getPayload(uint8_t *payload);
+        uint16_t getGeoRadius() { return _geofRadius; }
+        uint16_t getResInterval() { return _resInterval; }
     private:
         uint16_t _geofRadius;
         uint16_t _resInterval;
@@ -104,6 +134,7 @@ class MLResSetLoraConfigGen : public MLPayloadGen {
     public:
         MLResSetLoraConfigGen(uint8_t errorCode);
         int getPayload(uint8_t *payload);
+        uint8_t getErrorCode() { return _errorCode; }
     private:
         uint8_t _errorCode;
 };
@@ -112,6 +143,12 @@ class MLResDataPayloadGen : public MLPayloadGen {
     public:
         MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data);
         int getPayload(uint8_t *payload);
+        uint8_t getErrorCode() { return _errorCode; }
+        uint8_t getDataLen() { return _dataLen; }
+        uint8_t* getData(uint8_t& dataLen) {
+            dataLen = _dataLen;
+            return _data;
+        }
     private:
         uint8_t _errorCode;
         uint8_t _dataLen;
@@ -122,6 +159,12 @@ class MLRetConfigGeofGen : public MLPayloadGen {
     public:
         MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location);
         int getPayload(uint8_t *payload);
+        uint16_t getGeoFRadius() { return _geofRadius; }
+        uint16_t getResInterval() { return _resInterval; }
+        void getLocation(mllocation& location) {
+            location.longtitude = _location.longtitude;
+            location.latitude = _location.latitude;
+        }
     private:
         uint16_t _geofRadius;
         uint16_t _resInterval;
@@ -133,6 +176,15 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
         MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
                 float sysVoltage, float humidity, float temperature, float reserved);
         int getPayload(uint8_t *payload);
+        uint8_t* getApiKey() { return _apiKey; }
+        float getSoil1() { return _soil_1; }
+        float getSoil2() { return _soil_2; }
+        float getSoil3() { return _soil_3; }
+        float getSoil4() { return _soil_4; }
+        float getSysVoltage() { return _sysVoltage; }
+        float getHumidity() { return _humidity; }
+        float getTemperature() { return _temperature; }
+        float getReserved() { return _reserved; }
     private:
         uint8_t _apiKey[VINDUNO_API_KEY_LEN]; 
         float _soil_1;
@@ -193,6 +245,8 @@ public:
         
         return pos;
     }
+
+    uint8_t* getDataMAC() { return _dataHMAC; }
 private:
     uint8_t _dataHMAC[SIZE_RES_AUTH_RESPONSE_HMAC];
 };
@@ -206,7 +260,13 @@ class MLPacketGen {
         void setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version);
         void setMLPayloadGen(MLPayloadGen *mlpayloadGen);
         int getMLPacket(uint8_t *mlpacket);
-        MLPayloadGen* getMLPayload();
+        uint8_t getAckBit() { return _ackBit; }
+        uint8_t getReceiverFlag() { return _receiverFlag; }
+        uint8_t getPacketType() { return _packetType; }
+        uint8_t getDirection() { return _direction; }
+        uint8_t* getID() { return _id; }
+        uint8_t getVersion() { return _version; }
+        MLPayloadGen* getMLPayload() { return _mlPayloadGen; }
     private:
         int getMLPayload(uint8_t *payload);
     private:
