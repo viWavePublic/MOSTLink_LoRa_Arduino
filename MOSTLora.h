@@ -100,7 +100,7 @@ private:
   unsigned char _receiverID[8];   // receiver ID
 //  String _keyHMAC;   // key of HMAC (challenge-response)
     const char *_keyHMAC;     // 16 bytes
-    const char *_keyAES;      // 16 bytes
+    const char *_keyAES;      // 16 bytes (AES128)
     const char *_ivAES;       // 4 bytes
   
   int _szBuf;

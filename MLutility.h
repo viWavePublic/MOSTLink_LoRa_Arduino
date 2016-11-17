@@ -21,6 +21,9 @@ public:
     static void generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *dataSrc, int szDataSrc);
     static void encryptAES(byte *srcData, int szData, const byte *srcKey, const byte *srcIV, byte *outTag = NULL);
     static void decryptAES(byte *srcData, int szData, const byte *srcKey, const byte *srcIV);
+
+    static void encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV);
+    static void decryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV);
 };
 
 
