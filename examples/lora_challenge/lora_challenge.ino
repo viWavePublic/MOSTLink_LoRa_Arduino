@@ -37,7 +37,7 @@ void setup() {
   
   lora.begin();
   // custom LoRa config by your environment setting
-//  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
   lora.setKeyHMAC(KEY_PUBLIC_CHALLENGE);
 
