@@ -204,16 +204,17 @@ void MLutility::generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *data
 // AES encrypt, decrypt
 /////////////////////////////////////////
 #define AES_KEY_SIZE    16
-#define AES_IV_SIZE     4
+#define AES_IV_SIZE     16
 #define AES_TAG_SIZE    16
 
 #include <AES.h>
 #include <Speck.h>
 #include <SpeckTiny.h>
 #include <CBC.h>
+/*
 #include <GCM.h>
-
-void MLutility::encryptAES(byte *srcData, int szData, const byte *srcKey, const byte *srcIV, byte *outTag) {
+// AES/GCM/NoPadding encrypt, decrypt
+void MLutility::encryptAES_GCM(byte *srcData, int szData, const byte *srcKey, const byte *srcIV, byte *outTag) {
     byte bufferAES[99];
     byte tagAES[AES_TAG_SIZE];
     
@@ -238,7 +239,7 @@ void MLutility::encryptAES(byte *srcData, int szData, const byte *srcKey, const 
     delete gcmaes128;
 }
 
-void MLutility::decryptAES(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
+void MLutility::decryptAES_GCM(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
     byte bufferAES[99];
     
     GCM<AES128> *gcmaes128 = new GCM<AES128>();
@@ -257,7 +258,9 @@ void MLutility::decryptAES(byte *srcData, int szData, const byte *srcKey, const 
     cipher->clear();
     delete gcmaes128;
 }
+*/
 
+// AES/CBC/NoPadding encrypt, decrypt
 void MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
     byte bufferAES[99];
     
@@ -265,11 +268,10 @@ void MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, co
     Cipher *cipher = aes128;
     
     cipher->clear();
-    cipher->setKey(srcKey, 16);
+    cipher->setKey(srcKey, AES_KEY_SIZE);
     cipher->setIV(srcIV, AES_IV_SIZE);
     cipher->encrypt(bufferAES, srcData, szData);
     
-    MLutility::printBinary(bufferAES,szData);
     memcpy(srcData, bufferAES, szData);
     
     cipher->clear();
@@ -283,12 +285,10 @@ void MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey, co
     Cipher *cipher = aes128;
     
     cipher->clear();
-    cipher->setKey(srcKey, 16);
+    cipher->setKey(srcKey, AES_KEY_SIZE);
     cipher->setIV(srcIV, AES_IV_SIZE);
     cipher->decrypt(bufferAES, srcData, szData);
-
     
-    MLutility::printBinary(bufferAES,szData);
     memcpy(srcData, bufferAES, szData);
     
     cipher->clear();

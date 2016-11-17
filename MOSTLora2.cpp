@@ -55,6 +55,21 @@ int MOSTLora::parsePacket()
     else if (_buf[0] == 0xFB && _buf[1] == 0xFC) {    // for MOST Link protocol
         MLPacketParser pkParser;
         MLPacketGen pkGen;
+        int szPacket = _buf[3];
+        uint8_t flag = _buf[4];
+
+        if (flag & 0x10) {      // AES128 decrypt
+            _buf[4] &= 0xEF;    // clear AES flag
+            int szAES = ((szPacket - 5) + 15) / 16 * 16;    // 16 alignment
+            MLutility::decryptAES_CBC(_buf + 5, szAES, _keyAES, _ivAES);
+#ifdef DEBUG_LORA
+            debugSerial.print(F("Decrypt: AES="));
+            debugSerial.print(szAES, DEC);
+            debugSerial.print(F(", Packet="));
+            debugSerial.println(szPacket, DEC);
+            MLutility::printBinary(_buf, szPacket);
+#endif // DEBUG_LORA
+        }
         
         // packet header
         int nResult = pkParser.mostloraPacketParse(&pkGen, _buf);
@@ -69,9 +84,9 @@ int MOSTLora::parsePacket()
                 debugSerial.print(F("UpLink"));
             
             debugSerial.print(F(": cmd("));
-            debugSerial.print((int)nRet, 10);
+            debugSerial.print((int)nRet, DEC);
             debugSerial.print(F(") 0x"));
-            debugSerial.print((int)nRet, 16);
+            debugSerial.print((int)nRet, HEX);
             
             debugSerial.print(F(", nodeID:"));
             MLutility::printBinary(pNodeID, 8);
@@ -109,6 +124,11 @@ int MOSTLora::parsePacket()
                 }
 
             }
+        }
+        else {
+#ifdef DEBUG_LORA
+            debugSerial.println(F("ERROR: parse packet."));
+#endif // DEBUG_LORA
         }
     }
     return nRet;

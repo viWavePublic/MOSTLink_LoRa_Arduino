@@ -24,6 +24,7 @@ struct DataUplink {
     }
   }
 };
+//const char KEY_AES128[16] = {'X','2','3','4','5','6','7','8','9','0','A','B','C','D','E','F'};
 
 // cache uplink-buffer
 DataUplink g_bufLora;
@@ -34,20 +35,20 @@ DataUplink g_bufAuthResponse;
 // callback for rece data
 void funcCustomRece(unsigned char *data, int szData)
 {
-  debugSerial.println("funcRece= cache latest message");
+  debugSerial.println(F("funcRece= cache latest message"));
   g_bufLora.setData(data, szData);        // #1 cache: Any Rece-Data
 }
 
 // callback for CMD_REQ_AUTH_CHALLENGE
 void funcPacketReqAuthChallenge(unsigned char *data, int szData)
 {
-  debugSerial.println("ReqChallenge= ");
+  debugSerial.println(F("ReqChallenge= "));
 }
 
 // callback for Parse MOSTLink Command
 void funcParseMOSTLink(int cmdID)
 {
-  debugSerial.print("MOSTLink cmd= ");
+  debugSerial.print(F("MOSTLink cmd= "));
   debugSerial.println(cmdID, DEC);
   // store specify command ID
   const byte *data = g_bufLora._data;
@@ -79,6 +80,7 @@ void setup() {
   // custom LoRa config by your environment setting
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
+//  lora.setKeyAES(KEY_AES128);
 
   delay(1000);
   lora.sendData("[Fake]");
@@ -119,14 +121,14 @@ void inputBySerial()
         lora.sendData(g_bufAuthResponse._data, g_bufAuthResponse._szData);
       }
       else if (buf[1] == '0') {
-        Serial.println("cache: ");
-        Serial.print("    Lora= ");
+        Serial.println(F("cache: "));
+        Serial.print(F("    Lora= "));
         MLutility::printBinary(g_bufLora._data, g_bufLora._szData);
-        Serial.print(" ResData= ");
+        Serial.print(F(" ResData= "));
         MLutility::printBinary(g_bufResData._data, g_bufResData._szData);
-        Serial.print("AuthJoin= ");
+        Serial.print(F("AuthJoin= "));
         MLutility::printBinary(g_bufAuthJoin._data, g_bufAuthJoin._szData);
-        Serial.print(" AuthRes= ");
+        Serial.print(F(" AuthRes= "));
         MLutility::printBinary(g_bufAuthResponse._data, g_bufAuthResponse._szData);
       }
     }
