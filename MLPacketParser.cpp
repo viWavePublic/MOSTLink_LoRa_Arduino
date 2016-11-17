@@ -88,6 +88,9 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             mlpacket->setMLPayloadGen(new MLResDataPayloadGen(errorCode, dataLen, data));
             optionFlagsPos = CMD_REQ_D_DATA_POS + dataLen;
             break;
+        case CMD_REQ_AUTH_CHALLENGE:
+            mlpacket->setMLPayloadGen(new MLReqAuthChallengePayloadGen());
+            break;
         case CMD_NTF_UPLOAD_VINDUINO_FIELD:
             memcpy(apikey, payload+CMD_NTF_VINDUINO_API_KEY_POS, VINDUNO_API_KEY_LEN);
             soil1 = payload[CMD_NTF_VINDUINO_SOIL1_POS+3] << 24 | payload[CMD_NTF_VINDUINO_SOIL1_POS+2] << 16

@@ -53,29 +53,30 @@ int MOSTLora::parsePacket()
         
     }
     else if (_buf[0] == 0xFB && _buf[1] == 0xFC) {    // for MOST Link protocol
-        MLPacketCtx pkctx;
         MLPacketParser pkParser;
+        MLPacketGen pkGen;
         
         // packet header
-        int nResult = pkParser.mostloraPacketParse(&pkctx, _buf);
+        int nResult = pkParser.mostloraPacketParse(&pkGen, _buf);
         if (nResult == 0) {     // packet CRC correct
-            const byte *pNodeID = (byte*)&pkctx._id;
+            const byte *pNodeID = pkGen.getID();
+            nRet = pkGen.getMLPayload()->getCmdId();
+            
 #ifdef DEBUG_LORA
-            if (pkctx._direction == 0)
+            if (pkGen.getDirection() == 0)
                 debugSerial.print(F("DnLink"));
             else
                 debugSerial.print(F("UpLink"));
             
             debugSerial.print(F(": cmd("));
-            debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 10);
+            debugSerial.print((int)nRet, 10);
             debugSerial.print(F(") 0x"));
-            debugSerial.print((int)pkctx._mlPayloadCtx._cmdId, 16);
+            debugSerial.print((int)nRet, 16);
             
             debugSerial.print(F(", nodeID:"));
             MLutility::printBinary(pNodeID, 8);
 #endif // DEBUG_LORA
             
-            nRet = pkctx._mlPayloadCtx._cmdId;
             const boolean bForMe = (memcmp(pNodeID, _data.mac_addr, 8) == 0);
             // parse MOSTLink command
             if (_cbParseMOSTLink) {
@@ -97,7 +98,7 @@ int MOSTLora::parsePacket()
                     if (_cbPacketReqAuthChallenge)
                         _cbPacketReqAuthChallenge(pData, 4);
                     else {
-                        delay(200);
+                        delay(500);
                         sendPacketResAuthResponse(pData, 4);
                     }
                 }

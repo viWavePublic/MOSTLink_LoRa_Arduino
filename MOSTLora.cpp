@@ -437,7 +437,8 @@ void MOSTLora::sendPacketResData(float h, float t)
     memcpy(dataHT + 4, &t, 4);      // temperature (4 bytes)
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);
+    MLPayloadGen *pPayload = new MLResDataPayloadGen(0, 8, dataHT);
+//    MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
@@ -540,7 +541,7 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     loc.longtitude = lng;
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = MLPayloadGen::createNotifyLocationGen(date_time, loc, 0, 1, 0, NULL);
+    MLPayloadGen *pPayload = NULL;//MLPayloadGen::createNotifyLocationGen(date_time, loc, 0, 1, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
@@ -554,7 +555,7 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
 void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
+    MLPayloadGen *pPayload = NULL;//MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);

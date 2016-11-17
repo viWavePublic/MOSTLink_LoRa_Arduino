@@ -199,6 +199,16 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
 
 //////////////////////////////////////////////////////////////////////////////////
 
+class MLReqAuthChallengePayloadGen : public MLPayloadGen {
+public:
+    MLReqAuthChallengePayloadGen() : MLPayloadGen(CMD_REQ_AUTH_CHALLENGE) {}
+    
+    int getPayload(uint8_t *payload)
+    {
+        return 4 + 4;
+    }
+};
+
 class MLReqAuthJoinPayloadGen : public MLPayloadGen {
 public:
     MLReqAuthJoinPayloadGen() : MLPayloadGen(CMD_REQ_AUTH_JOIN) {}
