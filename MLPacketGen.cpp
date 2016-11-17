@@ -1,72 +1,11 @@
 #include "MLPacketGen.h"
 
-MLPayloadGen *createReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId,
-        uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLReqSetLoraConfigGen *req = new MLReqSetLoraConfigGen(frequency, dataRate, power, wakeupInterval, groupId, optionFlags, optionData, version);
-    return req;
-}
-
-MLPayloadGen* MLPayloadGen::createReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLReqDataPayloadGen *req = new MLReqDataPayloadGen(resInterval, dataLen, data, optionFlags, optionData, version);
-    return req;
-}
-
-MLPayloadGen* MLPayloadGen::createNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLNotifyLocationGen *notifyLocation = new MLNotifyLocationGen(dateTime, location, notifyType, gpsStatus, optionFlags, optionData, version);
-    return notifyLocation;
-}
-
-MLPayloadGen* MLPayloadGen::createReqLocation(int32_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLReqLocationGen *reqLocation = new MLReqLocationGen(resInterval, optionFlags, optionData, version);
-    return reqLocation;
-}
-
-MLPayloadGen* MLPayloadGen::createSetGeoFenceConfig(uint16_t geofRadius, uint16_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLSetGeoFenceConfigGen *setGeofConf = new MLSetGeoFenceConfigGen(geofRadius, resInterval, optionFlags, optionData, version);
-    return setGeofConf;
-}
-
-MLPayloadGen* MLPayloadGen::createGetGeoFenceConfig(uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLGetGeoFenceConfigGen *getGeofConf = new MLGetGeoFenceConfigGen(optionFlags, optionData, version);
-    return getGeofConf;
-}
-
-MLPayloadGen* MLPayloadGen::createResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLResSetLoraConfigGen *res = new MLResSetLoraConfigGen(errorCode, optionFlags, optionData, version);
-    return res;
-}
-
-MLPayloadGen* MLPayloadGen::createRetConfigGeof(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLRetConfigGeofGen *ret = new MLRetConfigGeofGen(geofRadius, resInterval, location, optionFlags, optionData, version);
-    return ret;
-}
-
-MLPayloadGen* MLPayloadGen::createResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLResDataPayloadGen *res = new MLResDataPayloadGen(errorCode, dataLen, data, optionFlags, optionData, version);
-    return res;
-}
-
-MLPayloadGen* MLPayloadGen::createNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
-                float sysVoltage, float humidity, float temperature, float reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    MLNotifyVindunoPayloadGen *ntf = new MLNotifyVindunoPayloadGen(apiKey, soil_1, soil_2, soil_3, soil_4, sysVoltage, humidity, temperature, reserved, 
-            optionFlags, optionData, version);
-    return ntf;
-}
-
-MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_REQ_SET_LORA_CONFIG;
+MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId) : MLPayloadGen(CMD_REQ_SET_LORA_CONFIG) {
     memcpy(_frequency, frequency, ML_FREQUENCY_LEN);
     _dataRate = dataRate;
     _power = power;
     _wakeupInterval = wakeupInterval;
     _groupId = groupId;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
@@ -88,19 +27,10 @@ int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_REQ_DATA;
+MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_REQ_DATA) {
     _resInterval = resInterval;
     _dataLen = dataLen;
     memcpy(_data, data, _dataLen);
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
@@ -121,20 +51,11 @@ int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_NOTIFY_LOCATION;
+MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus) : MLPayloadGen(CMD_NOTIFY_LOCATION) {
     _dateTime = dateTime;
     _location.longtitude = location.longtitude;
     _location.latitude = location.latitude;
     _gpsStatus = gpsStatus;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLNotifyLocationGen::getPayload(uint8_t *payload) {
@@ -156,17 +77,8 @@ int MLNotifyLocationGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLReqLocationGen::MLReqLocationGen(int32_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_REQ_LOCATION;
+MLReqLocationGen::MLReqLocationGen(int32_t resInterval) : MLPayloadGen(CMD_REQ_LOCATION) {
     _resInterval = resInterval;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLReqLocationGen::getPayload(uint8_t *payload) {
@@ -184,18 +96,9 @@ int MLReqLocationGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLSetGeoFenceConfigGen::MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_SET_CONFIG_GEOF;
+MLSetGeoFenceConfigGen::MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval) : MLPayloadGen(CMD_SET_CONFIG_GEOF) {
     _geofRadius = geofRadius;
     _resInterval = resInterval;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLSetGeoFenceConfigGen::getPayload(uint8_t *payload) {
@@ -215,18 +118,6 @@ int MLSetGeoFenceConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLGetGeoFenceConfigGen::MLGetGeoFenceConfigGen(uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_GET_CONFIG_GEOF;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
-}
-
 int MLGetGeoFenceConfigGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
@@ -240,17 +131,8 @@ int MLGetGeoFenceConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLResSetLoraConfigGen::MLResSetLoraConfigGen(uint8_t errorCode, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_RES_SET_LORA_CONFIG;
+MLResSetLoraConfigGen::MLResSetLoraConfigGen(uint8_t errorCode) : MLPayloadGen(CMD_RES_SET_LORA_CONFIG) {
     _errorCode = errorCode;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLResSetLoraConfigGen::getPayload(uint8_t *payload) {
@@ -267,19 +149,10 @@ int MLResSetLoraConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLResDataPayloadGen::MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_RES_DATA;
+MLResDataPayloadGen::MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_RES_DATA) {
     _errorCode = errorCode;
     _dataLen = dataLen;
     memcpy(_data, data, _dataLen);
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLResDataPayloadGen::getPayload(uint8_t *payload) {
@@ -299,20 +172,11 @@ int MLResDataPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_RET_CONFIG_GEOF;
+MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location) : MLPayloadGen(CMD_RET_CONFIG_GEOF) {
     _geofRadius = geofRadius;
     _resInterval = resInterval;
     _location.longtitude = location.longtitude;
     _location.latitude = location.latitude;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
@@ -335,9 +199,7 @@ int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
 }
 
 MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
-                float sysVoltage, float humidity, float temperature, float reserved, uint8_t optionFlags, uint8_t *optionData, uint8_t version) {
-    _version = version;
-    _cmdId = CMD_NTF_UPLOAD_VINDUINO_FIELD;
+                float sysVoltage, float humidity, float temperature, float reserved) : MLPayloadGen(CMD_NTF_UPLOAD_VINDUINO_FIELD) {
     memcpy(_apiKey, apiKey, VINDUNO_API_KEY_LEN);
     _soil_1 = soil_1;
     _soil_2 = soil_2;
@@ -347,13 +209,6 @@ MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil
     _humidity = humidity;
     _temperature = temperature;
     _reserved = reserved;
-    _optionFlags = optionFlags;
-    if (_optionFlags & 0x01) {
-        _optionDataLen = 3;
-        memcpy(_optionData, optionData, _optionDataLen);
-    } else {
-        _optionDataLen = 0;
-    }
 }
 
 int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
@@ -379,6 +234,16 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+MLPacketGen::MLPacketGen(uint8_t version) {
+    _ackBit = MAX_VAL_UINT8;
+    _receiverFlag = MAX_VAL_UINT8;
+    _packetType = MAX_VAL_UINT8;
+    _direction = MAX_VAL_UINT8;
+    memset(_id, 0, ML_PK_ID_SIZE);
+    _version = version;
+    _mlPayloadGen = NULL;
+}
+
 MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version) {
     _ackBit = ackBit;
     _receiverFlag = receiverFlag;
@@ -387,6 +252,15 @@ MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetTyp
     memcpy(_id, id, ML_PK_ID_SIZE);
     _version = version;
     _mlPayloadGen = NULL;
+}
+
+void MLPacketGen::setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version) {
+    _ackBit = ackBit;
+    _receiverFlag = receiverFlag;
+    _packetType = packetType;
+    _direction = direction;
+    memcpy(_id, id, ML_PK_ID_SIZE);
+    _version = version;
 }
 
 void MLPacketGen::setMLPayloadGen(MLPayloadGen *mlpayloadGen) {
@@ -420,3 +294,4 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     mlpacket[totalLen-1] = getCrc(mlpacket, totalLen-1);
     return totalLen;
 }
+

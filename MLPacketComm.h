@@ -80,6 +80,9 @@
 #define CMD_OPTION_RES_FREQ_NO_RES 0
 #define CMD_OPTION_RES_FREQ_WITH_RES 1
 
+#define MAX_VAL_UINT8 0xFF
+#define MAX_VAL_UINT16 0xFFFF
+
 namespace {
     uint8_t getCrc(const uint8_t *dataBuffer, const uint8_t length) {									
         uint8_t crc = 0;

@@ -18,7 +18,7 @@ int main() {
 
     uint8_t cmdData[4] = {0x74,0x65,0x73,0x74};
     uint8_t optionData[1] = {0x00};
-    reqPacketGen.setMLPayloadGen(MLPayloadGen::createReqDataPayloadGen(10, 4, cmdData, 0, optionData));
+    reqPacketGen.setMLPayloadGen(new MLReqDataPayloadGen(10, 4, cmdData));
     uint8_t packetLen = reqPacketGen.getMLPacket(reqPacket);
     //for (int i=0; i<packetLen; i++){
     //    printf("0x%02X ", mlpacket[i]);
@@ -28,15 +28,35 @@ int main() {
     
     MLPacketGen resPacketGen(0, 0, 0, 1, ID);
     uint8_t cmdD[8] = {0x00, 0x00, 0x2E, 0x42, 0x33, 0x33, 0xC3, 0x41};
-    resPacketGen.setMLPayloadGen(MLPayloadGen::createResDataPayloadGen(0, 8, cmdD, 0, optionData));
+    resPacketGen.setMLPayloadGen(new MLResDataPayloadGen(0, 8, cmdD));
     resPacketGen.getMLPacket(resPacket);
 
-    MLPacketCtx pkctx;
     MLPacketParser pkParser;
-    pkParser.mostloraPacketParse(&pkctx, reqPacket);
-    pkParser.mostloraPacketParse(&pkctx, resPacket);
-    pkParser.mostloraPacketParse(&pkctx, REQ_DATA_PK);
-    pkParser.mostloraPacketParse(&pkctx, RES_DATA_PK);
+    MLPacketGen mlPacket;
+
+    pkParser.mostloraPacketParse(&mlPacket, reqPacket);
+    printf("Version: %d\n", mlPacket.getVersion());
+    uint8_t id[8] = {0};
+    uint8_t* idP = mlPacket.getID();
+    memcpy(id, idP, 8);
+    for (int i =0; i<8; i++) {
+        printf("0x%02x ",id[i]);
+    }
+    printf("\n");
+    MLReqDataPayloadGen* reqPayload = dynamic_cast<MLReqDataPayloadGen*>(mlPacket.getMLPayload());
+    printf("ResInterval:%d", reqPayload->getResInterval());
+    printf("\n");
+    uint8_t dSize=0;
+    uint8_t* dataPtr;
+    dataPtr = reqPayload->getData(dSize);
+    for (int i = 0; i < dSize; i++) {
+        printf("0x%02x ", *(dataPtr+i));
+    }
+    printf("\n");
+
+    pkParser.mostloraPacketParse(&mlPacket, resPacket);
+    pkParser.mostloraPacketParse(&mlPacket, REQ_DATA_PK);
+    pkParser.mostloraPacketParse(&mlPacket, RES_DATA_PK);
  
     return 0;
 }
