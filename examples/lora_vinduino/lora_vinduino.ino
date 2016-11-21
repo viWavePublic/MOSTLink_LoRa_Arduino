@@ -3,7 +3,7 @@
 //
 // Note:
 //    If you use Vinduino board, check MOSTLora library folder:
-//    "Arduino/libraries/MOSTLink/MostLora.h" header file,
+//    "Arduino/libraries/MOSTLink/MostLora_def.h" header file,
 //    you must unmark "#define USE_VINDUINO".
 //
 //    Then MOST Link library is ready for use.

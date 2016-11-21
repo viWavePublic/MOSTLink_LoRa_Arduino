@@ -9,7 +9,7 @@
 #ifndef __MLutility_h
 #define __MLutility_h
 
-#include <Arduino.h>
+#include "MOSTLora_def.h"
 
 // common utility
 class MLutility {

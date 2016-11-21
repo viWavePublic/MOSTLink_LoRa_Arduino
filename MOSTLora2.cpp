@@ -81,6 +81,7 @@ int MOSTLora::parsePacket()
         szRet = _buf[3];        // packet size
         uint8_t flag = _buf[4]; // packet flag
 
+#ifdef USE_LIB_CRYPTO_AES128
         if (flag & 0x10) {      // AES128 decrypt
             _buf[4] &= 0xEF;    // clear AES flag
             int szAES = ((szRet - 5) + 15) / 16 * 16;    // 16 alignment
@@ -92,6 +93,7 @@ int MOSTLora::parsePacket()
 #endif // DEBUG_LORA
             szRet = szAES + 5;  // packet with AES
         }
+#endif // USE_LIB_CRYPTO_AES128
         
         // packet header
         int nResult = pkParser.mostloraPacketParse(&pkGen, _buf);

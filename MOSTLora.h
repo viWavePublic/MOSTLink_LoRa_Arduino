@@ -15,44 +15,7 @@
 #ifndef __MOSTLora_h
 #define __MOSTLora_h
 
-#include <Arduino.h>
-
-#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)
-
-#elif defined(ARDUINO_AVR_PRO)  // vinduino pro mini
-
-#define USE_VINDUINO  // for Vinduino project (unmark the line)
-
-#elif defined(ARDUINO_AVR_MINI) //
-
-#elif defined(__LINKIT_ONE__)   // for LinkIt ONE
-
-#else
-
-// unsupported board
-#error "ARDUINO BOARD NOT SUPPORTED"
-
-#endif
-
-
-//#define USE_VINDUINO  // for Vinduino project (unmark the line)
-#ifdef USE_VINDUINO     // for Vinduino project
-
-#else // USE_VINDUINO
-#define DEBUG_LORA     // debug by Serial Monitor
-#endif // USE_VINDUINO
-
-// debug LoRa to serial-monitor
-#ifdef DEBUG_LORA
-#define debugSerial Serial
-#else
-// not ready yet
-class DummySerial {
-    
-};
-//#define debugSerial DummySerial
-
-#endif
+#include "MOSTLora_def.h"
 
 // callback function
 typedef void (* CALLBACK_ReceData) (unsigned char *data, int szData);

@@ -16,6 +16,12 @@ Install MOSTLora to Arduino IDE
 * here [GitHub][MOSTLora]: [Clone or download] -> [Download ZIP]
 * Arduino IDE install library: [Sketch] -> [Include Library] -> [Add .ZIP Library] 
 
+Crypto library to encrypt/decrypt, then support security transmission
+----
+* in "MOSTLora_def.h"
+* USE_LIB_CRYPTO_AES128: AES/CBC/NoPadding encrypt/decrypt
+* USE_LIB_CRYPTO_HMAC: Challenge-response to check HMAC result
+
 Building and using the example by Arduino IDE
 ----
 1.  Humidity & Temperature Sensor  
@@ -23,10 +29,11 @@ Building and using the example by Arduino IDE
     
 2.  Vinduino project 
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_vinduino]      
-        USE_VINDUINO, Digit pin for RX/TX, and P1/P2 would be specified correctly.
-            D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)
+        header file: MOSTLora_def.h, unmark "#define USE_VINDUINO", 
+        Digit pin for RX/TX, and P1/P2 would be specified correctly.
+        D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)
 
-3.  thingspeak project  
+3.  ThingSpeak project  
         [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_thingspeak]      
 
 4.  chat  

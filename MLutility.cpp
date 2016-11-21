@@ -9,17 +9,11 @@
 
 #include "MLutility.h"
 
-///////////////////////
-// use AES/HMAC
-///////////////////////
-#define USE_CRYPTO_AES128 // for crypto AES128
-//#define USE_CRYPTO_HMAC   // for crypto HAC (Challenge-Response)
-
 // crypto
-#ifdef USE_CRYPTO_AES128
+#ifdef USE_LIB_CRYPTO_HMAC
 #include <Crypto.h>
 #include <SHA256.h>
-#endif // USE_CRYPTO_AES128
+#endif // USE_LIB_CRYPTO_HMAC
 
 static unsigned char getComma(unsigned char num,const char *str)
 {
@@ -197,11 +191,14 @@ int MLutility::readSerial(char *buf)
 #define HMAC_SIZE    16
 void MLutility::generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *dataSrc, int szDataSrc)
 {
+#ifdef USE_LIB_CRYPTO_HMAC
     SHA256 hash;
     
     hash.resetHMAC(keySrc, strlen(keySrc));
     hash.update(dataSrc, szDataSrc);
     hash.finalizeHMAC(keySrc, strlen(keySrc), dataDst, HMAC_SIZE);
+#endif USE_LIB_CRYPTO_HMAC
+    
 #ifdef DEBUG_LORA
     debugSerial.print(F("HMAC data: "));
     MLutility::printBinary(dataDst, HMAC_SIZE);
@@ -213,13 +210,16 @@ void MLutility::generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *data
 /////////////////////////////////////////
 #define AES_KEY_SIZE    16
 #define AES_IV_SIZE     16
-#define AES_TAG_SIZE    16
 
+#ifdef USE_LIB_CRYPTO_AES128
 #include <AES.h>
 #include <Speck.h>
 #include <SpeckTiny.h>
 #include <CBC.h>
+#endif // USE_LIB_CRYPTO_AES128
+
 /*
+#define AES_TAG_SIZE    16
 #include <GCM.h>
 // AES/GCM/NoPadding encrypt, decrypt
 void MLutility::encryptAES_GCM(byte *srcData, int szData, const byte *srcKey, const byte *srcIV, byte *outTag) {
@@ -273,6 +273,7 @@ boolean MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey,
     if (szData > 96)
         return false;
     
+#ifdef USE_LIB_CRYPTO_AES128
     byte bufferAES[96];
     
     CBC<AES128> *aes128 = new CBC<AES128>();
@@ -287,6 +288,8 @@ boolean MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey,
     
     cipher->clear();
     delete aes128;
+#endif // USE_LIB_CRYPTO_AES128
+    
     return true;
 }
 
@@ -294,6 +297,7 @@ boolean MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey,
     if (szData > 96)
         return false;
 
+#ifdef USE_LIB_CRYPTO_AES128
     byte bufferAES[96];
     
     CBC<AES128> *aes128 = new CBC<AES128>();
@@ -308,5 +312,7 @@ boolean MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey,
     
     cipher->clear();
     delete aes128;
+#endif // USE_LIB_CRYPTO_AES128
+    
     return true;
 }
