@@ -122,6 +122,7 @@ public:
 private:
   // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
   void setMode(int p1, int p2);
+  int parsePacket();
 public:
   void setMode(int mode);
   int getMode() { return _eMode; }
@@ -141,7 +142,6 @@ public:
   int sendData(const char *strData);
   int sendData(byte *data, int szData);
   int receData();
-  int parsePacket();
 
   // LoRa busy state
   boolean isBusy();

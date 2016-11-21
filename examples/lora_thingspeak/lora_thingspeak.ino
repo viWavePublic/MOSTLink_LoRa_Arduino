@@ -28,7 +28,7 @@ void funcPacketReqData(unsigned char *data, int szData)
 void setup() {
 #ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
-  Serial.println("--- ThingSpeak ---");  // app title
+  Serial.println(F("--- ThingSpeak ---"));  // app title
 #endif // DEBUG_LORA
   
   lora.begin();

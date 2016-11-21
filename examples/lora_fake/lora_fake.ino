@@ -48,8 +48,6 @@ void funcPacketReqAuthChallenge(unsigned char *data, int szData)
 // callback for Parse MOSTLink Command
 void funcParseMOSTLink(int cmdID)
 {
-  debugSerial.print(F("MOSTLink cmd= "));
-  debugSerial.println(cmdID, DEC);
   // store specify command ID
   const byte *data = g_bufLora._data;
   int szData = g_bufLora._szData;
@@ -122,13 +120,13 @@ void inputBySerial()
       }
       else if (buf[1] == '0') {
         Serial.println(F("cache: "));
-        Serial.print(F("    Lora= "));
+        Serial.print(F("    Lora(1)= "));
         MLutility::printBinary(g_bufLora._data, g_bufLora._szData);
-        Serial.print(F(" ResData= "));
+        Serial.print(F(" ResData(2)= "));
         MLutility::printBinary(g_bufResData._data, g_bufResData._szData);
-        Serial.print(F("AuthJoin= "));
+        Serial.print(F("AuthJoin(3)= "));
         MLutility::printBinary(g_bufAuthJoin._data, g_bufAuthJoin._szData);
-        Serial.print(F(" AuthRes= "));
+        Serial.print(F(" AuthRes(4)= "));
         MLutility::printBinary(g_bufAuthResponse._data, g_bufAuthResponse._szData);
       }
     }

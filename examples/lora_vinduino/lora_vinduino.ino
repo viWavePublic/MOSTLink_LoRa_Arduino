@@ -25,7 +25,7 @@ const char *loraApiKey = "0GFUGE371WNPMMJE";    // ThingSpeak API-key for vindui
 void funcCustomPacketReqData(unsigned char *data, int szData)
 {
 #ifdef DEBUG_LORA
-  debugSerial.println("ReqData= sendPacketVinduino");
+  debugSerial.println(F("ReqData= sendPacketVinduino"));
 #endif // DEBUG_LORA
 
   // send data to Vinduino.io when received REQ_DATA from gateway

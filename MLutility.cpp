@@ -9,9 +9,17 @@
 
 #include "MLutility.h"
 
+///////////////////////
+// use AES/HMAC
+///////////////////////
+#define USE_CRYPTO_AES128 // for crypto AES128
+//#define USE_CRYPTO_HMAC   // for crypto HAC (Challenge-Response)
+
 // crypto
+#ifdef USE_CRYPTO_AES128
 #include <Crypto.h>
 #include <SHA256.h>
+#endif // USE_CRYPTO_AES128
 
 static unsigned char getComma(unsigned char num,const char *str)
 {
@@ -261,8 +269,11 @@ void MLutility::decryptAES_GCM(byte *srcData, int szData, const byte *srcKey, co
 */
 
 // AES/CBC/NoPadding encrypt, decrypt
-void MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
-    byte bufferAES[99];
+boolean MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
+    if (szData > 96)
+        return false;
+    
+    byte bufferAES[96];
     
     CBC<AES128> *aes128 = new CBC<AES128>();
     Cipher *cipher = aes128;
@@ -276,10 +287,14 @@ void MLutility::encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, co
     
     cipher->clear();
     delete aes128;
+    return true;
 }
 
-void MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
-    byte bufferAES[99];
+boolean MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV) {
+    if (szData > 96)
+        return false;
+
+    byte bufferAES[96];
     
     CBC<AES128> *aes128 = new CBC<AES128>();
     Cipher *cipher = aes128;
@@ -293,4 +308,5 @@ void MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey, co
     
     cipher->clear();
     delete aes128;
+    return true;
 }

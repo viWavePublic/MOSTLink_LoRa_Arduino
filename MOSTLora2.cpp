@@ -44,38 +44,60 @@ void MOSTLora::setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc)
 {
     _cbParseMOSTLink = cbFunc;
 }
-//////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////
+// 1: set normal mode, 2: send data 3: recover original mode
+int MOSTLora::sendPacket(byte *pPacket, int szPacket)
+{
+    int nModeBackup = getMode();
+    setMode(E_LORA_NORMAL);
+    
+    // AES/CBC encrypt
+    boolean bUseAES = false;
+    if (bUseAES) {
+        pPacket[4] |= 0x10;    // add AES flag
+        int szAES = ((szPacket - 5) + 15) / 16 * 16;    // 16 alignment
+        MLutility::encryptAES_CBC(pPacket, szAES, _keyAES, _ivAES);
+    }
+    /////////////////////
+    // send data is ready
+    int nRet = sendData(pPacket, szPacket);
+    
+    setMode(nModeBackup);
+    return nRet;
+}
+
+/////////////////////////////////////////////////////////////
 
 int MOSTLora::parsePacket()
 {
-    int nRet = -1;
+    int szRet = -1;
     if (_buf[0] == '$') {     // for LT200 protocol
         
     }
     else if (_buf[0] == 0xFB && _buf[1] == 0xFC) {    // for MOST Link protocol
         MLPacketParser pkParser;
         MLPacketGen pkGen;
-        int szPacket = _buf[3];
-        uint8_t flag = _buf[4];
+        szRet = _buf[3];        // packet size
+        uint8_t flag = _buf[4]; // packet flag
 
         if (flag & 0x10) {      // AES128 decrypt
             _buf[4] &= 0xEF;    // clear AES flag
-            int szAES = ((szPacket - 5) + 15) / 16 * 16;    // 16 alignment
+            int szAES = ((szRet - 5) + 15) / 16 * 16;    // 16 alignment
             MLutility::decryptAES_CBC(_buf + 5, szAES, _keyAES, _ivAES);
 #ifdef DEBUG_LORA
             debugSerial.print(F("Decrypt: AES="));
             debugSerial.print(szAES, DEC);
-            debugSerial.print(F(", Packet="));
-            debugSerial.println(szPacket, DEC);
-            MLutility::printBinary(_buf, szPacket);
+            MLutility::printBinary(_buf, szRet);
 #endif // DEBUG_LORA
+            szRet = szAES + 5;  // packet with AES
         }
         
         // packet header
         int nResult = pkParser.mostloraPacketParse(&pkGen, _buf);
         if (nResult == 0) {     // packet CRC correct
             const byte *pNodeID = pkGen.getID();
-            nRet = pkGen.getMLPayload()->getCmdId();
+            const uint16_t cmdID = pkGen.getMLPayload()->getCmdId();
             
 #ifdef DEBUG_LORA
             if (pkGen.getDirection() == 0)
@@ -84,9 +106,9 @@ int MOSTLora::parsePacket()
                 debugSerial.print(F("UpLink"));
             
             debugSerial.print(F(": cmd("));
-            debugSerial.print((int)nRet, DEC);
+            debugSerial.print(cmdID, DEC);
             debugSerial.print(F(") 0x"));
-            debugSerial.print((int)nRet, HEX);
+            debugSerial.print(cmdID, HEX);
             
             debugSerial.print(F(", nodeID:"));
             MLutility::printBinary(pNodeID, 8);
@@ -95,16 +117,16 @@ int MOSTLora::parsePacket()
             const boolean bForMe = (memcmp(pNodeID, _data.mac_addr, 8) == 0);
             // parse MOSTLink command
             if (_cbParseMOSTLink) {
-                _cbParseMOSTLink(nRet);
+                _cbParseMOSTLink(cmdID);
             }
             if (bForMe) // packet for me
             {
-                if (nRet == CMD_REQ_DATA) {
+                if (cmdID == CMD_REQ_DATA) {
                     if (_cbPacketReqData) {
                         _cbPacketReqData(_buf + 20, _buf[19]);
                     }
                 }
-                else if (nRet == CMD_REQ_AUTH_CHALLENGE) {
+                else if (cmdID == CMD_REQ_AUTH_CHALLENGE) {
                     byte *pData = &_buf[17];
 #ifdef DEBUG_LORA
                     debugSerial.print(F("HMAC key: "));
@@ -117,7 +139,7 @@ int MOSTLora::parsePacket()
                         sendPacketResAuthResponse(pData, 4);
                     }
                 }
-                else if (nRet == CMD_RES_AUTH_TOKEN) {
+                else if (cmdID == CMD_RES_AUTH_TOKEN) {
 #ifdef DEBUG_LORA
                     debugSerial.println(F("AUTH_TOKEN"));
 #endif // DEBUG_LORA
@@ -131,7 +153,7 @@ int MOSTLora::parsePacket()
 #endif // DEBUG_LORA
         }
     }
-    return nRet;
+    return szRet;
 }
 
 /////////////////////////////////////////

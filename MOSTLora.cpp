@@ -369,24 +369,10 @@ int MOSTLora::receData()
       if (_cbReceData) {
           _cbReceData(_buf, _szBuf);
       }
-      parsePacket();  // parse Packet by your code
+      int szParse = parsePacket();  // parse Packet by your code
   }
 
   return _szBuf;
-}
-
-/////////////////////////////////////////
-// 1: set normal mode, 2: send data 3: recover original mode
-int MOSTLora::sendPacket(byte *pPacket, int szPacket)
-{
-    int nModeBackup = getMode();
-    setMode(E_LORA_NORMAL);
-    /////////////////////
-    // send data is ready
-    int nRet = sendData(pPacket, szPacket);
-    
-    setMode(nModeBackup);
-    return nRet;
 }
 
 boolean MOSTLora::isBusy()
@@ -559,7 +545,7 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
 void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = NULL;//MLPayloadGen::createNotifyVindunoPayloadGen((unsigned char*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7, 0, NULL);
+    MLPayloadGen *pPayload = new MLNotifyVindunoPayloadGen((uint8_t*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
