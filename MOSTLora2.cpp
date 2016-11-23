@@ -57,7 +57,7 @@ int MOSTLora::sendPacket(byte *pPacket, int szPacket)
     if (bUseAES) {
         pPacket[4] |= 0x10;    // add AES flag
         int szAES = ((szPacket - 5) + 15) / 16 * 16;    // 16 alignment
-        MLutility::encryptAES_CBC(pPacket, szAES, _keyAES, _ivAES);
+        MLutility::encryptAES_CBC(pPacket, szAES, (byte*)_keyAES, (byte*)_ivAES);
     }
     /////////////////////
     // send data is ready
@@ -85,7 +85,7 @@ int MOSTLora::parsePacket()
         if (flag & 0x10) {      // AES128 decrypt
             _buf[4] &= 0xEF;    // clear AES flag
             int szAES = ((szRet - 5) + 15) / 16 * 16;    // 16 alignment
-            MLutility::decryptAES_CBC(_buf + 5, szAES, _keyAES, _ivAES);
+            MLutility::decryptAES_CBC(_buf + 5, szAES, (byte*)_keyAES, (byte*)_ivAES);
 #ifdef DEBUG_LORA
             debugSerial.print(F("Decrypt: AES="));
             debugSerial.print(szAES, DEC);
