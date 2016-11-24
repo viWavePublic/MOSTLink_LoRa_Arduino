@@ -267,6 +267,9 @@ class MLPacketGen {
     public:
         MLPacketGen(uint8_t version = 0x0B);
         MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version = 0x0B);
+        ~MLPacketGen() {
+            setMLPayloadGen(NULL);
+        }
         void setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetType, uint8_t direction, uint8_t *id, uint8_t version);
         void setMLPayloadGen(MLPayloadGen *mlpayloadGen);
         int getMLPacket(uint8_t *mlpacket);

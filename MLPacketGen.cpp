@@ -264,6 +264,9 @@ void MLPacketGen::setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t pack
 }
 
 void MLPacketGen::setMLPayloadGen(MLPayloadGen *mlpayloadGen) {
+    if (_mlPayloadGen != NULL)
+        delete _mlPayloadGen;
+    
     _mlPayloadGen = mlpayloadGen;
 }
 
