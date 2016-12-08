@@ -16,7 +16,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   Serial.begin(9600);
   lora.begin();
-  lora.writeConfig(915000, 0, 0, 7, 5);
+//  lora.writeConfig(915000, 0, 0, 7, 4);
   lora.setMode(E_LORA_NORMAL);    // module mode: power-saving
   lora.setCallbackReceData(receData);
   digitalWrite(LED_PIN, HIGH); // high led for indicating ready to work

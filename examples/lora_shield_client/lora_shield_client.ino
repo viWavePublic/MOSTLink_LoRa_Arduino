@@ -37,7 +37,7 @@ void setup() {
   mCurrentPhase = PHASE_SETUP;
   turnLedOn(); // set led to in progress
   lora.begin();
-  lora.writeConfig(915000, 0, 0, 7, 5);
+//  lora.writeConfig(915000, 0, 0, 7, 4);
   lora.setCallbackReceData(receConfig);
   lora.readConfig();  
   lora.setMode(E_LORA_NORMAL);    // module mode: power-saving

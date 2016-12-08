@@ -433,7 +433,6 @@ void MOSTLora::sendPacketResData(float h, float t)
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
-    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
@@ -536,7 +535,6 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
-    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
@@ -550,7 +548,6 @@ void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float 
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
-    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);

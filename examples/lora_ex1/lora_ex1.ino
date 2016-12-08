@@ -5,6 +5,9 @@ const int pinLedRece = 13;
 //#include <LDHT.h>
 #include "DHT.h"
 #include "MLutility.h"
+#if !defined(__LINKIT_ONE__)
+#include <MemoryFree.h>
+#endif // __LINKIT_ONE__
 
 int count = 0;
 const int pinTouch = A0;  // 12;
@@ -30,7 +33,12 @@ String strHi = "";
 // callback for CMD_REQ_DATA
 void funcPacketReqData(unsigned char *data, int szData)
 {
-  debugSerial.print("ReqData= ");
+#if !defined(__LINKIT_ONE__)
+    Serial.print(F(" Free mem:"));
+    Serial.println(freeMemory());
+#endif // __LINKIT_ONE__
+
+  debugSerial.print(F("ReqData= "));
 
   dht.readSensor(fHumidity, fTemperature, true);
   lora.sendPacketResData(fHumidity, fTemperature);
@@ -82,6 +90,11 @@ void setup() {
     delay(1000);
     i++;
   }
+  
+#if !defined(__LINKIT_ONE__)
+    Serial.print(F(" Free mem:"));
+    Serial.println(freeMemory());
+#endif // __LINKIT_ONE__
 }
 
 

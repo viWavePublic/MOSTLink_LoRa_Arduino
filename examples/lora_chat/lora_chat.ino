@@ -7,6 +7,10 @@
 #include "MOSTLora.h"
 #include "MLutility.h"
 
+#if !defined(__LINKIT_ONE__)
+#include <MemoryFree.h>
+#endif // __LINKIT_ONE__
+
 MOSTLora lora;
 
 int szBuf = 0;
@@ -15,6 +19,11 @@ byte buf[100] = {0};
 // callback for rece data
 void funcCustomRece(unsigned char *data, int szData)
 {
+#if !defined(__LINKIT_ONE__)
+    Serial.print(F(" Free mem:"));
+    Serial.println(freeMemory());
+#endif // __LINKIT_ONE__
+  
   debugSerial.print("funcCustomRece= ");
   MLutility::printBinary(data, szData);
 }

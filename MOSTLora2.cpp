@@ -185,7 +185,6 @@ void MOSTLora::sendPacketReqAuthJoin()
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
-    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
@@ -203,7 +202,6 @@ void MOSTLora::sendPacketResAuthResponse(uint8_t *data, int szData)
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
-    delete pPayload;
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
