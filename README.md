@@ -54,6 +54,6 @@ Building and using the example by Arduino IDE
 Reference
 ----
 * Arduino: https://www.arduino.cc
-* MOSTLink: http://mostlink.viwave.io
+* MOSTLink: http://www.mostlink.io
 * Vinduino: https://github.com/ReiniervdL/Vinduino
 * Cryptographic Library: http://rweather.github.io/arduinolibs/crypto.html
