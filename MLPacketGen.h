@@ -298,6 +298,7 @@ public:
         // prefix
         int pos = getPayloadPrefix(payload);
         
+        payload[pos++] = _dataLen;
         memcpy(&payload[pos], _data, _dataLen);
         pos += _dataLen;
         
@@ -324,6 +325,22 @@ public:
     MLNotifyMcsCommandPayloadGen(uint8_t dataLen, uint8_t *data) : MLReqLoginMcsPayloadGen(dataLen, data)
     {
         _cmdId = CMD_NOTIFY_MCS_COMMAND;
+    }
+};
+
+class MLReqLogoutPayloadGen : public MLReqAuthJoinPayloadGen {
+public:
+    MLReqLogoutPayloadGen() : MLReqAuthJoinPayloadGen()
+    {
+        _cmdId = CMD_REQ_LOGOUT;
+    }
+};
+
+class MLReqStillAlivePayloadGen : public MLReqAuthJoinPayloadGen {
+public:
+    MLReqStillAlivePayloadGen() : MLReqAuthJoinPayloadGen()
+    {
+        _cmdId = CMD_REQ_STILL_ALIVE;
     }
 };
 

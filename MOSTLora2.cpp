@@ -207,3 +207,30 @@ void MOSTLora::sendPacketAnsAuthResponse(uint8_t *data, int szData)
     // send packet is ready
     sendPacket(_buf, packetLen);
 }
+
+// send CMD_REQ_LOGIN_MCS to gateway, to login MCS
+void MOSTLora::sendPacketReqLoginMCS(uint8_t *data, int szData)
+{
+    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
+    MLPayloadGen *pPayload = new MLReqLoginMcsPayloadGen(szData, data);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}
+
+void MOSTLora::sendPacketSendMCSCommand(uint8_t *data, int szData)
+{
+    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
+    MLPayloadGen *pPayload = new MLSendMcsCommandPayloadGen(szData, data);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}

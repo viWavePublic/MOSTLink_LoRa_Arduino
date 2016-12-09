@@ -138,6 +138,10 @@ public:
     void sendPacketReqAuthJoin();       // send REQ_AUTH_JOIN to gateway, then will receive REQ_AUTH_CHALLENGE
     void sendPacketAnsAuthResponse(uint8_t *data, int szData);   // received REQ_AUTH_CHALLENGE, then ANS_AUTH_RESPONSE
     
+    // MCS related:
+    void sendPacketReqLoginMCS(uint8_t *data, int szData);
+    void sendPacketSendMCSCommand(uint8_t *data, int szData);
+
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);
     
