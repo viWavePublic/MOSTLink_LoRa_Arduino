@@ -35,7 +35,24 @@ class MLPayloadGen {
             }
         }
     
+        // payload = prefix + [custom] + postfix
         virtual int getPayload(uint8_t *payload) = 0;
+        int getPayloadPrefix(uint8_t *payload) {
+            // prefix
+            payload[0] = _version;
+            payload[1] = _cmdId & 0xFF;
+            payload[2] = _cmdId >> 8;
+            return 3;
+        }
+        int getPayloadPostfix(uint8_t *payload, int pos) {
+            // postfix
+            payload[pos++] = _optionFlags;
+            if (_optionDataLen > 0) {
+                memcpy(&payload[pos], _optionData, _optionDataLen);
+                pos += _optionDataLen;
+            }
+            return pos;
+        }
 
         uint8_t getVersion() { return _version; }
         uint16_t getCmdId() { return _cmdId; }
@@ -46,8 +63,11 @@ class MLPayloadGen {
         }
         uint8_t getOptionDataLen() { return _optionDataLen; }
     protected:
+        // prefix
         uint8_t _version;
         uint16_t _cmdId;
+    
+        // postfix
         uint8_t _optionFlags;
         uint8_t _optionData[ML_MAX_OPTION_DATA_SIZE];
         uint8_t _optionDataLen;
@@ -139,9 +159,9 @@ class MLResSetLoraConfigGen : public MLPayloadGen {
         uint8_t _errorCode;
 };
 
-class MLResDataPayloadGen : public MLPayloadGen {
+class MLAnsDataPayloadGen : public MLPayloadGen {
     public:
-        MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data);
+        MLAnsDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data);
         int getPayload(uint8_t *payload);
         uint8_t getErrorCode() { return _errorCode; }
         uint8_t getDataLen() { return _dataLen; }
@@ -201,12 +221,26 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
 
 class MLReqAuthChallengePayloadGen : public MLPayloadGen {
 public:
-    MLReqAuthChallengePayloadGen() : MLPayloadGen(CMD_REQ_AUTH_CHALLENGE) {}
+    MLReqAuthChallengePayloadGen(uint8_t *keyHMAC) : MLPayloadGen(CMD_REQ_AUTH_CHALLENGE) {
+        memcpy(_keyHMAC, keyHMAC, 4);
+    }
     
     int getPayload(uint8_t *payload)
     {
-        return 4 + 4;
+        // prefix
+        int pos = getPayloadPrefix(payload);
+    
+        memcpy(payload + pos, _keyHMAC, 4);
+        pos += 4;
+        
+        // postfix
+        pos = getPayloadPostfix(payload, pos);
+        return pos;
     }
+    
+    uint8_t* getKeyHMAC() { return _keyHMAC; }
+private:
+    uint8_t _keyHMAC[4];
 };
 
 class MLReqAuthJoinPayloadGen : public MLPayloadGen {
@@ -216,49 +250,81 @@ public:
     int getPayload(uint8_t *payload)
     {
         // prefix
-        payload[0] = _version;
-        payload[1] = _cmdId & 0xFF;
-        payload[2] = _cmdId >> 8;
+        int pos = getPayloadPrefix(payload);
         
         // postfix
-        payload[3] = _optionFlags;
-        if (_optionDataLen > 0)
-            memcpy(&payload[4], _optionData, _optionDataLen);
-        
-        return (4 + _optionDataLen);
+        pos = getPayloadPostfix(payload, pos);
+        return pos;
     }
 };
 
-#define SIZE_RES_AUTH_RESPONSE_HMAC     16
-class MLResAuthResponsePayloadGen : public MLPayloadGen {
+#define SIZE_AUTH_RESPONSE_HMAC     16
+class MLAnsAuthResponsePayloadGen : public MLPayloadGen {
 public:
-    MLResAuthResponsePayloadGen(uint8_t *dataHMAC) : MLPayloadGen(CMD_RES_AUTH_RESPONSE)
+    MLAnsAuthResponsePayloadGen(uint8_t *dataHMAC) : MLPayloadGen(CMD_ANS_AUTH_RESPONSE)
     {
-        memcpy(_dataHMAC, dataHMAC, SIZE_RES_AUTH_RESPONSE_HMAC);
+        memcpy(_dataHMAC, dataHMAC, SIZE_AUTH_RESPONSE_HMAC);
     }
     
     int getPayload(uint8_t *payload)
     {
         // prefix
-        payload[0] = _version;
-        payload[1] = _cmdId & 0xFF;
-        payload[2] = _cmdId >> 8;
+        int pos = getPayloadPrefix(payload);
         
-        memcpy(&payload[3], _dataHMAC, SIZE_RES_AUTH_RESPONSE_HMAC);
+        memcpy(&payload[pos], _dataHMAC, SIZE_AUTH_RESPONSE_HMAC);
+        pos += SIZE_AUTH_RESPONSE_HMAC;
+        
         // postfix
-        int pos = 3 + SIZE_RES_AUTH_RESPONSE_HMAC;
-        payload[pos++] = _optionFlags;
-        if (_optionDataLen > 0) {
-            memcpy(&payload[pos], _optionData, _optionDataLen);
-            pos += _optionDataLen;
-        }
-        
+        pos = getPayloadPostfix(payload, pos);
         return pos;
     }
 
     uint8_t* getDataMAC() { return _dataHMAC; }
 private:
-    uint8_t _dataHMAC[SIZE_RES_AUTH_RESPONSE_HMAC];
+    uint8_t _dataHMAC[SIZE_AUTH_RESPONSE_HMAC];
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+// MediaTek Cloud Sandbox
+class MLReqLoginMcsPayloadGen : public MLPayloadGen {
+public:
+    MLReqLoginMcsPayloadGen(uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_REQ_LOGIN_MCS)
+    {
+        _dataLen = dataLen;
+        memcpy(_data, data, dataLen);
+    }
+    int getPayload(uint8_t *payload)
+    {
+        // prefix
+        int pos = getPayloadPrefix(payload);
+        
+        memcpy(&payload[pos], _data, _dataLen);
+        pos += _dataLen;
+        
+        // postfix
+        pos = getPayloadPostfix(payload, pos);
+        return pos;
+    }
+
+private:
+    uint8_t _dataLen;
+    uint8_t _data[ML_MAX_DATA_SIZE];
+};
+
+class MLSendMcsCommandPayloadGen : public MLReqLoginMcsPayloadGen {
+public:
+    MLSendMcsCommandPayloadGen(uint8_t dataLen, uint8_t *data) : MLReqLoginMcsPayloadGen(dataLen, data)
+    {
+        _cmdId = CMD_SEND_MCS_COMMAND;
+    }
+};
+
+class MLNotifyMcsCommandPayloadGen : public MLReqLoginMcsPayloadGen {
+public:
+    MLNotifyMcsCommandPayloadGen(uint8_t dataLen, uint8_t *data) : MLReqLoginMcsPayloadGen(dataLen, data)
+    {
+        _cmdId = CMD_NOTIFY_MCS_COMMAND;
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////

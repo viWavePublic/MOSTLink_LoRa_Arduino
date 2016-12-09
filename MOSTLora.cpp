@@ -418,7 +418,7 @@ boolean MOSTLora::waitUntilReady(unsigned long timeout)
   return bRet;
 }
 
-// RES_DATA command for humidity & temperature
+// ANS_DATA command for humidity & temperature
 void MOSTLora::sendPacketResData(float h, float t)
 {
     byte dataHT[8];
@@ -427,8 +427,7 @@ void MOSTLora::sendPacketResData(float h, float t)
     memcpy(dataHT + 4, &t, 4);      // temperature (4 bytes)
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = new MLResDataPayloadGen(0, 8, dataHT);
-//    MLPayloadGen::createResDataPayloadGen(0, 8, dataHT, 0, NULL);
+    MLPayloadGen *pPayload = new MLAnsDataPayloadGen(0, 8, dataHT);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
@@ -438,7 +437,7 @@ void MOSTLora::sendPacketResData(float h, float t)
     sendPacket(_buf, packetLen);
 }
 
-// RES_DATA command for humidity & temperature
+// ANS_DATA command for humidity & temperature
 void MOSTLora::sendPacketResData_old(float h, float t)
 {
     int szPacket = 22 + 15;
@@ -447,7 +446,7 @@ void MOSTLora::sendPacketResData_old(float h, float t)
     // prapare payload chunk
     byte payload[15];
     payload[0] = 0x0A;    // version
-    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 RES_DATA commandID
+    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 ANS_DATA commandID
     payload[3] = 0;       // error code: 0 - success
     payload[4] = 8;       // data length
     // humidity (4 bytes)
@@ -530,7 +529,7 @@ void MOSTLora::sendPacketNotifyLocation(unsigned long date_time, unsigned long l
     loc.longtitude = lng;
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = NULL;//MLPayloadGen::createNotifyLocationGen(date_time, loc, 0, 1, 0, NULL);
+    MLPayloadGen *pPayload = new MLNotifyLocationGen(date_time, loc, 0, 1);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);

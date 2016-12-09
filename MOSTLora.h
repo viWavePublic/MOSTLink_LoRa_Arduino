@@ -126,7 +126,7 @@ public:
   /////////////////////////////////////////
   int sendPacket(byte *pPacket, int szPacket);
     
-  // RES_DATA command for humidity & temperature
+  // ANS_DATA command for humidity & temperature
   void sendPacketResData(float h, float t);
   void sendPacketResData_old(float h, float t);
   
@@ -136,7 +136,7 @@ public:
 
     // auth related: challenge-reponse
     void sendPacketReqAuthJoin();       // send REQ_AUTH_JOIN to gateway, then will receive REQ_AUTH_CHALLENGE
-    void sendPacketResAuthResponse(uint8_t *data, int szData);   // received REQ_AUTH_CHALLENGE, then RES_AUTH_RESPONSE
+    void sendPacketAnsAuthResponse(uint8_t *data, int szData);   // received REQ_AUTH_CHALLENGE, then ANS_AUTH_RESPONSE
     
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);

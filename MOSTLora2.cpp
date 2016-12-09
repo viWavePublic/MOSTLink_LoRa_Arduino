@@ -129,7 +129,8 @@ int MOSTLora::parsePacket()
                     }
                 }
                 else if (cmdID == CMD_REQ_AUTH_CHALLENGE) {
-                    byte *pData = &_buf[17];
+                    MLReqAuthChallengePayloadGen *pPayload = pkGen.getMLPayload();
+                    uint8_t *pData = pPayload->getKeyHMAC();
 #ifdef DEBUG_LORA
                     debugSerial.print(F("HMAC key: "));
                     MLutility::printBinary(pData, 4);
@@ -138,10 +139,10 @@ int MOSTLora::parsePacket()
                         _cbPacketReqAuthChallenge(pData, 4);
                     else {
                         delay(500);
-                        sendPacketResAuthResponse(pData, 4);
+                        sendPacketAnsAuthResponse(pData, 4);
                     }
                 }
-                else if (cmdID == CMD_RES_AUTH_TOKEN) {
+                else if (cmdID == CMD_RET_AUTH_TOKEN) {
 #ifdef DEBUG_LORA
                     debugSerial.println(F("AUTH_TOKEN"));
 #endif // DEBUG_LORA
@@ -190,14 +191,14 @@ void MOSTLora::sendPacketReqAuthJoin()
     sendPacket(_buf, packetLen);
 }
 
-// received REQ_AUTH_CHALLENGE, then RES_AUTH_RESPONSE
-void MOSTLora::sendPacketResAuthResponse(uint8_t *data, int szData)
+// received REQ_AUTH_CHALLENGE, then ANS_AUTH_RESPONSE
+void MOSTLora::sendPacketAnsAuthResponse(uint8_t *data, int szData)
 {
     uint8_t dataHMAC[16] = {0};
     MLutility::generateHMAC(dataHMAC, _keyHMAC, data, szData);
     
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = new MLResAuthResponsePayloadGen(dataHMAC);
+    MLPayloadGen *pPayload = new MLAnsAuthResponsePayloadGen(dataHMAC);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);

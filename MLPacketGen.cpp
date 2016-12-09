@@ -149,26 +149,23 @@ int MLResSetLoraConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLResDataPayloadGen::MLResDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_RES_DATA) {
+MLAnsDataPayloadGen::MLAnsDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_ANS_DATA) {
     _errorCode = errorCode;
     _dataLen = dataLen;
     memcpy(_data, data, _dataLen);
 }
 
-int MLResDataPayloadGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
+int MLAnsDataPayloadGen::getPayload(uint8_t *payload) {
+    // prefix
+    int pos = getPayloadPrefix(payload);
+
     payload[pos++] = _errorCode;
     payload[pos++] = _dataLen;
     memcpy(&payload[pos], _data, _dataLen);
     pos += _dataLen;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
+    
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
 }
 

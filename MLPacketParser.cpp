@@ -81,24 +81,27 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             mlpacket->setMLPayloadGen(new MLResSetLoraConfigGen(errorCode));
             optionFlagsPos = CMD_RES_SET_ERR_CODE_POS + 1;
             break;
-        case CMD_RES_DATA:
-            errorCode = payload[CMD_RES_D_ERR_CODE_POS];
-            dataLen = payload[CMD_RES_D_DATA_LENGTH];
-            memcpy(data, payload+CMD_REQ_D_DATA_POS, dataLen);
-            mlpacket->setMLPayloadGen(new MLResDataPayloadGen(errorCode, dataLen, data));
-            optionFlagsPos = CMD_REQ_D_DATA_POS + dataLen;
+        case CMD_ANS_DATA:
+            errorCode = payload[CMD_ANS_D_ERR_CODE_POS];
+            dataLen = payload[CMD_ANS_D_DATA_LENGTH];
+            memcpy(data, payload+CMD_ANS_D_DATA_POS, dataLen);
+            mlpacket->setMLPayloadGen(new MLAnsDataPayloadGen(errorCode, dataLen, data));
+            optionFlagsPos = CMD_ANS_D_DATA_POS + dataLen;
             break;
         case CMD_REQ_AUTH_JOIN:
             mlpacket->setMLPayloadGen(new MLReqAuthJoinPayloadGen());
             break;
         case CMD_REQ_AUTH_CHALLENGE:
-            mlpacket->setMLPayloadGen(new MLReqAuthChallengePayloadGen());
+            memcpy(data, payload + 3, 4);
+            mlpacket->setMLPayloadGen(new MLReqAuthChallengePayloadGen(data));
             break;
-        case CMD_RES_AUTH_RESPONSE:
-        {
-            uint8_t dataHMAC[16] = {0};
-            mlpacket->setMLPayloadGen(new MLResAuthResponsePayloadGen(dataHMAC));
-        }
+        case CMD_ANS_AUTH_RESPONSE:
+            mlpacket->setMLPayloadGen(new MLAnsAuthResponsePayloadGen(data));
+            break;
+        case CMD_NOTIFY_MCS_COMMAND:
+            dataLen = payload[3];
+            memcpy(data, payload + 4, dataLen);
+            mlpacket->setMLPayloadGen(new MLNotifyMcsCommandPayloadGen(dataLen, data));
             break;
         case CMD_NTF_UPLOAD_VINDUINO_FIELD:
             memcpy(apikey, payload+CMD_NTF_VINDUINO_API_KEY_POS, VINDUNO_API_KEY_LEN);
