@@ -306,7 +306,10 @@ public:
         pos = getPayloadPostfix(payload, pos);
         return pos;
     }
-
+    uint8_t getDataLen() { return _dataLen; }
+    uint8_t* getData() {
+        return _data;
+    }
 private:
     uint8_t _dataLen;
     uint8_t _data[ML_MAX_DATA_SIZE];

@@ -12,9 +12,17 @@
 #endif // __LINKIT_ONE__
 
 MOSTLora lora;
+#include <Grove_LED_Bar.h>
+Grove_LED_Bar bar(3, 2, false);
 
 int szBuf = 0;
 byte buf[100] = {0};
+
+
+//char *strDevice = "DyoERH4D,VlnyAVKNL60CxZb1";
+//char *strDevice = "DLKy51TU,VlnyAVKNL60CxZb1";
+char *strDevice = "DLKy51TU,Z98z3UKrZR4tcEPX";
+const char *token = "ANALOG_CONTROL";
 
 // callback for rece data
 void funcCustomRece(unsigned char *data, int szData)
@@ -27,7 +35,7 @@ void funcCustomRece(unsigned char *data, int szData)
   debugSerial.print("funcCustomRece= ");
   MLutility::printBinary(data, szData);
 }
-void funcCustomPacketReqData(unsigned char *data, int szData)
+void funcPacketReqData(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
   buf[szData] = 0;
@@ -35,11 +43,26 @@ void funcCustomPacketReqData(unsigned char *data, int szData)
   debugSerial.println((const char*)buf);
 }
 
-char *strDevice = "DyoERH4D,VlnyAVKNL60CxZb1";
+void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
+{
+  memcpy(buf, data, szData);  
+  buf[szData] = 0;
+  debugSerial.print("NotifyMcsCommand= ");
+  debugSerial.println((const char*)buf);
+
+  if (strstr(buf, token) == buf) {
+    char *strVal = buf + strlen(token) + 1;
+    int nVal = atoi(strVal);
+    bar.setLevel(nVal / 10);
+  }
+}
 
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
-  
+  // bar-meter
+  bar.begin();
+  bar.setLevel(3);
+    
   lora.begin();
   // custom LoRa config by your environment setting
 //  lora.writeConfig(915555, 0, 0, 7, 5);
@@ -50,8 +73,10 @@ void setup() {
 
   // custom callback
   lora.setCallbackReceData(funcCustomRece);
-  lora.setCallbackPacketReqData(funcCustomPacketReqData);
+  lora.setCallbackPacketReqData(funcPacketReqData);
+  lora.setCallbackPacketNotifyMcsCommand(funcPacketNotifyMcsCommand);
 
+  // login MCS
   lora.sendPacketReqLoginMCS(strDevice, strlen(strDevice));
 }
 

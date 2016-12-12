@@ -40,6 +40,11 @@ void MOSTLora::setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc)
 {
     _cbPacketReqAuthChallenge = cbFunc;
 }
+void MOSTLora::setCallbackPacketNotifyMcsCommand(CALLBACK_ReceData cbFunc)
+{
+    _cbPacketNotifyMcsCommand = cbFunc;
+}
+
 void MOSTLora::setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc)
 {
     _cbParseMOSTLink = cbFunc;
@@ -125,7 +130,11 @@ int MOSTLora::parsePacket()
             {
                 if (cmdID == CMD_REQ_DATA) {
                     if (_cbPacketReqData) {
-                        _cbPacketReqData(_buf + 20, _buf[19]);
+                        MLReqDataPayloadGen *pPayload = pkGen.getMLPayload();
+                        
+                        uint8_t nDataLen;
+                        uint8_t *pData = pPayload->getData(nDataLen);
+                        _cbPacketReqData(pData, nDataLen);
                     }
                 }
                 else if (cmdID == CMD_REQ_AUTH_CHALLENGE) {
@@ -147,7 +156,12 @@ int MOSTLora::parsePacket()
                     debugSerial.println(F("AUTH_TOKEN"));
 #endif // DEBUG_LORA
                 }
-
+                else if (cmdID == CMD_NOTIFY_MCS_COMMAND) {
+                    if (_cbPacketNotifyMcsCommand) {
+                        MLNotifyMcsCommandPayloadGen *pPayload = pkGen.getMLPayload();
+                        _cbPacketNotifyMcsCommand(pPayload->getData(), pPayload->getDataLen());
+                    }
+                }
             }
         }
         else {

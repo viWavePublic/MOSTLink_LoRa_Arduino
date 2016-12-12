@@ -70,9 +70,10 @@ private:
   unsigned char _buf[MAX_SIZE_BUF + 1];
     
     // callback
-    CALLBACK_ReceData _cbReceData;        // common rece data
-    CALLBACK_ReceData _cbPacketReqData;   // REQ_DATA
+    CALLBACK_ReceData _cbReceData;          // common rece data
+    CALLBACK_ReceData _cbPacketReqData;             // REQ_DATA
     CALLBACK_ReceData _cbPacketReqAuthChallenge;    // REQ_AUTH_CHALLENGE
+    CALLBACK_ReceData _cbPacketNotifyMcsCommand;    // NOTIFY_MCS_COMMAND
     CALLBACK_ParseCommand _cbParseMOSTLink;         // MOSTLink cmdID
     
 public:
@@ -114,8 +115,8 @@ public:
     void setCallbackReceData(CALLBACK_ReceData cbFunc);
     void setCallbackPacketReqData(CALLBACK_ReceData cbFunc);
     void setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc);
+    void setCallbackPacketNotifyMcsCommand(CALLBACK_ReceData cbFunc);
     void setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc);
-
     
     void setKeyHMAC(const char *strKey);
     void setKeyAES(const char *strKey);
