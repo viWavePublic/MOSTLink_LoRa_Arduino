@@ -1,10 +1,7 @@
 //////////////////////////////////////////////////////
-// This sample code is used for Vinduino project base on MOSTLink protocol
+// This sample code is used for ThingSpeak project base on MOSTLink protocol
 //
-// Note:
-//    If you use Vinduino board, check MOSTLora library folder.
-//    in "MostLora.h" header file, you must unmark "#define USE_VINDUINO".
-//    Then MOST Link library would work correctly. 
+// https://thingspeak.com/login
 //
 //////////////////////////////////////////////////////
 
@@ -15,14 +12,14 @@ MOSTLora lora;
 DHT dht(2, DHT22);
 float fTemperature, fHumidity;
 
-const char *thinkSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
+const char *thingSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
 
 // callback for REQ_DATA
 void funcPacketReqData(unsigned char *data, int szData)
 {
   debugSerial.println("ReqData= sendPacketThingSpeak");
   dht.readSensor(fHumidity, fTemperature, true);
-  lora.sendPacketThingSpeak(thinkSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
+  lora.sendPacketThingSpeak(thingSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
 }
 
 void setup() {
