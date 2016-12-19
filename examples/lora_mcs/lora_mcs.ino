@@ -14,15 +14,20 @@
 MOSTLora lora;
 #include <Grove_LED_Bar.h>
 Grove_LED_Bar bar(3, 2, false);
+#define PIN_LED_CONTROL  13
 
 int szBuf = 0;
 byte buf[100] = {0};
 
 
-//char *strDevice = "DyoERH4D,VlnyAVKNL60CxZb1";
-//char *strDevice = "DLKy51TU,VlnyAVKNL60CxZb1";
-char *strDevice = "DLKy51TU,Z98z3UKrZR4tcEPX";
-const char *token = "ANALOG_CONTROL";
+//char *strDevice = "DyoERH4D,VlnyAVKNL60CxZb1";    // correct id,key
+//char *strDevice = "DLKy51TU,VlnyAVKNL60CxZb1";    // wrong key
+//char *strDevice = "DLKy51TU,Z98z3UKrZR4tcEPX";    // correct id,key
+char *strDevice = "DT1G2CG4,MNH1AQxlA4xJrtM1";      // correct id,key
+const char *tokenAnalog = "ANALOG_CONTROL";
+const char *tokenLed = "LED_CONTROL";
+const char *resultTemperature = ",TEMPERATURE,,";
+const char *resultLed = ",LED_DISPLAY,,";
 
 // callback for rece data
 void funcCustomRece(unsigned char *data, int szData)
@@ -50,10 +55,24 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
   debugSerial.print("NotifyMcsCommand= ");
   debugSerial.println((const char*)buf);
 
-  if (strstr(buf, token) == buf) {
-    char *strVal = buf + strlen(token) + 1;
+  if (strstr(buf, tokenAnalog) == buf) {
+    char *strVal = buf + strlen(tokenAnalog) + 1;
     int nVal = atoi(strVal);
     bar.setLevel(nVal / 10);
+  }
+  if (strstr(buf, tokenLed) == buf) {
+    char *strVal = buf + strlen(tokenLed) + 1;
+    int nVal = atoi(strVal);
+    digitalWrite(PIN_LED_CONTROL, nVal);
+    
+    String strCmd = strDevice;
+    strCmd += resultLed;
+    if (0 == nVal)
+      strCmd += "0";
+    else
+      strCmd += "1";
+     
+    lora.sendPacketSendMCSCommand(strCmd.c_str(), strCmd.length());
   }
 }
 
@@ -62,10 +81,13 @@ void setup() {
   // bar-meter
   bar.begin();
   bar.setLevel(3);
+  pinMode(PIN_LED_CONTROL, OUTPUT);
+  digitalWrite(PIN_LED_CONTROL, HIGH);
+
     
   lora.begin();
   // custom LoRa config by your environment setting
-//  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
 
   delay(1000);
@@ -102,14 +124,26 @@ void inputBySerial()
         lora.sendPacketReqLoginMCS(strDevice, strlen(strDevice));
       }
       else if (buf[1] == '2') {
-        strCmd += ",TEMPERATURE,,20.8";
+        strCmd += resultTemperature;
+        strCmd += "22.2";
         lora.sendPacketSendMCSCommand(strCmd.c_str(), strCmd.length());
       }
       else if (buf[1] == '3') {
-        strCmd += ",TEMPERATURE,,23.9";
+        strCmd += resultTemperature;
+        strCmd += "23.9";
         lora.sendPacketSendMCSCommand(strCmd.c_str(), strCmd.length());
       }
-     else if (buf[1] == '9') {
+      else if (buf[1] == '4') {
+        strCmd += resultTemperature;
+        strCmd += "24.5";
+        lora.sendPacketSendMCSCommand(strCmd.c_str(), strCmd.length());
+      }
+      else if (buf[1] == '5') {
+        strCmd += resultTemperature;
+        strCmd += "25.6";
+        lora.sendPacketSendMCSCommand(strCmd.c_str(), strCmd.length());
+      }
+      else if (buf[1] == '9') {
         lora.sendPacketSendMCSCommand(buf + 2, strlen(buf + 2));
       }
     }
