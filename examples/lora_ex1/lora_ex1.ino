@@ -14,9 +14,9 @@ const int pinTouch = A0;  // 12;
 bool bPressTouch = false;
 //Grove_LED_Bar bar(7, 6, false);
 
-//MOSTLora lora(13,12,A2);    // LM-230 (old)
 MOSTLora lora(7, 6, 5);       // LM-130 (new)
-DHT dht(2, DHT22);
+//DHT dht(2, DHT22);
+DHT dht(2, DHT11);
 
 float fTemperature, fHumidity;
 int szBuf = 0;
@@ -48,7 +48,7 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(pinTouch, INPUT);
   pinMode(pinLedRece, OUTPUT);
-  
+
   digitalWrite(pinLedRece, LOW);
   digitalWrite(pinTouch, LOW);
 
