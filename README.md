@@ -9,6 +9,10 @@ Requirements
 * Arduino Uno connected to computer
 * Arduino IDE 1.6.x installed in computer
 
+LoRa Shield Switch(S1): occupied pins
+---- 
+* S1 on LinkIt: D0(RX), D1(TX), D7(P1), D6(P2), D5(BZ)
+* S1 on Arduino: D10(RX), D11(TX), D7(P1), D6(P2), D5(BZ) 
 
 Install MOSTLora to Arduino IDE
 ----
@@ -22,38 +26,44 @@ Crypto library to encrypt/decrypt, then support security transmission
 * USE_LIB_CRYPTO_AES128: AES/CBC/NoPadding encrypt/decrypt
 * USE_LIB_CRYPTO_HMAC: Challenge-response to check HMAC result
 
-Building and using the example by Arduino IDE
+Building and using the example by Arduino IDE 
 ----
+[File] -> [Examples] -> [installed MOSTLora lib] as examples folder
 1.  Humidity & Temperature Sensor  
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_ex1]  
+        [lora_ex1]  
     
-2.  Vinduino project 
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_vinduino]      
+2.  Chat test between gateway and node  
+        [lora_chat] 
+
+3.  Vinduino project 
+        [lora_vinduino]      
         header file: MOSTLora_def.h, unmark "#define USE_VINDUINO", 
         Digit pin for RX/TX, and P1/P2 would be specified correctly.
         D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)
 
-3.  ThingSpeak project  
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_thingspeak]      
+4.  ThingSpeak project  
+        [lora_thingspeak]           
 
-4.  chat  
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_chat]      
+5.  Challenge-Response by crypto lib
+        [lora_fake] as fake node simulate
+        [lora_challenge] as challenge-response using HMAC, AES
 
-5.  fake node simulate
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_fake]
+6.  GPS test (for Linkit One)
+        [lora_gps]
 
-6.  challenge-response using HMAC
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_challenge]
-
-7.  GPS test (for Linkit One)
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_gps]      
+7.  MediaTek Cloud Sandbox (MCS)
+        [lora_mcs]
 
 8.  debug configure (for GlobalSat debug):  
-        [File] -> [Examples] -> [installed MOSTLora lib] -> [lora_debug]      
+        [lora_debug]      
+
+
 
 Reference
 ----
 * Arduino: https://www.arduino.cc
 * MOSTLink: http://www.mostlink.io
+* ThingSpeak: https://thingspeak.com
 * Vinduino: https://github.com/ReiniervdL/Vinduino
 * Cryptographic Library: http://rweather.github.io/arduinolibs/crypto.html
+* MCS: https://mcs.mediatek.com
