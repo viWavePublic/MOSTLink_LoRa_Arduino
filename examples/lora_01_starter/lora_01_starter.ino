@@ -1,17 +1,31 @@
+//////////////////////////////////////////////////////
+// MOSTLink LoRa Arduino sample code for starter.
+// For check gateway and LoRa node are working correctly.
+// 
+// https://github.com/viWavePublic/MOSTLink_Doc/blob/master/GettingStartedwithMOSTLinkLoRa.pdf
+//
+//////////////////////////////////////////////////////
+
 #include "MOSTLora.h"
 #define LED_PIN 13
  
 MOSTLora lora; 
  
 void setup() { 
-  pinMode(LED_PIN, OUTPUT); 
+  pinMode(LED_PIN, OUTPUT);
+  
+  // Serial for log monitor
   Serial.begin(9600);
+  Serial.println(F("*** lora_01_starter ***"));
   
   lora.begin(); 
-  //
+  
+  // config setting: drequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915000, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);
-  lora.setCallbackPacketReqData(funcBlink); // set polling request callback 
+  
+  // set polling request callback
+  lora.setCallbackPacketReqData(funcBlink);
 } 
   
 void loop() { 
