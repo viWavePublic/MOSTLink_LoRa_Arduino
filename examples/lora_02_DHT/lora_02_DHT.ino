@@ -4,6 +4,8 @@
 // Gateway request data to node, then node response it's 
 // temperature and humidity to gateway
 //
+// DHT dht(2, DHT22);         // for DHT22
+// DHT dht(2, DHT11);         // for DHT11
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"

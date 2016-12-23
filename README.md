@@ -25,25 +25,27 @@ Crypto library to encrypt/decrypt, then support security transmission
 * in "MOSTLora_def.h"
 * USE_LIB_CRYPTO_AES128: AES/CBC/NoPadding encrypt/decrypt
 * USE_LIB_CRYPTO_HMAC: Challenge-response to check HMAC result
+* DEBUG_LORA: show debug log in serial monitor
 
-Examples in Arduino IDE: [File] -> [Examples] -> [installed MOSTLora lib] examples folder
+Examples in Arduino IDE: [File] -> [Examples] -> [installed MOSTLora lib] folder
 ----
 1.  Starter for MOSTLink_Doc/GettingStartedwithMOSTLinkLoRa.pdf  
         [lora_01_starter]
 
-2.  Humidity & Temperature Sensor  
+2.  Humidity & Temperature Sensor: DHT22/DHT11  
+        [lora_02_DHT]
     
-3.  Chat test between gateway and node  
+3.  Chat between gateway and node  
         [lora_03_chat] 
 
-4.  Vinduino project 
-        [lora_04_vinduino]      
+4.  ThingSpeak project
+        [lora_04_thingspeak] 
+
+5.  Vinduino project 
+        [lora_05_vinduino]      
         header file: MOSTLora_def.h, unmark "#define USE_VINDUINO", 
         Digit pin for RX/TX, and P1/P2 would be specified correctly.
-        D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)
-
-5.  ThingSpeak project  
-        [lora_05_thingspeak]           
+        D0(RX), D1(TX), D3(P1), D4(P2), A7(BZ)          
 
 6.  Challenge-Response by crypto lib
         [lora_06_fake] as fake node simulate

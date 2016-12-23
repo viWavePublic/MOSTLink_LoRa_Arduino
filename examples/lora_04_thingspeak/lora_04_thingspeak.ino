@@ -1,23 +1,28 @@
 //////////////////////////////////////////////////////
-// This sample code is used for ThingSpeak project base on MOSTLink protocol
-//
+// ThingSpeak project base on MOSTLink protocol
+// upload sensors to cloud server
 // https://thingspeak.com/login
 //
+// DHT dht(2, DHT22);         // for DHT22
+// DHT dht(2, DHT11);         // for DHT11
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
-#include <DHT.h>
+#include "DHT.h"
 
 MOSTLora lora;
 DHT dht(2, DHT22);
-float fTemperature, fHumidity;
 
+float fTemperature, fHumidity;
 const char *thingSpeakApiKey = "W00UTJRN68Z7HJJN";    // ThingSpeak API-key
 
 // callback for REQ_DATA
 void funcPacketReqData(unsigned char *data, int szData)
 {
-  debugSerial.println("ReqData= sendPacketThingSpeak");
+#ifdef DEBUG_LORA
+  debugSerial.println(F("ReqData, sendPacketThingSpeak= "));
+#endif // DEBUG_LORA
+  
   dht.readSensor(fHumidity, fTemperature, true);
   lora.sendPacketThingSpeak(thingSpeakApiKey, fHumidity, fTemperature, 33, 46, 59, 60, 70, 85);
 }
@@ -25,11 +30,12 @@ void funcPacketReqData(unsigned char *data, int szData)
 void setup() {
 #ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
-  Serial.println(F("--- ThingSpeak ---"));  // app title
+  Serial.println(F("*** lora_04_thingspeak ***"));  // app title
 #endif // DEBUG_LORA
   
   lora.begin();
-  // custom LoRa config by your environment setting
+  
+  // config setting: drequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
 
@@ -45,17 +51,12 @@ void setup() {
     i++;
   }
 
-  // test to gateway
-  const char *strTest = "Hi, ThingSpeak.";
-  lora.sendData(strTest); 
-
   // custom callback
   lora.setCallbackPacketReqData(funcPacketReqData);
 }
 
 void loop() {
   lora.run();
-  
   delay(100);
 }
 

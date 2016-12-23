@@ -1,5 +1,7 @@
 //////////////////////////////////////////////////////
-// This sample code is used for Vinduino project base on MOSTLink protocol
+// Vinduino project base on MOSTLink protocol
+// upload sensors to cloud server
+// http://vinduino.io/
 //
 // Note:
 //    If you use Vinduino board, check MOSTLora library folder:
@@ -12,20 +14,19 @@
 
 #include "MOSTLora.h"       // MOSTLora library 
 
-
 #ifdef USE_VINDUINO
 MOSTLora lora(3, 4, A7);  // Arduino Pro mini borad: D3 for P1, D4 for P2, A7 for BZ
 #else
 MOSTLora lora;
 #endif
 
-const char *loraApiKey = "0GFUGE371WNPMMJE";    // ThingSpeak API-key for vinduino.io
+const char *loraApiKey = "0GFUGE371WNPMMJE";    // API-key for vinduino.io
 
 // callback for REQ_DATA
 void funcCustomPacketReqData(unsigned char *data, int szData)
 {
 #ifdef DEBUG_LORA
-  debugSerial.println(F("ReqData= sendPacketVinduino"));
+  debugSerial.println(F("ReqData, sendPacketVinduino= "));
 #endif // DEBUG_LORA
 
   // send data to Vinduino.io when received REQ_DATA from gateway
@@ -36,6 +37,7 @@ void funcCustomPacketReqData(unsigned char *data, int szData)
 void setup() {
 #ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
+  Serial.println(F("*** lora_05_vinduino ***"));  // app title
 #endif // DEBUG_LORA
 
   /////////////////////
@@ -43,9 +45,8 @@ void setup() {
   /////////////////////
   lora.begin();         // lora library init
   
-  // custom LoRa config: freq(915555kHz), groupid(0), data_rate(0), power(7), wakeup_time(5)
+  // config setting: drequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915555, 0, 0, 7, 5);
-  
   lora.setMode(E_LORA_POWERSAVING);    // module mode: power-saving
 
   // test data to Vinduino.io
@@ -57,7 +58,6 @@ void setup() {
 
 void loop() {
   lora.run();
-
   delay(100);     // wait a moment for next loop
 }
 

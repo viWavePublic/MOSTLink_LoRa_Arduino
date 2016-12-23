@@ -1,33 +1,26 @@
 //////////////////////////////////////////////////////
-// This sample code is used for ShareCourse on MOSTLink protocol
+// Simple chat sample between Gateway <-> Lora
 //
-//
+//    Gateway: chat by Send TEXT(HEX)
+//    Lora Node: chat by Serial Monitor
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
 #include "MLutility.h"
 
-#if !defined(__LINKIT_ONE__)
-#include <MemoryFree.h>
-#endif // __LINKIT_ONE__
-
 MOSTLora lora;
 
-int szBuf = 0;
 byte buf[100] = {0};
 
 // callback for rece data
 void funcCustomRece(unsigned char *data, int szData)
-{
-#if !defined(__LINKIT_ONE__)
-    Serial.print(F(" Free mem:"));
-    Serial.println(freeMemory());
-#endif // __LINKIT_ONE__
-  
+{ 
   debugSerial.print("funcCustomRece= ");
   MLutility::printBinary(data, szData);
 }
-void funcCustomPacketReqData(unsigned char *data, int szData)
+
+// callback for CMD_REQ_DATA
+void funcPacketReqData(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
   buf[szData] = 0;
@@ -37,6 +30,7 @@ void funcCustomPacketReqData(unsigned char *data, int szData)
 
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
+  Serial.println(F("*** lora_03_chat ***"));
   
   lora.begin();
   // custom LoRa config by your environment setting
@@ -48,13 +42,12 @@ void setup() {
 
   // custom callback
   lora.setCallbackReceData(funcCustomRece);
-  lora.setCallbackPacketReqData(funcCustomPacketReqData);
+  lora.setCallbackPacketReqData(funcPacketReqData);
 }
 
 void loop() {
   lora.run();
-
-  delay(10);
+  delay(100);
 
   // command to send
   if (Serial.available())
