@@ -49,6 +49,7 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
     _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
     
+    _bPacketAES = false;
     setKeyHMAC("PublicKey");
     setKeyAES(KEY_AES128);
     setIvAES(IV_AES128);

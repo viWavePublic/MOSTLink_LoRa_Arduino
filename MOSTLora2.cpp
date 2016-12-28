@@ -58,11 +58,12 @@ int MOSTLora::sendPacket(byte *pPacket, int szPacket)
     setMode(E_LORA_NORMAL);
     
     // AES/CBC encrypt
-    boolean bUseAES = false;
-    if (bUseAES) {
+    if (_bPacketAES) {
         pPacket[4] |= 0x10;    // add AES flag
         int szAES = ((szPacket - 5) + 15) / 16 * 16;    // 16 alignment
-        MLutility::encryptAES_CBC(pPacket, szAES, (byte*)_keyAES, (byte*)_ivAES);
+        MLutility::encryptAES_CBC(pPacket + 5, szAES, (byte*)_keyAES, (byte*)_ivAES);
+        
+        szPacket = szAES + 5;
     }
     /////////////////////
     // send data is ready
