@@ -131,7 +131,7 @@ int MOSTLora::parsePacket()
             {
                 if (cmdID == CMD_REQ_DATA) {
                     if (_cbPacketReqData) {
-                        MLReqDataPayloadGen *pPayload = pkGen.getMLPayload();
+                        MLReqDataPayloadGen *pPayload = (MLReqDataPayloadGen*)pkGen.getMLPayload();
                         
                         uint8_t nDataLen;
                         uint8_t *pData = pPayload->getData(nDataLen);
@@ -139,7 +139,7 @@ int MOSTLora::parsePacket()
                     }
                 }
                 else if (cmdID == CMD_REQ_AUTH_CHALLENGE) {
-                    MLReqAuthChallengePayloadGen *pPayload = pkGen.getMLPayload();
+                    MLReqAuthChallengePayloadGen *pPayload = (MLReqAuthChallengePayloadGen*)pkGen.getMLPayload();
                     uint8_t *pData = pPayload->getKeyHMAC();
 #ifdef DEBUG_LORA
                     debugSerial.print(F("HMAC key: "));
@@ -159,7 +159,7 @@ int MOSTLora::parsePacket()
                 }
                 else if (cmdID == CMD_NOTIFY_MCS_COMMAND) {
                     if (_cbPacketNotifyMcsCommand) {
-                        MLNotifyMcsCommandPayloadGen *pPayload = pkGen.getMLPayload();
+                        MLNotifyMcsCommandPayloadGen *pPayload = (MLNotifyMcsCommandPayloadGen*)pkGen.getMLPayload();
                         _cbPacketNotifyMcsCommand(pPayload->getData(), pPayload->getDataLen());
                     }
                 }

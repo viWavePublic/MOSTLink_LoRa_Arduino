@@ -197,7 +197,7 @@ void MLutility::generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *data
     hash.resetHMAC(keySrc, strlen(keySrc));
     hash.update(dataSrc, szDataSrc);
     hash.finalizeHMAC(keySrc, strlen(keySrc), dataDst, HMAC_SIZE);
-#endif USE_LIB_CRYPTO_HMAC
+#endif // USE_LIB_CRYPTO_HMAC
     
 #ifdef DEBUG_LORA
     debugSerial.print(F("HMAC data: "));
