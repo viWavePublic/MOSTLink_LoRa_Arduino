@@ -65,7 +65,7 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 void MOSTLora::begin()
 {
 #ifdef DEBUG_LORA
-  debugSerial.println(F("== MOSTLink v1.5.0 =="));
+  debugSerial.println(F("== MOSTLink v1.5.1 =="));
   debugSerial.print(F("CPU: "));
   debugSerial.println(F_CPU);
     

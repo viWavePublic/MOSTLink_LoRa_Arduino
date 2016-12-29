@@ -15,6 +15,16 @@
 #include <SHA256.h>
 #endif // USE_LIB_CRYPTO_HMAC
 
+#if defined(__LINKIT_ONE__)
+
+void dtostrf(float fVal, int width, int precision, char *strBuf)
+{
+    char strFormat[32];
+    sprintf(strFormat, "%%%d.%df", width, precision);
+    sprintf(strBuf, strFormat, fVal);
+}
+#endif // (__LINKIT_ONE__)
+
 static unsigned char getComma(unsigned char num,const char *str)
 {
     unsigned char i,j = 0;

@@ -67,7 +67,7 @@ private:
     const char *_keyHMAC;   // 16 bytes
     const char *_keyAES;    // 16 bytes (AES128)
     const char *_ivAES;     // 4 bytes
-  
+      
   int _szBuf;
   unsigned char _buf[MAX_SIZE_BUF + 1];
     
@@ -150,6 +150,7 @@ public:
     // MCS related:
     void sendPacketReqLoginMCS(uint8_t *data, int szData);
     void sendPacketSendMCSCommand(uint8_t *data, int szData);
+    void sendPacketSendMCS(const char *strDevIdKey, const char *strChannel, const char *strValue);
 
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);

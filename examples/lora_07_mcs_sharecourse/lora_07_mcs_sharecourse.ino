@@ -17,7 +17,8 @@
 #endif // __LINKIT_ONE__
 
 MOSTLora lora;
-DHT dht(2, DHT22);          // DHT22
+DHT dht(2, DHT22);      // DHT22, DHT11
+//DHT dht(2, DHT11);       
 
 #define PIN_LED_CONTROL  13
 #define PIN_FAN_CONTROL  8
@@ -29,8 +30,8 @@ float fTemperature, fHumidity;
 int soHot = 40, soWet = 60;
 unsigned long tsSensor = millis();
 
-//char *strDevice = "DeDCKPaV,KMs1XXpnmZK2pEJy";  // LoRa Node #2
-char *strDevice = "DpsWOd5I,76k6kr3u0uyIm87x";    // LoRa Node #1
+//const char *strDevice = "DF4dQDv7,48MRQ7vjehmKHSm0";  // LoRa Node #2
+const char *strDevice = "DyAwB8Ed,gWAVV00hHXAZ0lhv";    // LoRa Node #1
 const char *strCtrlFan = "CTRL_FAN";
 const char *strCtrlLed = "CTRL_LED";
 const char *strCtrlUpdate = "CTRL_UPDATE";        // refresh sensor
@@ -45,7 +46,7 @@ void funcPacketReqData(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
   buf[szData] = 0;
-  debugSerial.print("ReqData= ");
+  debugSerial.print(F("ReqData= "));
   debugSerial.println((const char*)buf);
 }
 
@@ -53,7 +54,7 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
   buf[szData] = 0;
-  debugSerial.print("NotifyMcsCommand= ");
+  debugSerial.print(F("NotifyMcsCommand= "));
   debugSerial.println((const char*)buf);
 
   int nVal = 0;
@@ -77,22 +78,19 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
   }
   else if (parseDownlink(strCtrlUpdate, nVal)) {
     dht.readSensor(fHumidity, fTemperature, true);
-    
-    sprintf(strTmp, "%.1f", fHumidity);
-    sendUplink(strDispHumidity, strTmp);
-    
-    sprintf(strTmp, "%.1f", fTemperature);
-    sendUplink(strDispTemperature, strTmp);
-    sendUplink(strCtrlUpdate, "0");
+
+    sendUplink(strDispHumidity, fHumidity);
+    sendUplink(strDispTemperature, fTemperature);
+    refreshControlState();
   }
   else if (parseDownlink(strCtrlSoHot, nVal)) {
     soHot = nVal;
-    sprintf(strTmp, "temperature > %d (hot)", nVal);
+    sprintf(strTmp, "(Hot)T > %d", nVal);
     strValue = strTmp;
   }
   else if (parseDownlink(strCtrlSoWet, nVal)) {
     soWet = nVal;
-    sprintf(strTmp, "humidity > %d (wet)", nVal);    
+    sprintf(strTmp, "(Wet)H > %d", nVal);    
     strValue = strTmp;
   }
 
@@ -133,7 +131,8 @@ void sendUplink(const char *strID, int nVal) {
   sendUplink(strID, strTmp);
 }
 void sendUplink(const char *strID, float fVal) {
-  sprintf(strTmp, "%.1f", fVal);
+  dtostrf(fVal, 1, 1, strTmp);
+//  sprintf(strTmp, "%3.1f", fVal);
   sendUplink(strID, strTmp);
 }
 //
@@ -160,9 +159,9 @@ void setup() {
   dht.begin();
   int i = 0;
   boolean bReadDHT = false;
-  while (!bReadDHT && i < 5) {
+  while (!bReadDHT && i < 8) {
+    delay(700);
     bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
-    delay(1000);
     i++;
   }
 
@@ -176,9 +175,9 @@ void setup() {
 void refreshControlState() {
   sendUplink(strCtrlFan, digitalRead(PIN_FAN_CONTROL));
   sendUplink(strCtrlLed, digitalRead(PIN_LED_CONTROL));
-  sendUplink(strCtrlUpdate, "0");
   sendUplink(strCtrlSoHot, soHot);
   sendUplink(strCtrlSoWet, soWet);
+  sendUplink(strCtrlUpdate, "0");
 }
 
 void loop() {
@@ -192,15 +191,19 @@ void loop() {
     if (fTemperature > soHot && 0 == digitalRead(PIN_FAN_CONTROL)) {
       digitalWrite(PIN_FAN_CONTROL, 1);
       sendUplink(strCtrlFan, "1");
-      sprintf(strTmp, "temperature: %.1f > %d", fTemperature, soHot);
-      debugSerial.println(F("auto active fan."));
+      debugSerial.print(F("temperature > "));
+      debugSerial.print(soHot);
+      debugSerial.println(F(", active fan."));
     }
     if (fHumidity > soWet && 0 == digitalRead(PIN_LED_CONTROL)) {
       digitalWrite(PIN_LED_CONTROL, 1);
       sendUplink(strCtrlLed, "1");
-      sprintf(strTmp, "temperature: %.1f > %d", fHumidity, soWet);
-      debugSerial.println(F("auto active led"));
+      debugSerial.print(F("humidity > "));
+      debugSerial.print(soWet);
+      debugSerial.println(F(", active led"));
     }
+    Serial.print(F("timestamp: "));
+    Serial.println(tsCurr);
   }
 
   // command to send (for debug)

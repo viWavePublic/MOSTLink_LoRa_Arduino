@@ -237,6 +237,7 @@ void MOSTLora::sendPacketReqLoginMCS(uint8_t *data, int szData)
     sendPacket(_buf, packetLen);
 }
 
+// send uplink command to MCS
 void MOSTLora::sendPacketSendMCSCommand(uint8_t *data, int szData)
 {
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
@@ -248,4 +249,16 @@ void MOSTLora::sendPacketSendMCSCommand(uint8_t *data, int szData)
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
+}
+
+// send uplink command to MCS ("devID,devKey,channel,,value")
+void MOSTLora::sendPacketSendMCS(const char *strDevIdKey, const char *strChannel, const char *strValue)
+{
+    String strCmd = strDevIdKey;
+    strCmd += ",";
+    strCmd += strChannel;
+    strCmd += ",,";
+    strCmd += strValue;
+    
+    sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
 }

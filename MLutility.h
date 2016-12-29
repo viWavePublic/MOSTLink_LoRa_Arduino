@@ -26,7 +26,9 @@ public:
     static boolean encryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV);
     static boolean decryptAES_CBC(byte *srcData, int szData, const byte *srcKey, const byte *srcIV);
 };
-
+#if defined(__LINKIT_ONE__)
+extern void dtostrf(float fVal, int width, int precision, char *strBuf);
+#endif // (__LINKIT_ONE__)
 
 #endif // __MLutility_h
 

@@ -47,7 +47,7 @@ float DHT::readTemperature(bool S) {
       return f;
     }
   }
-  Serial.print("Read fail");
+  Serial.print(F("Read T fail"));
   return NAN;
 }
 
@@ -71,7 +71,7 @@ float DHT::readHumidity(void) {
       return f;
     }
   }
-  Serial.print("Read fail");
+  Serial.print(F("Read H fail"));
   return NAN;
 }
 
@@ -178,14 +178,14 @@ boolean DHT::readSensor(float &h, float &t, boolean bShowResult)
 
     if (bShowResult) {
         if (bRet) {
-            Serial.print("Humidity: ");
+            Serial.print(F("Humidity: "));
             Serial.print(h);
-            Serial.print(" %, Temperature: ");
+            Serial.print(F(" %, Temperature: "));
             Serial.print(t);
-            Serial.println(" *C");
+            Serial.println(F(" *C"));
         }
         else {
-            Serial.println("DHT Fail.");
+            Serial.println(F("DHT Fail."));
         }
     }
     return bRet;
