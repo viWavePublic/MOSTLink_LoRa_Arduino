@@ -1,10 +1,20 @@
 //////////////////////////////////////////////////////
-// ShareCourse on MOSTLink protocol with MCS
+// USG(CES) on MOSTLink protocol with MCS
 // 
-// Green House system by LoRa and MOSTLink
-// 1. DHT22 sensor for humidity and temperature
-// 2. Led for control humidity
-// 3. Fan for cool down
+// Sensor connect to these pins on Arduino UNO:
+//     1. blue-led(D3): show light-sensor(A0) value
+//     2. red-led(D13): show reed-sensor(D12) state
+//     3. green-led(D8): control by MCS
+//     4. humidity-temperature sensor (D2)
+//
+// MediaTek Cloud Sandbox(MCS) web-server
+//     1. sign in https://mcs.mediatek.com
+//     2. Development->Prototype->Create Prototype->import from JSON file
+//     3. select "MCS_USG.json" in "Arduinolibraries/MOSTLinkLib/examples/lora_07_mcs_usg" folder
+//     4. Create test device, MCS will generate DeviceId,DeviceKey.
+//     5. modify strDevice as your "DeviceId,DeviceKey"
+//     6. select test device in MCS
+//     7. Vertify and Upload this code to Arduino UNO
 //
 //////////////////////////////////////////////////////
 
@@ -179,17 +189,23 @@ void loop() {
   lora.run();
   delay(100);
 
+// reed sensor
   int nReedState = digitalRead(PIN_SENSOR_REED);
   digitalWrite(PIN_REED_LED, nReedState);
+  
+  int nLit = analogRead(PIN_SENSOR_LIGHT);    
+  int nLitLed = map(nLit, 0, 1023, 0, 255);   // analog light-sensor convert to blue-led (PWM)
+  analogWrite(PIN_LIT_LED, nLitLed);
     
   unsigned long tsCurr = millis();
   if (tsCurr > tsSensor + 5000) {
     tsSensor = tsCurr;
     dht.readSensor(fHumidity, fTemperature, true);
 
-    int nLit = analogRead(PIN_SENSOR_LIGHT);    
-    Serial.print(F("Lit: "));
-    Serial.println(nLit);
+    Serial.print(F("LightSensor: "));
+    Serial.print(nLit);
+    Serial.print(F(", BlueLed(PWM): "));
+    Serial.println(nLitLed);
 
     Serial.print(F("timestamp: "));
     Serial.println(tsCurr);
