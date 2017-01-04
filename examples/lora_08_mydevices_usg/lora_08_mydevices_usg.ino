@@ -43,7 +43,11 @@ char strTmp[32] = {0};
 float fTemperature, fHumidity;
 unsigned long tsSensor = millis();
 
-const char *strDevice = "D4AKFZ6S,6LTy6N1OkRlhDfk4";    // LoRa Node #1
+// myDevices: Cayenne
+const char *MQTTUsername = "66d320a0-c737-11e6-aeea-ffda3f4916c6";
+const char *MQTTPassword = "84b09083b226ae4eaa2adf559350bd2ab56b98f6";
+const char *ClientID =     "4cc70f50-d17d-11e6-b522-ed8f75cdd18a";
+
 const char *strCtrlLed = "CTRL_LED";
 const char *strCtrlUpdate = "CTRL_UPDATE";        // refresh sensor
 const char *strDispTemperature = "DISP_TEMPERATURE";
@@ -61,11 +65,11 @@ void funcPacketReqData(unsigned char *data, int szData)
   debugSerial.println((const char*)buf);
 }
 
-void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
+void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
   buf[szData] = 0;
-  debugSerial.print(F("NotifyMcsCommand= "));
+  debugSerial.print(F("NotifyMydevicesCommand= "));
   debugSerial.println((const char*)buf);
 
   int nVal = 0;
@@ -84,7 +88,7 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
     refreshControlState();
   }
 
-  // send log to MCS (as LoRa ack)
+  // send log to myDevices (as LoRa ack)
   if (strValue.length() > 0) {
     // add timestamp
     unsigned long tsCurr = millis();
@@ -93,7 +97,7 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
     sendUplink(strDispLog, strValue.c_str());    
   }
 }
-// parse downlink command from MCS
+// parse downlink command from myDevices
 boolean parseDownlink(const char *strToken, int &nVal) {
   boolean bRet = false;
   const char *strBuf = (const char *)buf;
@@ -130,7 +134,7 @@ void setup() {
 
   // custom callback
   lora.setCallbackPacketReqData(funcPacketReqData);
-  lora.setCallbackPacketNotifyMcsCommand(funcPacketNotifyMcsCommand);
+  lora.setCallbackPacketNotifyMydevicesCommand(funcPacketNotifyMydevicesCommand);
 
   // init sensor for humidity & temperature
   dht.begin();
@@ -142,58 +146,73 @@ void setup() {
     i++;
   }
 
-  // login MCS
-  lora.sendPacketReqLoginMCS((uint8_t*)strDevice, strlen(strDevice));
-
-  // init MCS control state:
-  refreshControlState();
+  // login myDevices
+  szBuf = convertMQTTtoHex(buf, MQTTUsername, MQTTPassword, ClientID);
+  lora.sendPacketReqLoginMydevices(buf, szBuf);
 }
 
-// send uplink command to MCS
+int convertMQTTtoHex(uint8_t *dst, const char *username, const char *password, const char *clientID)
+{
+  // username
+  MLutility::stringHexToBytes(dst, username, 8);
+  MLutility::stringHexToBytes(dst + 4, username + 9, 4);
+  MLutility::stringHexToBytes(dst + 6, username + 14, 4);
+  MLutility::stringHexToBytes(dst + 8, username + 19, 4);
+  MLutility::stringHexToBytes(dst + 10, username + 24, 12);
+
+  MLutility::stringHexToBytes(dst + 16, password, 40);
+
+  uint8_t *pID = dst + 36;
+  MLutility::stringHexToBytes(pID, clientID, 8);
+  MLutility::stringHexToBytes(pID + 4, clientID + 9, 4);
+  MLutility::stringHexToBytes(pID + 6, clientID + 14, 4);
+  MLutility::stringHexToBytes(pID + 8, clientID + 19, 4);
+  MLutility::stringHexToBytes(pID + 10, clientID + 24, 12);
+    
+  MLutility::printBinary(dst, 16);
+  MLutility::printBinary(dst + 16, 20);
+  MLutility::printBinary(dst + 36, 16);
+
+  return (16 + 20 + 16);
+}
+
+// send uplink command to myDevices
 void sendUplink(const char *strID, const char *strValue)
 {
-  String strCmd = strDevice;
-  strCmd += ",";
-  strCmd += MLutility::generateChannelData(strID, strValue);
-  
-  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
 }
 
 void refreshControlState() {
-  String strCmd = strDevice;
-  strCmd += ",";
-  strCmd += MLutility::generateChannelData(strCtrlLed, digitalRead(PIN_LED_CONTROL));
-    
-  int nReedState = digitalRead(PIN_SENSOR_REED);
-  digitalWrite(PIN_REED_LED, nReedState);  
-  strCmd += "\n";
-  strCmd += MLutility::generateChannelData(strDispReed, nReedState);
-  
-  int nLit = analogRead(PIN_SENSOR_LIGHT);
-  strCmd += "\n";
-  strCmd += MLutility::generateChannelData(strDispLight, nLit);
-  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
+  String strCmd = "12,null,null,";
+  int nVal = digitalRead(PIN_SENSOR_REED);
+  itoa(nVal, strTmp, 10);
+  strCmd += strTmp;
+  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
   delay(500);
-
-  sendUplink(strCtrlUpdate, "0");
+  
+  int nLit = analogRead(PIN_SENSOR_LIGHT);    
+  strCmd = "20,lum,lux,";
+  itoa(nVal, strTmp, 10);
+  strCmd += strTmp;
+  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  delay(500);
 }
 
 void sendUplinkDHT() {
   dht.readSensor(fHumidity, fTemperature, false);
-  fTemperature = dht.convertCtoF(fTemperature);
-  
-  String strCmd = strDevice;
-  strCmd += ",";
-  strCmd += MLutility::generateChannelData(strDispHumidity, fHumidity);
-  strCmd += "\n";
-  strCmd += MLutility::generateChannelData(strDispTemperature, fTemperature);
 
-  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
+  String strCmd = "2,temp,f,";
+  int nVal = dht.convertCtoF(fTemperature);
+  itoa(nVal, strTmp, 10);
+  strCmd += strTmp;
+  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
   delay(500);
-
-  Serial.print(strCmd.length());
-  Serial.println(F(" count chars"));
+  
+  strCmd = "3,rel_hum,p,";
+  itoa((int)fHumidity, strTmp, 10);
+  strCmd += strTmp;
+  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  delay(500);
 }
 
 void loop() {
@@ -223,7 +242,6 @@ void loop() {
 
     Serial.print(F("timestamp: "));
     Serial.println(tsCurr);
-
   }
 
   // command to send (for debug)
@@ -239,7 +257,9 @@ void inputBySerial()
     if (buf[0] == '/')
     {
       if (buf[1] == '1') {
-        lora.sendPacketReqLoginMCS((uint8_t*)strDevice, strlen(strDevice));
+        // login myDevices
+        szBuf = convertMQTTtoHex(buf, MQTTUsername, MQTTPassword, ClientID);
+        lora.sendPacketReqLoginMydevices(buf, szBuf);        
       }
       else if (buf[1] == '2') {
         sendUplinkDHT();

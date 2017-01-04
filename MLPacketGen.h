@@ -285,7 +285,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////
-// MediaTek Cloud Sandbox
+// MediaTek Cloud Sandbox (MCS)
 class MLReqLoginMcsPayloadGen : public MLPayloadGen {
 public:
     MLReqLoginMcsPayloadGen(uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_REQ_LOGIN_MCS)
@@ -344,6 +344,40 @@ public:
     MLReqStillAlivePayloadGen() : MLReqAuthJoinPayloadGen()
     {
         _cmdId = CMD_REQ_STILL_ALIVE;
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+// myDevices: Cayenne
+class MLReqLoginMydevicesPayloadGen : public MLReqLoginMcsPayloadGen {
+public:
+    MLReqLoginMydevicesPayloadGen(uint8_t dataLen, uint8_t *data) : MLReqLoginMcsPayloadGen(dataLen, data)
+    {
+        _cmdId = CMD_REQ_LOGIN_MYDEVICES;
+    }
+};
+
+class MLSendMydevicesCommandPayloadGen : public MLReqLoginMcsPayloadGen {
+public:
+    MLSendMydevicesCommandPayloadGen(uint8_t dataLen, uint8_t *data) : MLReqLoginMcsPayloadGen(dataLen, data)
+    {
+        _cmdId = CMD_SEND_MYDEVICES_COMMAND;
+    }
+};
+
+class MLNotifyMydevicesCommandPayloadGen : public MLReqLoginMcsPayloadGen {
+public:
+    MLNotifyMydevicesCommandPayloadGen(uint8_t dataLen, uint8_t *data) : MLReqLoginMcsPayloadGen(dataLen, data)
+    {
+        _cmdId = CMD_NOTIFY_MYDEVICES_COMMAND;
+    }
+};
+
+class MLReqLogoutMydevicesPayloadGen : public MLReqLogoutPayloadGen {
+public:
+    MLReqLogoutMydevicesPayloadGen() : MLReqLogoutPayloadGen()
+    {
+        _cmdId = CMD_REQ_LOGOUT_MYDEVICES;
     }
 };
 

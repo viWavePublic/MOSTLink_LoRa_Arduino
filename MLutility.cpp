@@ -168,7 +168,7 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
     return bRet;
 }
 
-void MLutility::printBinary(const byte *data, const int szData)
+void MLutility::printBinary(const uint8_t *data, const int szData)
 {
     int i;
     for (i = 0; i < szData; i++) {
@@ -180,6 +180,17 @@ void MLutility::printBinary(const byte *data, const int szData)
     Serial.print(F(" ("));
     Serial.print(szData, DEC);
     Serial.print(F(" bytes)\n"));
+}
+
+void MLutility::stringHexToBytes(uint8_t *dst, const char *strSrc, const int szSrc)
+{
+    int i;
+    char strTmp[3] = {0};
+    for (i = 0; i < szSrc / 2; i++) {
+        strTmp[0] = strSrc[i * 2];
+        strTmp[1] = strSrc[i * 2 + 1];
+        dst[i] = strtoul(strTmp, NULL, 16);
+    }
 }
 
 int MLutility::readSerial(char *buf)
@@ -326,3 +337,28 @@ boolean MLutility::decryptAES_CBC(byte *srcData, int szData, const byte *srcKey,
     
     return true;
 }
+
+// send uplink command to MCS ("devID,devKey,channel,,value")
+// MCS data generator: "ChannelID,,value"
+String MLutility::generateChannelData(const char *strID, const char *strValue)
+{
+    String strRet = strID;
+    strRet += ",,";
+    strRet += strValue;
+    return strRet;
+}
+String MLutility::generateChannelData(const char *strID, float fVal)
+{
+    char strTmp[16];
+    dtostrf(fVal, 1, 1, strTmp);
+    String strRet = generateChannelData(strID, strTmp);
+    return strRet;
+}
+String MLutility::generateChannelData(const char *strID, int nVal)
+{
+    char strTmp[16];
+    itoa(nVal, strTmp, 10);
+    String strRet = generateChannelData(strID, strTmp);
+    return strRet;
+}
+

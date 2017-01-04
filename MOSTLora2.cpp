@@ -14,7 +14,6 @@
 
 #include "MOSTLora.h"
 #include "MLutility.h"
-#include "MLpacket.h"
 #include "MLPacketGen.h"
 #include "MLPacketParser.h"
 
@@ -43,6 +42,10 @@ void MOSTLora::setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc)
 void MOSTLora::setCallbackPacketNotifyMcsCommand(CALLBACK_ReceData cbFunc)
 {
     _cbPacketNotifyMcsCommand = cbFunc;
+}
+void MOSTLora::setCallbackPacketNotifyMydevicesCommand(CALLBACK_ReceData cbFunc)
+{
+    _cbPacketNotifyMydevicesCommand = cbFunc;
 }
 
 void MOSTLora::setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc)
@@ -163,6 +166,12 @@ int MOSTLora::parsePacket()
                         _cbPacketNotifyMcsCommand(pPayload->getData(), pPayload->getDataLen());
                     }
                 }
+                else if (cmdID == CMD_NOTIFY_MYDEVICES_COMMAND) {
+                    if (_cbPacketNotifyMydevicesCommand) {
+                        MLNotifyMydevicesCommandPayloadGen *pPayload = (MLNotifyMydevicesCommandPayloadGen*)pkGen.getMLPayload();
+                        _cbPacketNotifyMydevicesCommand(pPayload->getData(), pPayload->getDataLen());
+                    }
+                }
             }
         }
         else {
@@ -221,44 +230,4 @@ void MOSTLora::sendPacketAnsAuthResponse(uint8_t *data, int szData)
     /////////////////////
     // send packet is ready
     sendPacket(_buf, packetLen);
-}
-
-// send CMD_REQ_LOGIN_MCS to gateway, to login MCS
-void MOSTLora::sendPacketReqLoginMCS(uint8_t *data, int szData)
-{
-    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = new MLReqLoginMcsPayloadGen(szData, data);
-    
-    mlPacketGen.setMLPayloadGen(pPayload);
-    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
-    
-    /////////////////////
-    // send packet is ready
-    sendPacket(_buf, packetLen);
-}
-
-// send uplink command to MCS
-void MOSTLora::sendPacketSendMCSCommand(uint8_t *data, int szData)
-{
-    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
-    MLPayloadGen *pPayload = new MLSendMcsCommandPayloadGen(szData, data);
-    
-    mlPacketGen.setMLPayloadGen(pPayload);
-    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
-    
-    /////////////////////
-    // send packet is ready
-    sendPacket(_buf, packetLen);
-}
-
-// send uplink command to MCS ("devID,devKey,channel,,value")
-void MOSTLora::sendPacketSendMCS(const char *strDevIdKey, const char *strChannel, const char *strValue)
-{
-    String strCmd = strDevIdKey;
-    strCmd += ",";
-    strCmd += strChannel;
-    strCmd += ",,";
-    strCmd += strValue;
-    
-    sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
 }

@@ -20,11 +20,18 @@
 #define CMD_REQ_AUTH_JOIN       0x0009
 #define CMD_REQ_AUTH_CHALLENGE  0x000A
 
+// Mediatek Cloud Sandbox: MCS
 #define CMD_REQ_LOGIN_MCS       0x000C
 #define CMD_REQ_LOGOUT          0x000D
 #define CMD_REQ_STILL_ALIVE     0x000E
 #define CMD_SEND_MCS_COMMAND    0x000F
 #define CMD_NOTIFY_MCS_COMMAND  0x0010
+
+// myDevices: Cayenne
+#define CMD_REQ_LOGIN_MYDEVICES       0x0011
+#define CMD_REQ_LOGOUT_MYDEVICES      0x0012
+#define CMD_SEND_MYDEVICES_COMMAND    0x0013
+#define CMD_NOTIFY_MYDEVICES_COMMAND  0x0014
 
 #define CMD_RES_SET_LORA_CONFIG 0x0200
 #define CMD_ANS_DATA            0x0202

@@ -25,7 +25,7 @@ DHT dht(2, DHT22);      // DHT22, DHT11
 
 int szBuf = 0;
 byte buf[100] = {0};
-char strTmp[32] = {0};
+char *strTmp = buf;
 float fTemperature, fHumidity;
 int soHot = 40, soWet = 60;
 unsigned long tsSensor = millis();
@@ -79,9 +79,8 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
   else if (parseDownlink(strCtrlUpdate, nVal)) {
     dht.readSensor(fHumidity, fTemperature, true);
 
-    sendUplink(strDispHumidity, fHumidity);
-    sendUplink(strDispTemperature, fTemperature);
-    refreshControlState();
+    sendUplinkDHT();
+    refreshControlState(); 
   }
   else if (parseDownlink(strCtrlSoHot, nVal)) {
     soHot = nVal;
@@ -114,27 +113,7 @@ boolean parseDownlink(const char *strToken, int &nVal) {
   }
   return bRet;
 }
-// send uplink command to MCS
-void sendUplink(const char *strID, const char *strValue)
-{
-  String strCmd = strDevice;
-  strCmd += ",";
-  strCmd += strID;
-  strCmd += ",,";
-  strCmd += strValue;
-  
-  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
-  delay(500);
-}
-void sendUplink(const char *strID, int nVal) {
-  sprintf(strTmp, "%d", nVal);
-  sendUplink(strID, strTmp);
-}
-void sendUplink(const char *strID, float fVal) {
-  dtostrf(fVal, 1, 1, strTmp);
-//  sprintf(strTmp, "%3.1f", fVal);
-  sendUplink(strID, strTmp);
-}
+
 //
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
@@ -172,12 +151,51 @@ void setup() {
   refreshControlState();
 }
 
+// send uplink command to MCS
+void sendUplink(const char *strID, const char *strValue)
+{
+  String strCmd = strDevice;
+  strCmd += ",";
+  strCmd += MLutility::generateChannelData(strID, strValue);
+  
+  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
+  delay(500);
+}
+
 void refreshControlState() {
-  sendUplink(strCtrlFan, digitalRead(PIN_FAN_CONTROL));
-  sendUplink(strCtrlLed, digitalRead(PIN_LED_CONTROL));
-  sendUplink(strCtrlSoHot, soHot);
-  sendUplink(strCtrlSoWet, soWet);
-  sendUplink(strCtrlUpdate, "0");
+  String strCmd = strDevice;
+  strCmd += ",";
+  strCmd += MLutility::generateChannelData(strCtrlSoHot, soHot);
+  strCmd += "\n";
+  strCmd += MLutility::generateChannelData(strCtrlSoWet, soWet);
+
+  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
+  delay(500);
+
+  strCmd = strDevice;
+  strCmd += ",";
+  strCmd += MLutility::generateChannelData(strCtrlFan, digitalRead(PIN_FAN_CONTROL));
+  strCmd += "\n";
+  strCmd += MLutility::generateChannelData(strCtrlLed, digitalRead(PIN_LED_CONTROL));
+  strCmd += "\n";
+  strCmd += MLutility::generateChannelData(strCtrlUpdate, "0");
+  
+  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
+  delay(500);
+}
+
+void sendUplinkDHT() {
+  String strCmd = strDevice;
+  strCmd += ",";
+  strCmd += MLutility::generateChannelData(strDispHumidity, fHumidity);
+  strCmd += "\n";
+  strCmd += MLutility::generateChannelData(strDispTemperature, fTemperature);
+
+  lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
+  delay(500);
+
+  Serial.print(strCmd.length());
+  Serial.println(F(" count chars"));
 }
 
 void loop() {
@@ -191,12 +209,14 @@ void loop() {
     if (fTemperature > soHot && 0 == digitalRead(PIN_FAN_CONTROL)) {
       digitalWrite(PIN_FAN_CONTROL, 1);
       sendUplink(strCtrlFan, "1");
+      sendUplinkDHT();      
       debugSerial.print(F("temperature > "));
       debugSerial.print(soHot);
       debugSerial.println(F(", active fan."));
     }
     if (fHumidity > soWet && 0 == digitalRead(PIN_LED_CONTROL)) {
       digitalWrite(PIN_LED_CONTROL, 1);
+      sendUplinkDHT();      
       sendUplink(strCtrlLed, "1");
       debugSerial.print(F("humidity > "));
       debugSerial.print(soWet);
@@ -222,10 +242,9 @@ void inputBySerial()
         lora.sendPacketReqLoginMCS((uint8_t*)strDevice, strlen(strDevice));
       }
       else if (buf[1] == '2') {
-        sendUplink(strDispTemperature, fTemperature);
+        sendUplinkDHT();
       }
       else if (buf[1] == '3') {
-        sendUplink(strDispHumidity, fHumidity);
       }
       else if (buf[1] == '4') {
         refreshControlState();
@@ -239,3 +258,5 @@ void inputBySerial()
     }
   }  
 }
+
+

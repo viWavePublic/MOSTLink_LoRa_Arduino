@@ -76,6 +76,7 @@ private:
     CALLBACK_ReceData _cbPacketReqData;             // REQ_DATA
     CALLBACK_ReceData _cbPacketReqAuthChallenge;    // REQ_AUTH_CHALLENGE
     CALLBACK_ReceData _cbPacketNotifyMcsCommand;    // NOTIFY_MCS_COMMAND
+    CALLBACK_ReceData _cbPacketNotifyMydevicesCommand;    // NOTIFY_MYDEVICES_COMMAND
     CALLBACK_ParseCommand _cbParseMOSTLink;         // MOSTLink cmdID
     
 public:
@@ -118,6 +119,7 @@ public:
     void setCallbackPacketReqData(CALLBACK_ReceData cbFunc);
     void setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc);
     void setCallbackPacketNotifyMcsCommand(CALLBACK_ReceData cbFunc);
+    void setCallbackPacketNotifyMydevicesCommand(CALLBACK_ReceData cbFunc);
     void setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc);
     
     void setKeyHMAC(const char *strKey);
@@ -150,8 +152,11 @@ public:
     // MCS related:
     void sendPacketReqLoginMCS(uint8_t *data, int szData);
     void sendPacketSendMCSCommand(uint8_t *data, int szData);
-    void sendPacketSendMCS(const char *strDevIdKey, const char *strChannel, const char *strValue);
 
+    // myDevices(Cayenne) related:
+    void sendPacketReqLoginMydevices(uint8_t *data, int szData);
+    void sendPacketSendMydevicesCommand(uint8_t *data, int szData);
+    
   // NOTIFY_LOCATION
   void sendPacketNotifyLocation(unsigned long date_time, unsigned long lat, unsigned long lng);
     

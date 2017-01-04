@@ -20,8 +20,8 @@
 ///////////////////////
 // crypto encrypt/decrypt for AES128/CBC/NoPadding, HMAC for challenge-response
 ///////////////////////
-#define USE_LIB_CRYPTO_AES128
-#define USE_LIB_CRYPTO_HMAC
+//#define USE_LIB_CRYPTO_AES128
+//#define USE_LIB_CRYPTO_HMAC
 
 ///////////////////////
 // Arduino board
