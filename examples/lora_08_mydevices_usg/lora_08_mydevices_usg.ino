@@ -34,6 +34,9 @@ DHT dht(2, DHT11);
 #define PIN_SENSOR_REED   12
 #define PIN_REED_LED      13
 
+#define ID_UPDATE         15
+
+
 #define PIN_SENSOR_LIGHT  A0
 #define PIN_LIT_LED       3
 
@@ -46,15 +49,8 @@ unsigned long tsSensor = millis();
 // myDevices: Cayenne
 const char *MQTTUsername = "66d320a0-c737-11e6-aeea-ffda3f4916c6";
 const char *MQTTPassword = "84b09083b226ae4eaa2adf559350bd2ab56b98f6";
-const char *ClientID =     "4cc70f50-d17d-11e6-b522-ed8f75cdd18a";
-
-const char *strCtrlLed = "CTRL_LED";
-const char *strCtrlUpdate = "CTRL_UPDATE";        // refresh sensor
-const char *strDispTemperature = "DISP_TEMPERATURE";
-const char *strDispHumidity = "DISP_HUMIDITY";
-const char *strDispLog = "DISP_LOG";
-const char *strDispReed = "DISP_REED";
-const char *strDispLight = "DISP_LIGHT";
+//const char *ClientID =     "4cc70f50-d17d-11e6-b522-ed8f75cdd18a";
+const char *ClientID =     "ffa54f30-d1ad-11e6-b089-9f6bfa78ab33";
 
 // callback for rece data
 void funcPacketReqData(unsigned char *data, int szData)
@@ -72,41 +68,34 @@ void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
   debugSerial.print(F("NotifyMydevicesCommand= "));
   debugSerial.println((const char*)buf);
 
-  int nVal = 0;
-  String strValue;
-  const char *strCtrl = NULL;
-  if (parseDownlink(strCtrlLed, nVal)) {
-    digitalWrite(PIN_LED_CONTROL, nVal);
-    strValue = strCtrlLed;
-    if (0 == nVal)
-      strValue += " off";
-    else
-      strValue += " on";    
-  }
-  else if (parseDownlink(strCtrlUpdate, nVal)) {
-    sendUplinkDHT();
-    refreshControlState();
+  const char *strCommon = strstr(buf, ",");
+  int nChannel = 0;
+  int nVal;
+  if (strCommon != NULL) {
+    nChannel = atoi(buf);
+    nVal = atoi(strCommon + 1);
+    debugSerial.print(F("#"));
+    debugSerial.print(nChannel);
+    debugSerial.print(F("="));
+    debugSerial.println(nVal);
+
+    if (nChannel == PIN_LED_CONTROL) {
+      digitalWrite(PIN_LED_CONTROL, nVal);
+    }
+    else if (nChannel == ID_UPDATE) {
+      sendUplinkDHT();
+      refreshControlState();      
+    }
   }
 
   // send log to myDevices (as LoRa ack)
-  if (strValue.length() > 0) {
+/*  if (strValue.length() > 0) {
     // add timestamp
     unsigned long tsCurr = millis();
     sprintf(strTmp, " (@%d)", tsCurr);
     strValue += strTmp;
     sendUplink(strDispLog, strValue.c_str());    
-  }
-}
-// parse downlink command from myDevices
-boolean parseDownlink(const char *strToken, int &nVal) {
-  boolean bRet = false;
-  const char *strBuf = (const char *)buf;
-  if (strstr(strBuf, strToken) == strBuf) {
-    const char *strVal = strBuf + strlen(strToken) + 1;
-    nVal = atoi(strVal);
-    bRet = true;
-  }
-  return bRet;
+  }*/
 }
 
 //
@@ -127,7 +116,7 @@ void setup() {
     
   lora.begin();
   // custom LoRa config by your environment setting
-  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915333, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
@@ -183,8 +172,20 @@ void sendUplink(const char *strID, const char *strValue)
 }
 
 void refreshControlState() {
-  String strCmd = "12,null,null,";
-  int nVal = digitalRead(PIN_SENSOR_REED);
+  String strCmd;
+  int nVal = digitalRead(PIN_LED_CONTROL);
+  itoa(PIN_LED_CONTROL, strTmp, 10);
+  strCmd = strTmp;
+  strCmd += ",null,null,";
+  itoa(nVal, strTmp, 10);
+  strCmd += strTmp;
+  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  delay(500);
+  
+  nVal = digitalRead(PIN_SENSOR_REED);
+  itoa(PIN_SENSOR_REED, strTmp, 10);
+  strCmd = strTmp;
+  strCmd += ",null,null,";
   itoa(nVal, strTmp, 10);
   strCmd += strTmp;
   lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
@@ -192,10 +193,16 @@ void refreshControlState() {
   
   int nLit = analogRead(PIN_SENSOR_LIGHT);    
   strCmd = "20,lum,lux,";
-  itoa(nVal, strTmp, 10);
+  itoa(nLit, strTmp, 10);
   strCmd += strTmp;
   lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
   delay(500);
+
+  itoa(ID_UPDATE, strTmp, 10);
+  strCmd = strTmp;
+  strCmd += ",null,null,0";
+  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  delay(500);  
 }
 
 void sendUplinkDHT() {

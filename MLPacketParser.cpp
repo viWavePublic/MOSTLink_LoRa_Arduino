@@ -103,6 +103,11 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             memcpy(data, payload + 4, dataLen);
             mlpacket->setMLPayloadGen(new MLNotifyMcsCommandPayloadGen(dataLen, data));
             break;
+        case CMD_NOTIFY_MYDEVICES_COMMAND:
+            dataLen = payload[3];
+            memcpy(data, payload + 4, dataLen);
+            mlpacket->setMLPayloadGen(new MLNotifyMydevicesCommandPayloadGen(dataLen, data));
+            break;
         case CMD_NTF_UPLOAD_VINDUINO_FIELD:
             memcpy(apikey, payload+CMD_NTF_VINDUINO_API_KEY_POS, VINDUNO_API_KEY_LEN);
             soil1 = payload[CMD_NTF_VINDUINO_SOIL1_POS+3] << 24 | payload[CMD_NTF_VINDUINO_SOIL1_POS+2] << 16
