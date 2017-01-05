@@ -47,10 +47,9 @@ float fTemperature, fHumidity;
 unsigned long tsSensor = millis();
 
 // myDevices: Cayenne
-const char *MQTTUsername = "66d320a0-c737-11e6-aeea-ffda3f4916c6";
-const char *MQTTPassword = "84b09083b226ae4eaa2adf559350bd2ab56b98f6";
-//const char *ClientID =     "4cc70f50-d17d-11e6-b522-ed8f75cdd18a";
-const char *ClientID =     "ffa54f30-d1ad-11e6-b089-9f6bfa78ab33";
+const char *MQTTUsername = "b1ccd4a0-d30f-11e6-97cc-8758d0339dd8";
+const char *MQTTPassword = "dd183e02322d645286cb9076bf76cfb2f2a094c4";
+const char *ClientID =     "c4cb8060-d30f-11e6-ae8c-f90e83be502a";
 
 // callback for rece data
 void funcPacketReqData(unsigned char *data, int szData)
@@ -116,7 +115,7 @@ void setup() {
     
   lora.begin();
   // custom LoRa config by your environment setting
-  lora.writeConfig(915333, 0, 0, 7, 5);
+  lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
