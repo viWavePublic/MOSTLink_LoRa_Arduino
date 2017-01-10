@@ -45,7 +45,7 @@ void setup() {
   /////////////////////
   lora.begin();         // lora library init
   
-  // config setting: drequency, group, data-rate, power, wakeup-time
+  // config setting: frequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);    // module mode: power-saving
 

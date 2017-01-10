@@ -33,7 +33,7 @@ void setup() {
   Serial.println(F("*** lora_03_chat ***"));
   
   lora.begin();
-  // custom LoRa config by your environment setting
+  // config setting: frequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
 
