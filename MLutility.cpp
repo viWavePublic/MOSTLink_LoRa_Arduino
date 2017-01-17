@@ -193,6 +193,34 @@ void MLutility::stringHexToBytes(uint8_t *dst, const char *strSrc, const int szS
     }
 }
 
+// myDevices Cayenne: username, password, clientID
+int MLutility::convertMQTTtoHex(uint8_t *dst, const char *username, const char *password, const char *clientID)
+{
+    // username
+    MLutility::stringHexToBytes(dst, username, 8);
+    MLutility::stringHexToBytes(dst + 4, username + 9, 4);
+    MLutility::stringHexToBytes(dst + 6, username + 14, 4);
+    MLutility::stringHexToBytes(dst + 8, username + 19, 4);
+    MLutility::stringHexToBytes(dst + 10, username + 24, 12);
+    
+    MLutility::stringHexToBytes(dst + 16, password, 40);
+    
+    uint8_t *pID = dst + 36;
+    MLutility::stringHexToBytes(pID, clientID, 8);
+    MLutility::stringHexToBytes(pID + 4, clientID + 9, 4);
+    MLutility::stringHexToBytes(pID + 6, clientID + 14, 4);
+    MLutility::stringHexToBytes(pID + 8, clientID + 19, 4);
+    MLutility::stringHexToBytes(pID + 10, clientID + 24, 12);
+    
+    MLutility::printBinary(dst, 16);
+    MLutility::printBinary(dst + 16, 20);
+    MLutility::printBinary(dst + 36, 16);
+    
+    return (16 + 20 + 16);
+}
+
+/////////////////////////////////////////
+
 int MLutility::readSerial(char *buf)
 {
     int countBuf = 0;

@@ -19,6 +19,7 @@ public:
     static int readSerial(char *buf);
     static void printBinary(const uint8_t *data, const int szData);
     static void stringHexToBytes(uint8_t *dst, const char *strSrc, const int szSrc);
+    static int convertMQTTtoHex(uint8_t *dst, const char *username, const char *password, const char *clientID);
     
     static void generateHMAC(uint8_t *dataDst, const char *keySrc, uint8_t *dataSrc, int szDataSrc);
     

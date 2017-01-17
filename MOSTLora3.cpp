@@ -14,6 +14,7 @@
 
 #include "MOSTLora.h"
 #include "MLPacketGen.h"
+#include "MLutility.h"
 
 /////////////////////////////////////////
 // Mediatek Cloud Sandbox (MCS)
@@ -49,6 +50,12 @@ void MOSTLora::sendPacketSendMCSCommand(uint8_t *data, int szData)
 /////////////////////////////////////////
 // myDevices(Cayenne)
 /////////////////////////////////////////
+void MOSTLora::sendPacketReqLoginMydevices(const char *username, const char *pwd, const char *clientID)
+{
+    _szBuf = MLutility::convertMQTTtoHex(_buf, username, pwd, clientID);
+    sendPacketReqLoginMydevices(_buf, _szBuf);
+}
+
 void MOSTLora::sendPacketReqLoginMydevices(uint8_t *data, int szData)
 {
     MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());

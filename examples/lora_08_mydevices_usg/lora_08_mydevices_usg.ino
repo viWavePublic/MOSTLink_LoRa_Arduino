@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////
-// USG(CES) on MOSTLink protocol with MCS
+// USG(CES) on MOSTLink protocol with myDevices Cayenne
 // 
 // Sensor connect to these pins on Arduino UNO:
 //     1. blue-led(D3): show light-sensor(A0) value
@@ -7,15 +7,16 @@
 //     3. green-led(D8): control by MCS
 //     4. humidity-temperature sensor (D2)
 //
-// MediaTek Cloud Sandbox(MCS) web-server
-//     1. sign in https://mcs.mediatek.com
-//     2. Development->Prototype->Create Prototype->import from JSON file
-//     3. select "MCS_USG.json" in "Arduinolibraries/MOSTLinkLib/examples/lora_07_mcs_usg" folder
-//     4. Create test device, MCS will generate DeviceId,DeviceKey.
-//     5. modify strDevice as your "DeviceId,DeviceKey"
-//     6. select test device in MCS
-//     7. Vertify and Upload this code to Arduino UNO
+// myDevices Cayenne
+//     1. sign in http://mydevices.com/cayenne/signin/
+//     2. [Add New...]->[Device/Widget]->CAYENNE API(Bring Your Own Thing)
+//     3. copy/paste: MQTT USERNAME, PASSWORD, CLIENT ID
+//     4. Vertify and Upload this code to Arduino UNO
 //
+// Command in Serial monitor
+//     "/1" relogin myDevices Cayenne
+//     "/2" send uplink DHT to myDevices
+//     "/4" send uplink control-status to myDevices
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
@@ -36,7 +37,6 @@ DHT dht(2, DHT11);
 
 #define ID_UPDATE         15
 
-
 #define PIN_SENSOR_LIGHT  A0
 #define PIN_LIT_LED       3
 
@@ -46,20 +46,13 @@ char strTmp[32] = {0};
 float fTemperature, fHumidity;
 unsigned long tsSensor = millis();
 
-// myDevices: Cayenne
+// ****** NOTICE ******
+// TODO: Before you run your application, you need a myDevices Cayenne account.
 const char *MQTTUsername = "b1ccd4a0-d30f-11e6-97cc-8758d0339dd8";
 const char *MQTTPassword = "dd183e02322d645286cb9076bf76cfb2f2a094c4";
 const char *ClientID =     "c4cb8060-d30f-11e6-ae8c-f90e83be502a";
 
-// callback for rece data
-void funcPacketReqData(unsigned char *data, int szData)
-{
-  memcpy(buf, data, szData);  
-  buf[szData] = 0;
-  debugSerial.print(F("ReqData= "));
-  debugSerial.println((const char*)buf);
-}
-
+// callback for rece packet: notify myDevices Command
 void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
@@ -86,15 +79,6 @@ void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
       refreshControlState();      
     }
   }
-
-  // send log to myDevices (as LoRa ack)
-/*  if (strValue.length() > 0) {
-    // add timestamp
-    unsigned long tsCurr = millis();
-    sprintf(strTmp, " (@%d)", tsCurr);
-    strValue += strTmp;
-    sendUplink(strDispLog, strValue.c_str());    
-  }*/
 }
 
 //
@@ -115,13 +99,12 @@ void setup() {
     
   lora.begin();
   // custom LoRa config by your environment setting
-  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915222, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
 
   // custom callback
-  lora.setCallbackPacketReqData(funcPacketReqData);
   lora.setCallbackPacketNotifyMydevicesCommand(funcPacketNotifyMydevicesCommand);
 
   // init sensor for humidity & temperature
@@ -135,39 +118,7 @@ void setup() {
   }
 
   // login myDevices
-  szBuf = convertMQTTtoHex(buf, MQTTUsername, MQTTPassword, ClientID);
-  lora.sendPacketReqLoginMydevices(buf, szBuf);
-}
-
-int convertMQTTtoHex(uint8_t *dst, const char *username, const char *password, const char *clientID)
-{
-  // username
-  MLutility::stringHexToBytes(dst, username, 8);
-  MLutility::stringHexToBytes(dst + 4, username + 9, 4);
-  MLutility::stringHexToBytes(dst + 6, username + 14, 4);
-  MLutility::stringHexToBytes(dst + 8, username + 19, 4);
-  MLutility::stringHexToBytes(dst + 10, username + 24, 12);
-
-  MLutility::stringHexToBytes(dst + 16, password, 40);
-
-  uint8_t *pID = dst + 36;
-  MLutility::stringHexToBytes(pID, clientID, 8);
-  MLutility::stringHexToBytes(pID + 4, clientID + 9, 4);
-  MLutility::stringHexToBytes(pID + 6, clientID + 14, 4);
-  MLutility::stringHexToBytes(pID + 8, clientID + 19, 4);
-  MLutility::stringHexToBytes(pID + 10, clientID + 24, 12);
-    
-  MLutility::printBinary(dst, 16);
-  MLutility::printBinary(dst + 16, 20);
-  MLutility::printBinary(dst + 36, 16);
-
-  return (16 + 20 + 16);
-}
-
-// send uplink command to myDevices
-void sendUplink(const char *strID, const char *strValue)
-{
-  delay(500);
+  lora.sendPacketReqLoginMydevices(MQTTUsername, MQTTPassword, ClientID);
 }
 
 void refreshControlState() {
@@ -263,23 +214,19 @@ void inputBySerial()
     if (buf[0] == '/')
     {
       if (buf[1] == '1') {
-        // login myDevices
-        szBuf = convertMQTTtoHex(buf, MQTTUsername, MQTTPassword, ClientID);
-        lora.sendPacketReqLoginMydevices(buf, szBuf);        
+        // login myDevices    
+        lora.sendPacketReqLoginMydevices(MQTTUsername, MQTTPassword, ClientID);
       }
       else if (buf[1] == '2') {
-        sendUplinkDHT();
+        sendUplinkDHT();        // test uplink: 
       }
       else if (buf[1] == '3') {
       }
       else if (buf[1] == '4') {
-        refreshControlState();
+        refreshControlState();  // test uplink:
       }
       else if (buf[1] == 's') {
         dht.readSensor(fHumidity, fTemperature, true);
-      }
-      else if (buf[1] == '9') {
-        lora.sendPacketSendMCSCommand((buf + 2), strlen((char*)buf + 2));
       }
     }
   }  

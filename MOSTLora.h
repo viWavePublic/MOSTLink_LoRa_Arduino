@@ -87,14 +87,14 @@ public:
   unsigned char *getBuffer() { return _buf; }
 
 private:
-  // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
-  void setMode(int p1, int p2);
-  int parsePacket();
+    // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
+    void setMode(int p1, int p2);
+    int parsePacket();
+    boolean available();
 public:
   void setMode(int mode);
   int getMode() { return _eMode; }
   unsigned char *getMacAddress() { return _data.mac_addr; }
-  boolean available();
   boolean setReceiverID(const char *strID);
   
   boolean printConfig(DataLora &data);
@@ -154,6 +154,7 @@ public:
     void sendPacketSendMCSCommand(uint8_t *data, int szData);
 
     // myDevices(Cayenne) related:
+    void sendPacketReqLoginMydevices(const char *username, const char *pwd, const char *clientID);
     void sendPacketReqLoginMydevices(uint8_t *data, int szData);
     void sendPacketSendMydevicesCommand(uint8_t *data, int szData);
     
