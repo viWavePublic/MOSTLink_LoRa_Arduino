@@ -11,6 +11,7 @@
 #include "MOSTLora.h"
 #include "DHT.h"
 #include "MLutility.h"
+#include <EEPROM.h>
 
 #if !defined(__LINKIT_ONE__)
 #include <MemoryFree.h>
@@ -27,11 +28,18 @@ int szBuf = 0;
 byte buf[100] = {0};
 char *strTmp = buf;
 float fTemperature, fHumidity;
-int soHot = 40, soWet = 60;
+
+#define TAG_SO    0x1234
+struct DataSo {
+  int nTag;     // 0x1234: EEPROM stored correct value
+  int soHot;
+  int soWet;
+};
+DataSo dataSo;
+
 unsigned long tsSensor = millis();
 
-//const char *strDevice = "DF4dQDv7,48MRQ7vjehmKHSm0";  // LoRa Node #2
-const char *strDevice = "DyAwB8Ed,gWAVV00hHXAZ0lhv";    // LoRa Node #1
+const char *strDevice = "Df1yWOef,7VzSiBty1sgYTGMt";  // usgmostlink
 const char *strCtrlFan = "CTRL_FAN";
 const char *strCtrlLed = "CTRL_LED";
 const char *strCtrlUpdate = "CTRL_UPDATE";        // refresh sensor
@@ -83,12 +91,14 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
     refreshControlState(); 
   }
   else if (parseDownlink(strCtrlSoHot, nVal)) {
-    soHot = nVal;
+    dataSo.soHot = nVal;
+    EEPROM.put(0, dataSo);    
     sprintf(strTmp, "(Hot)T > %d", nVal);
     strValue = strTmp;
   }
   else if (parseDownlink(strCtrlSoWet, nVal)) {
-    soWet = nVal;
+    dataSo.soWet = nVal;
+    EEPROM.put(0, dataSo);  
     sprintf(strTmp, "(Wet)H > %d", nVal);    
     strValue = strTmp;
   }
@@ -117,6 +127,22 @@ boolean parseDownlink(const char *strToken, int &nVal) {
 //
 void setup() {
   Serial.begin(9600);  // use serial port for log monitor
+
+  // read EEPROM
+  EEPROM.get(0, dataSo);
+  if (dataSo.nTag != TAG_SO) {
+    debugSerial.println(F("=== init so hot/wet!"));
+    dataSo.nTag = TAG_SO;
+    dataSo.soHot = 30;
+    dataSo.soWet = 65;
+    EEPROM.put(0, dataSo);
+  }
+  else {
+    debugSerial.print(F("=== load: hot>"));
+    debugSerial.print(dataSo.soHot);
+    debugSerial.print(F(", wet>"));
+    debugSerial.println(dataSo.soWet);    
+  }
 
   pinMode(PIN_LED_CONTROL, OUTPUT);
   pinMode(PIN_FAN_CONTROL, OUTPUT);
@@ -165,9 +191,9 @@ void sendUplink(const char *strID, const char *strValue)
 void refreshControlState() {
   String strCmd = strDevice;
   strCmd += ",";
-  strCmd += MLutility::generateChannelData(strCtrlSoHot, soHot);
+  strCmd += MLutility::generateChannelData(strCtrlSoHot, dataSo.soHot);
   strCmd += "\n";
-  strCmd += MLutility::generateChannelData(strCtrlSoWet, soWet);
+  strCmd += MLutility::generateChannelData(strCtrlSoWet, dataSo.soWet);
 
   lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
@@ -206,20 +232,20 @@ void loop() {
   if (tsCurr > tsSensor + 5000) {
     tsSensor = tsCurr;
     dht.readSensor(fHumidity, fTemperature, true);
-    if (fTemperature > soHot && 0 == digitalRead(PIN_FAN_CONTROL)) {
+    if (fTemperature > dataSo.soHot && 0 == digitalRead(PIN_FAN_CONTROL)) {
       digitalWrite(PIN_FAN_CONTROL, 1);
       sendUplink(strCtrlFan, "1");
       sendUplinkDHT();      
       debugSerial.print(F("temperature > "));
-      debugSerial.print(soHot);
+      debugSerial.print(dataSo.soHot);
       debugSerial.println(F(", active fan."));
     }
-    if (fHumidity > soWet && 0 == digitalRead(PIN_LED_CONTROL)) {
+    if (fHumidity > dataSo.soWet && 0 == digitalRead(PIN_LED_CONTROL)) {
       digitalWrite(PIN_LED_CONTROL, 1);
       sendUplinkDHT();      
       sendUplink(strCtrlLed, "1");
       debugSerial.print(F("humidity > "));
-      debugSerial.print(soWet);
+      debugSerial.print(dataSo.soWet);
       debugSerial.println(F(", active led"));
     }
     Serial.print(F("timestamp: "));
