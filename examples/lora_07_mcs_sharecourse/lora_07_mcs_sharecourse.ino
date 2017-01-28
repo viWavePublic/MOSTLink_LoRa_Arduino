@@ -151,6 +151,7 @@ void setup() {
     
   lora.begin();
   // custom LoRa config by your environment setting
+  // config setting: frequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915555, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 

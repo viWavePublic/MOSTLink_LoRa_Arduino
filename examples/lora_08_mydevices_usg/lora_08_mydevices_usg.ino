@@ -57,8 +57,10 @@ void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
   buf[szData] = 0;
+#ifdef DEBUG_LORA
   debugSerial.print(F("NotifyMydevicesCommand= "));
   debugSerial.println((const char*)buf);
+#endif // DEBUG_LORA
 
   const char *strCommon = strstr(buf, ",");
   int nChannel = 0;
@@ -66,10 +68,12 @@ void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
   if (strCommon != NULL) {
     nChannel = atoi(buf);
     nVal = atoi(strCommon + 1);
+#ifdef DEBUG_LORA
     debugSerial.print(F("#"));
     debugSerial.print(nChannel);
     debugSerial.print(F("="));
     debugSerial.println(nVal);
+#endif // DEBUG_LORA
 
     if (nChannel == PIN_LED_CONTROL) {
       digitalWrite(PIN_LED_CONTROL, nVal);
@@ -99,7 +103,8 @@ void setup() {
     
   lora.begin();
   // custom LoRa config by your environment setting
-  lora.writeConfig(915222, 0, 0, 7, 5);
+  // config setting: frequency, group, data-rate, power, wakeup-time
+  lora.writeConfig(915111, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
@@ -129,7 +134,7 @@ void refreshControlState() {
   strCmd += ",null,null,";
   itoa(nVal, strTmp, 10);
   strCmd += strTmp;
-  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  lora.sendPacketSendMydevicesCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
   
   nVal = digitalRead(PIN_SENSOR_REED);
@@ -138,20 +143,20 @@ void refreshControlState() {
   strCmd += ",null,null,";
   itoa(nVal, strTmp, 10);
   strCmd += strTmp;
-  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  lora.sendPacketSendMydevicesCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
   
   int nLit = analogRead(PIN_SENSOR_LIGHT);    
   strCmd = "20,lum,lux,";
   itoa(nLit, strTmp, 10);
   strCmd += strTmp;
-  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  lora.sendPacketSendMydevicesCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
 
   itoa(ID_UPDATE, strTmp, 10);
   strCmd = strTmp;
   strCmd += ",null,null,0";
-  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  lora.sendPacketSendMydevicesCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);  
 }
 
@@ -162,13 +167,13 @@ void sendUplinkDHT() {
   int nVal = dht.convertCtoF(fTemperature);
   itoa(nVal, strTmp, 10);
   strCmd += strTmp;
-  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  lora.sendPacketSendMydevicesCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
   
   strCmd = "3,rel_hum,p,";
   itoa((int)fHumidity, strTmp, 10);
   strCmd += strTmp;
-  lora.sendPacketSendMydevicesCommand(strCmd.c_str(), strCmd.length());
+  lora.sendPacketSendMydevicesCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
 }
 
