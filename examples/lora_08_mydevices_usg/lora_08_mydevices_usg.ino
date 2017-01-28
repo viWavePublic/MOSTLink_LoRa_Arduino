@@ -87,7 +87,9 @@ void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
 
 //
 void setup() {
+#ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
+#endif // DEBUG_LORA
 
   pinMode(PIN_SENSOR_REED, INPUT);
   pinMode(PIN_REED_LED, OUTPUT);
