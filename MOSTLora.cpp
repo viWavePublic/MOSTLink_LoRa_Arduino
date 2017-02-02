@@ -17,38 +17,12 @@
 #include "MLpacket.h"
 #include "MLPacketGen.h"
 
-#if defined(__LINKIT_ONE__)
-    #define loraSerial Serial1       // for LinkIt ONE
-
-#else // __LINKIT_ONE__
-    #ifdef DEBUG_LORA
-
-        // for arduino Uno
-        #include <SoftwareSerial.h>
-        const int pinLoraRX = 10;
-        const int pinLoraTX = 11;
-//      pinMode(pinLoraRX, INPUT);
-//      pinMode(pinLoraTX, OUTPUT);
-        SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);    // RX, TX
-
-    #else // DEBUG_LORA
-
-        #define loraSerial Serial       // for Vinduino
-
-    #endif // DEBUG_LORA
-
-#endif // __LINKIT_ONE__
-
 const char KEY_AES128[16] = {'1','2','3','4','5','6','7','8','9','0','A','B','C','D','E','F'};
 const char IV_AES128[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
 
 MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
+: LoraBase(pinP1, pinP2, pinBusy)
 {
-    _pinP1 = pinP1;
-    _pinP2 = pinP2;
-    _pinBZ = pinBusy;
-    _eMode = E_UNKNOWN_LORA_MODE;
-    
     _bPacketAES = false;
     setKeyHMAC("PublicKey");
     setKeyAES(KEY_AES128);
@@ -62,20 +36,17 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 
 /////////////////////////////////////////
 
-void MOSTLora::begin()
+void MOSTLora::begin(long speed)
 {
+    // call parent-class function
+    LoraBase::begin();
+    
 #ifdef DEBUG_LORA
   debugSerial.println(F("== MOSTLink v1.5.2 =="));
   debugSerial.print(F("CPU: "));
   debugSerial.println(F_CPU);
     
 #endif // DEBUG_LORA
-    
-  pinMode(_pinP1, OUTPUT);
-  pinMode(_pinP2, OUTPUT);
-  pinMode(_pinBZ, INPUT);
-
-  loraSerial.begin(9600);
 
     setMode(E_LORA_SETUP);          // E_LORA_SETUP
     // read setting in lora shield
@@ -87,46 +58,6 @@ void MOSTLora::begin()
         }
     }
     setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
-}
-
-void MOSTLora::setMode(int mode)
-{
-  if (_eMode == mode)
-    return;
-
-  if (E_LORA_NORMAL == mode)
-    setMode(0, 0);
-  else if (E_LORA_WAKEUP == mode)
-    setMode(0, 1);
-  else if (E_LORA_POWERSAVING == mode) {
-    if (E_LORA_SETUP == _eMode) {       // Setup -> Normal -> Power Saving
-      setMode(0, 0);
-    }
-    setMode(1, 0);
-  }
-  else if (E_LORA_SETUP == mode) {
-    if (E_LORA_POWERSAVING == _eMode) { // Power Saving -> Normal -> Setup
-        setMode(0, 0);
-    }
-    setMode(1, 1);
-  }
-  
-  // assign to new state
-  _eMode = mode;
-}
-
-/////////////////////////////////////////
-// setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
-void MOSTLora::setMode(int p1, int p2)
-{
-  digitalWrite(_pinP1, p1);  // setup(1,1), normal(0,0)
-  digitalWrite(_pinP2, p2);
-  delay(200);
-}
-
-boolean MOSTLora::available()
-{
-  return loraSerial.available();
 }
 
 boolean MOSTLora::printConfig(DataLora &data)
@@ -246,7 +177,7 @@ boolean MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate,
   waitUntilReady(5000);
   setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
   
-  byte cmdWrite[16] = {0xFF,0x4C,0xCF,0x52,0xA1,0x57,0xF1};
+  uint8_t cmdWrite[16] = {0xFF,0x4C,0xCF,0x52,0xA1,0x57,0xF1};
   cmdWrite[7] = (freq >> 16) & 0xff;
   cmdWrite[8] = (freq >> 8) & 0xff;
   cmdWrite[9] = freq & 0xff;
@@ -271,7 +202,7 @@ boolean MOSTLora::receConfig(DataLora &data)
   int szData = sizeof(DataLora);
   int szRece = receData();
   if (szData <= szRece) {
-    memcpy(&data, _buf, szData);
+      memcpy(&data, _buf, szData);
       if (data.isValid()) {
         bRet = true;
         printConfig(data);
@@ -286,137 +217,26 @@ boolean MOSTLora::receConfig(DataLora &data)
   return bRet;
 }
 
-/////////////////////////////////////////
-// send data via LoRa
-int MOSTLora::sendData(const char *strData)
-{
-  waitUntilReady(3000);
-  int nRet = loraSerial.print(strData);
-  delay(100);
-#ifdef DEBUG_LORA
-  debugSerial.print(nRet);
-  debugSerial.print(F(") Send str > "));
-  debugSerial.println(strData);
-#endif // DEBUG_LORA
-  return nRet;
-}
-
-int MOSTLora::sendData(byte *data, int szData)
-{
-  waitUntilReady(3000);
-  int nRet = loraSerial.write(data, szData);
-  delay(100);
-#ifdef DEBUG_LORA
-  debugSerial.print(F("Send > "));
-  MLutility::printBinary(data, szData);
-#endif // DEBUG_LORA
-  return nRet;
-}
 
 /////////////////////////////////////////
 // receive data via LoRa
 int MOSTLora::receData()
 {
-  _szBuf = 0;
-  int nRssi = 0;
-  if (!loraSerial.available())
-    return 0;
-  int i;
-  for (i = 0; i < 6; i++) {
-      int nCharRead = 0;
-      while (loraSerial.available() && (_szBuf < MAX_SIZE_BUF)) {
-        int c = loraSerial.read();
-        _buf[_szBuf] = c;
-
-        _szBuf++;
-        nCharRead++;
-        delay(1);
-      }
-
-      delay(300);
-      if (nCharRead > 0) {
-#ifdef DEBUG_LORA
-          debugSerial.print(nCharRead);
-          debugSerial.print(F(") "));
-#endif // DEBUG_LORA
-          if (E_LORA_WAKEUP == _eMode) {      // get RSSI at last character
-              _szBuf--;
-#ifdef DEBUG_LORA
-              nRssi = _buf[_szBuf];
-              debugSerial.print(nRssi);
-              debugSerial.print(F(" rssi. "));
-#endif // DEBUG_LORA
-          }
-      }
-  }
-  if (_szBuf > 0) {
-    _buf[_szBuf] = 0;
+    if (LoraBase::receData() > 0) {
       
-#ifdef DEBUG_LORA
-    debugSerial.print(F("\nRece < "));
-    MLutility::printBinary(_buf, _szBuf);
-    debugSerial.println((char*)_buf);
-#endif // DEBUG_LORA
-      
-      if (_buf[0] == '/') {  // ack message
-          char *strBuf = (char*)_buf;
-          strBuf[0] = '>';
-          sendData((byte*)_buf, _szBuf);
-#ifdef DEBUG_LORA
-          debugSerial.println(F("< Echo >"));
-#endif // DEBUG_LORA
-      }
-      // parse downlink packet
-      if (_cbReceData) {
-          _cbReceData(_buf, _szBuf);
-      }
-      int szParse = parsePacket();  // parse Packet by your code
-  }
+        if (_buf[0] == '/') {  // ACK message (as Echo)
+            char *strBuf = (char*)_buf;
+            strBuf[0] = '>';
+            sendData((uint8_t*)_buf, _szBuf);
+        }
+        // parse downlink packet
+        if (_cbReceData) {
+            _cbReceData(_buf, _szBuf);
+        }
+        int szParse = parsePacket();  // parse Packet by your code
+    }
 
-  return _szBuf;
-}
-
-boolean MOSTLora::isBusy()
-{
-    boolean bRet = true;
-    int nBusy = 0;
-    
-    if (_pinBZ >= 14) {     // analog BZ
-        nBusy = analogRead(_pinBZ);
-        bRet = (nBusy < 512);
-    }
-    else {                  // digital BZ
-        const int nBusy = digitalRead(_pinBZ);
-        bRet = (nBusy < 1);
-    }
-  
-/*    if (bRet) {
-#ifdef DEBUG_LORA
-       const char *strBZ = " busy ...";
-        debugSerial.print(nBusy, DEC);
-        debugSerial.println(strBZ);
-#endif // DEBUG_LORA
-    }
-  */
-    return bRet;
-}
-
-boolean MOSTLora::waitUntilReady(unsigned long timeout)
-{
-  boolean bRet = true;
-  unsigned long tsStart = millis();
-  while (isBusy()) {
-    delay(100);
-    if (timeout < millis() - tsStart) {
-      bRet = false;
-      break;
-    }
-  }
-#ifdef DEBUG_LORA
-  debugSerial.print((millis() - tsStart));
-  debugSerial.println(F(" Ready"));
-#endif // DEBUG_LORA
-  return bRet;
+    return _szBuf;
 }
 
 // ANS_DATA command for humidity & temperature

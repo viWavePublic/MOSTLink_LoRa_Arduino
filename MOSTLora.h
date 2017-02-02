@@ -15,21 +15,12 @@
 #ifndef __MOSTLora_h
 #define __MOSTLora_h
 
-#include "MOSTLora_def.h"
+#include "LoraBase.h"
 
 // callback function
 typedef void (* CALLBACK_ReceData) (unsigned char *data, int szData);
 typedef void (* CALLBACK_ParseCommand) (int cmdID);
 
-
-// 4 mode: normal, wakeup, powersaving, setup
-enum E_LORA_MODE {
-  E_UNKNOWN_LORA_MODE = -1,
-  E_LORA_NORMAL = 0,
-  E_LORA_WAKEUP = 1,
-  E_LORA_POWERSAVING = 2,
-  E_LORA_SETUP = 3,
-};
 
 // config data for lora (30 bytes)
 struct DataLora {
@@ -53,12 +44,9 @@ struct DataLora {
     }
 };
 
-class MOSTLora
+class MOSTLora : public LoraBase
 {
-#define MAX_SIZE_BUF        99
 private:
-  int _pinP1, _pinP2, _pinBZ;   // p1, p2, busy
-  int _eMode;
   DataLora _data;
   unsigned char _receiverID[8];   // receiver ID
     
@@ -67,10 +55,7 @@ private:
     const char *_keyHMAC;   // 16 bytes
     const char *_keyAES;    // 16 bytes (AES128)
     const char *_ivAES;     // 4 bytes
-      
-  int _szBuf;
-  unsigned char _buf[MAX_SIZE_BUF + 1];
-    
+
     // callback
     CALLBACK_ReceData _cbReceData;          // common rece data
     CALLBACK_ReceData _cbPacketReqData;             // REQ_DATA
@@ -83,36 +68,25 @@ public:
 //    MOSTLora(int pinP1 = 13, int pinP2 = 12, int pinBusy = A2);
     MOSTLora(int pinP1 = 7, int pinP2 = 6, int pinBusy = 5);
 
-  void begin();
-  unsigned char *getBuffer() { return _buf; }
+  void begin(long speed = 9600);
 
 private:
-    // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
-    void setMode(int p1, int p2);
     int parsePacket();
-    boolean available();
+    
+    boolean printConfig(DataLora &data);
+    boolean printInfo();
+    
 public:
-  void setMode(int mode);
-  int getMode() { return _eMode; }
   unsigned char *getMacAddress() { return _data.mac_addr; }
   boolean setReceiverID(const char *strID);
-  
-  boolean printConfig(DataLora &data);
-  boolean printInfo();
 
   // config setting: drequency, group, data-rate, power, wakeup-time
   boolean readConfig();
   boolean writeConfig(long freq, unsigned char group_id = 0, char data_rate = 0, char power = 7, char wakeup_time = 5);
   boolean receConfig(DataLora &data);
     
-  // send/rece data via LoRa
-  int sendData(const char *strData);
-  int sendData(byte *data, int szData);
-  int receData();
-
-  // LoRa busy state
-  boolean isBusy();
-  boolean waitUntilReady(unsigned long timeout);
+    // send/rece data via LoRa
+    int receData();
 
     void run();
     void setCallbackReceData(CALLBACK_ReceData cbFunc);
