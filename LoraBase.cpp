@@ -39,7 +39,7 @@ LoraBase::LoraBase(int pinP1, int pinP2, int pinBusy)
     _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
     
-    _strBuf = _buf;
+    _strBuf = (char*)_buf;
 }
 
 void LoraBase::begin(long speed)

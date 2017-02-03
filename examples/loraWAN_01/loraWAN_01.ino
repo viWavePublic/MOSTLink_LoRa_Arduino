@@ -30,9 +30,18 @@ void setup() {
 
   // send command to LoraWan module
 //  loraWAN.testAll();
-  loraWAN.getADR();
-  loraWAN.setTx(3, "cnf", "112233");
+
+  loraWAN.setRxDelay1(123000);
+  long resDelay = loraWAN.getRxDelay1();
+  long freq = 0;
+  int dataRate = 0;
+  int channelOpen = 0, bandGroup = 0;
+  loraWAN.getRx2_Freq_DR(freq, dataRate);
+  loraWAN.getTx_Channel(2, freq, dataRate, channelOpen, bandGroup);
+
+  // send Tx
 //  loraWAN.command(strSend);
+  loraWAN.setTx(3, "cnf", "1122339900AA");
 }
 
 
