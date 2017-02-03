@@ -19,13 +19,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void MOSTLora::run()
-{
-    if (available()) {
-        receData();
-    }
-}
-
 void MOSTLora::setCallbackReceData(CALLBACK_ReceData cbFunc)
 {
     _cbReceData = cbFunc;

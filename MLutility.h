@@ -14,6 +14,8 @@
 // common utility
 class MLutility {
 public:
+    static int Fcopy(char* buf, const __FlashStringHelper *ifsh);
+
     static boolean parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus);
     
     static int readSerial(char *buf);

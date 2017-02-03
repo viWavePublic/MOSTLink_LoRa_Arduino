@@ -42,7 +42,7 @@ void MOSTLora::begin(long speed)
     LoraBase::begin();
     
 #ifdef DEBUG_LORA
-  debugSerial.println(F("== MOSTLink v1.5.2 =="));
+  debugSerial.println(F("== MOSTLink v1.5.3 =="));
   debugSerial.print(F("CPU: "));
   debugSerial.println(F_CPU);
     

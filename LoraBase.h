@@ -30,6 +30,7 @@ protected:
     // buffer
     int _szBuf;
     unsigned char _buf[MAX_SIZE_BUF + 1];
+    char *_strBuf;
     
 public:
     LoraBase(int pinP1 = 7, int pinP2 = 6, int pinBusy = 5);
@@ -45,10 +46,11 @@ public:
     void setMode(int mode);
     int getMode() { return _eMode; }
     
+    virtual void run();
     // send/rece data via LoRa
     int sendData(uint8_t *data, int szData);
     int sendData(const char *strData);
-    int receData();
+    virtual int receData();
     
     // LoRa busy state
     boolean isBusy();

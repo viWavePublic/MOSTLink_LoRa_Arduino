@@ -14,48 +14,30 @@
 // 
 //////////////////////////////////////////////////////
 
-#include "LoraBase.h"
+#include "MOSTLoraWAN.h"
 
-LoraBase lora;
+MOSTLoraWAN loraWAN;
 
 void setup() {
   // put your setup code here, to run once:
-  lora.begin(57600);
+  loraWAN.begin(57600);
   debugSerial.begin(9600);
 
-  debugSerial.println(F("*** lora_wan ***"));
+  debugSerial.println(F("*** loraWAN_01 ***"));
 
   // get device data
-  const char *strSave = "AAT1 Save\r\n";
-  const char *strFw = "AAT1 FwVersion\r\n";
-  const char *strReset = "AAT1 Reset\r\n";
-  const char *strDevEui = "AAT2 DevEui=?\r\n";
-  const char *strDevAddr = "AAT2 aDevicezEuin=?\r\n";
-  const char *strReTx = "AAT2 reTx=?\r\n";
-  const char *strSend = "AAT2 Tx=3,cnf,1234AAFF\r\n";
+  const char *strSend = "AAT2 Tx=3,cnf,ccddeeff11223344";
 
   // send command to LoraWan module
-  sendCmdLoraWan(strFw);
-  sendCmdLoraWan(strDevEui);
-  sendCmdLoraWan(strSend);
+//  loraWAN.testAll();
+  loraWAN.getADR();
+  loraWAN.setTx(3, "cnf", "112233");
+//  loraWAN.command(strSend);
 }
 
-void sendCmdLoraWan(const char* strData) {
-  lora.sendData(strData);
-
-  unsigned long tsStart = millis();
-  char buf[100] = {0};
-  int szBuf = 0;
-  while (millis() - tsStart < 3000) {
-    if (lora.receData() > 0) {
-      Serial.println("------");
-      break;
-    }
-    delay(100);
-  }
-}
 
 void loop() {
   // put your main code here, to run repeatedly:
+  loraWAN.run();
 
 }

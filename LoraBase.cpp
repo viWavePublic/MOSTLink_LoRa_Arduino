@@ -38,6 +38,8 @@ LoraBase::LoraBase(int pinP1, int pinP2, int pinBusy)
     _pinP2 = pinP2;
     _pinBZ = pinBusy;
     _eMode = E_UNKNOWN_LORA_MODE;
+    
+    _strBuf = _buf;
 }
 
 void LoraBase::begin(long speed)
@@ -120,14 +122,21 @@ int LoraBase::sendData(const char *strData)
 }
 
 /////////////////////////////////////////
+// run loop to rece data
+void LoraBase::run()
+{
+    if (available()) {
+        receData();
+    }
+}
+/////////////////////////////////////////
 // receive data via LoRa
 int LoraBase::receData()
 {
-    _szBuf = 0;
-
     if (!loraSerial.available())
         return 0;
     
+    _szBuf = 0;
     int i, nRssi = 0;
     for (i = 0; i < 6; i++) {
         int nCharRead = 0;

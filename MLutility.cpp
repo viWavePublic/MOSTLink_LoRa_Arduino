@@ -81,6 +81,20 @@ static double getIntNumber(const char *s)
  }
  */
 
+// copy Flash string to SRAM
+int MLutility::Fcopy(char* buf, const __FlashStringHelper *ifsh)
+{
+    const char PROGMEM *p = (const char PROGMEM *)ifsh;
+    int i = 0;
+    uint8_t c  = 0;
+    do
+    {
+        c = pgm_read_byte(p++);
+        buf[i++] = c;
+    } while ( c != 0 );
+    return i;
+}
+
 // Linkit GPS library
 // init GPS
 //    LGPS.powerOn();

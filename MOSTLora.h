@@ -88,7 +88,6 @@ public:
     // send/rece data via LoRa
     int receData();
 
-    void run();
     void setCallbackReceData(CALLBACK_ReceData cbFunc);
     void setCallbackPacketReqData(CALLBACK_ReceData cbFunc);
     void setCallbackPacketReqAuthChallenge(CALLBACK_ReceData cbFunc);
