@@ -131,11 +131,11 @@ int MLGetGeoFenceConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLResSetLoraConfigGen::MLResSetLoraConfigGen(uint8_t errorCode) : MLPayloadGen(CMD_RES_SET_LORA_CONFIG) {
+MLAnsSetLoraConfigGen::MLAnsSetLoraConfigGen(uint8_t errorCode) : MLPayloadGen(CMD_ANS_SET_LORA_CONFIG) {
     _errorCode = errorCode;
 }
 
-int MLResSetLoraConfigGen::getPayload(uint8_t *payload) {
+int MLAnsSetLoraConfigGen::getPayload(uint8_t *payload) {
     uint8_t pos = 0;
     payload[pos++] = _version;
     payload[pos++] = _cmdId & 0xFF;

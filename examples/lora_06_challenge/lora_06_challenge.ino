@@ -31,7 +31,7 @@ void funcPacketReqData(unsigned char *data, int szData)
  dht.readSensor(fHumidity, fTemperature, true);
 #endif // USE_DHT
 
-  lora.sendPacketResData(fHumidity, fTemperature);
+  lora.sendPacketAnsData(fHumidity, fTemperature);
 }
 
 void setup() {
@@ -39,7 +39,7 @@ void setup() {
   
   lora.begin();
   // custom LoRa config by your environment setting
-  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915000, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
   lora.setKeyHMAC(KEY_PUBLIC_CHALLENGE);
   lora.setKeyAES(KEY_AES128);

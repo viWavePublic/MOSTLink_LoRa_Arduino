@@ -46,7 +46,7 @@ void setup() {
   lora.begin();         // lora library init
   
   // config setting: frequency, group, data-rate, power, wakeup-time
-  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915000, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);    // module mode: power-saving
 
   // test data to Vinduino.io

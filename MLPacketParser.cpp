@@ -76,10 +76,10 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             mlpacket->setMLPayloadGen(new MLReqDataPayloadGen(responseInterval, dataLen, data));
             optionFlagsPos = CMD_REQ_D_DATA_POS + dataLen;
             break;
-        case CMD_RES_SET_LORA_CONFIG:
-            errorCode = payload[CMD_RES_SET_ERR_CODE_POS];
-            mlpacket->setMLPayloadGen(new MLResSetLoraConfigGen(errorCode));
-            optionFlagsPos = CMD_RES_SET_ERR_CODE_POS + 1;
+        case CMD_ANS_SET_LORA_CONFIG:
+            errorCode = payload[CMD_ANS_SET_ERR_CODE_POS];
+            mlpacket->setMLPayloadGen(new MLAnsSetLoraConfigGen(errorCode));
+            optionFlagsPos = CMD_ANS_SET_ERR_CODE_POS + 1;
             break;
         case CMD_ANS_DATA:
             errorCode = payload[CMD_ANS_D_ERR_CODE_POS];
@@ -134,7 +134,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
     }
     uint8_t optionResFreqFlag = payload[optionFlagsPos++] & 0x01;
     uint8_t resFrequency[ML_FREQUENCY_LEN] = {0};
-    if (CMD_OPTION_RES_FREQ_WITH_RES == optionResFreqFlag) {
+    if (CMD_OPTION_ANS_FREQ_WITH_RES == optionResFreqFlag) {
         MLPayloadGen* mlPayload = mlpacket->getMLPayload();
         if (mlPayload)
             mlPayload->setMLPayloadOption(optionResFreqFlag, resFrequency);

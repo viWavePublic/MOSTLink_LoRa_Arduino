@@ -36,7 +36,7 @@ void setup() {
   lora.begin();
   
   // config setting: frequency, group, data-rate, power, wakeup-time
-  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915000, 0, 0, 7, 5);
   lora.setMode(E_LORA_WAKEUP);
 
   delay(1000);

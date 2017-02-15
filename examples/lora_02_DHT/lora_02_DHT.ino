@@ -22,7 +22,7 @@ void funcPacketReqData(unsigned char *data, int szData)
   debugSerial.print(F("ReqData, answer= "));
 
   dht.readSensor(fHumidity, fTemperature, true);
-  lora.sendPacketResData(fHumidity, fTemperature);
+  lora.sendPacketAnsData(fHumidity, fTemperature);
 }
 
 void setup() {
@@ -50,7 +50,7 @@ void setup() {
     i++;
   }
 
-  lora.sendPacketResData(fHumidity, fTemperature);
+  lora.sendPacketAnsData(fHumidity, fTemperature);
 }
 
 void loop() {

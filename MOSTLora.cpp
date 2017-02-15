@@ -42,7 +42,7 @@ void MOSTLora::begin(long speed)
     LoraBase::begin();
     
 #ifdef DEBUG_LORA
-  debugSerial.println(F("== MOSTLink v1.5.3 =="));
+  debugSerial.println(F("== MOSTLink v1.5.4 =="));
   debugSerial.print(F("CPU: "));
   debugSerial.println(F_CPU);
     
@@ -240,7 +240,7 @@ int MOSTLora::receData()
 }
 
 // ANS_DATA command for humidity & temperature
-void MOSTLora::sendPacketResData(float h, float t)
+void MOSTLora::sendPacketAnsData(float h, float t)
 {
     byte dataHT[8];
 
@@ -258,35 +258,6 @@ void MOSTLora::sendPacketResData(float h, float t)
     sendPacket(_buf, packetLen);
 }
 
-// ANS_DATA command for humidity & temperature
-void MOSTLora::sendPacketResData_old(float h, float t)
-{
-    int szPacket = 22 + 15;
-    MLUplink headUplink(0x0A, 22 + 15, 0x08, getMacAddress(), _receiverID);
-    
-    // prapare payload chunk
-    byte payload[15];
-    payload[0] = 0x0A;    // version
-    payload[1] = 0x02;    payload[2] = 0x02;  // 0x0202 ANS_DATA commandID
-    payload[3] = 0;       // error code: 0 - success
-    payload[4] = 8;       // data length
-    // humidity (4 bytes)
-    memcpy(payload + 5, &h, 4);
-    
-    // temperature (4 bytes)
-    memcpy(payload + 9, &t, 4);
-    
-    payload[13] = 0;      // option flag
-    
-    // fill packet: header and payload
-    memcpy(_buf, &headUplink, 22);
-    memcpy(_buf + 22, payload, 15);
-    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
-    
-    /////////////////////
-    // send packet is ready
-    sendPacket(_buf, 37);
-}
 // REQ_SOS (Uplink) for request SOS
 void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery)
 {
@@ -318,7 +289,7 @@ void MOSTLora::sendPacketReqSOS(long datetime, char statusGPS, double lat, doubl
 }
 
 // RES_SOS (Downlink) for response SOS
-void MOSTLora::sendPacketResSOS()
+void MOSTLora::sendPacketAnsSOS()
 {
     int szPacket = 14 + 13;
     MLDownlink headDownlink(0x0A, szPacket, 0, _receiverID);
@@ -373,42 +344,7 @@ void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float 
     sendPacket(_buf, packetLen);
 }
 
-// NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
-void MOSTLora::sendPacketVinduino_old(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
-{
-    int szPacket = 22 + 53;
-    MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);
-    
-    // prapare payload chunk
-    const float arrF[8] = {f0, f1, f2, f3, f4, f5, f6, f7};
-    byte payload[53], *ptr;
-    payload[0] = 0x0A;    // version
-    // 0x1002 NTF_UPLOAD_VINDUINO_FIELD commandID
-    payload[1] = 0x02;    payload[2] = 0x10;
-    memcpy(payload + 3, apiKey, 16);
-    
-    // 8 floats (4 bytes)
-    int i, index = 3 + 16;
-    for (i = 0; i < 8; i++) {
-        ptr = (byte*)(arrF + i);
-        memcpy(payload + index, ptr, 4);
-        index += 4;
-    }
-    
-    payload[index] = 0;      // option flag
-    payload[index + 1] = 0;  // payload CRC
-    
-    // fill packet: header and payload
-    memcpy(_buf, &headUplink, 22);
-    memcpy(_buf + 22, payload, 53);
-    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
-    
-    /////////////////////
-    // send packet is ready
-    sendPacket(_buf, szPacket);
-}
-
-// NTF_UPLOAD_VINDUINO_FIELD command for Vinduino project
+// NTF_UPLOAD_THINKSPEAK_FIELD command for thingSpeak project
 void MOSTLora::sendPacketThingSpeak(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
     int szPacket = 22 + 53;

@@ -28,7 +28,7 @@ struct DataUplink {
 
 // cache uplink-buffer
 DataUplink g_bufLora;
-DataUplink g_bufResData;
+DataUplink g_bufAnsData;
 DataUplink g_bufAuthJoin;
 DataUplink g_bufAuthResponse;
 
@@ -52,20 +52,20 @@ void funcParseMOSTLink(int cmdID)
   const byte *data = g_bufLora._data;
   int szData = g_bufLora._szData;
   
-  if (cmdID == CMD_RES_DATA)
+  if (cmdID == CMD_ANS_DATA)
   {
     float fTemp;
-    g_bufResData.setData(data, szData);       // #2 cache: RES_DATA
+    g_bufAnsData.setData(data, szData);       // #2 cache: ANS_DATA
     // modify temperature to add 10 degree
-    memcpy(&fTemp, g_bufResData._data + 23, 4);
+    memcpy(&fTemp, g_bufAnsData._data + 23, 4);
     fTemp += 10.0f;
-    memcpy(g_bufResData._data + 23, &fTemp, 4);
+    memcpy(g_bufAnsData._data + 23, &fTemp, 4);
   }
   else if (cmdID == CMD_REQ_AUTH_JOIN)
   {
     g_bufAuthJoin.setData(data, szData);      // #3 cache: AUTH_JOIN
   }
-  else if (cmdID == CMD_RES_AUTH_RESPONSE)
+  else if (cmdID == CMD_ANS_AUTH_RESPONSE)
   {
     g_bufAuthResponse.setData(data, szData);  // #4 cache: AUTH_RESPONSE
   }
@@ -110,7 +110,7 @@ void inputBySerial()
         lora.sendData(g_bufLora._data, g_bufLora._szData);
       }
       else if (buf[1] == '2') {
-        lora.sendData(g_bufResData._data, g_bufResData._szData);
+        lora.sendData(g_bufAnsData._data, g_bufAnsData._szData);
       }
       else if (buf[1] == '3') {   // send join
         lora.sendData(g_bufAuthJoin._data, g_bufAuthJoin._szData);
@@ -123,7 +123,7 @@ void inputBySerial()
         Serial.print(F("    Lora(1)= "));
         MLutility::printBinary(g_bufLora._data, g_bufLora._szData);
         Serial.print(F(" ResData(2)= "));
-        MLutility::printBinary(g_bufResData._data, g_bufResData._szData);
+        MLutility::printBinary(g_bufAnsData._data, g_bufAnsData._szData);
         Serial.print(F("AuthJoin(3)= "));
         MLutility::printBinary(g_bufAuthJoin._data, g_bufAuthJoin._szData);
         Serial.print(F(" AuthRes(4)= "));

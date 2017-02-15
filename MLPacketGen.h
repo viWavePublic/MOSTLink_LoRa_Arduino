@@ -150,9 +150,9 @@ class MLGetGeoFenceConfigGen : public MLPayloadGen {
         int getPayload(uint8_t *payload);
 };
 
-class MLResSetLoraConfigGen : public MLPayloadGen {
+class MLAnsSetLoraConfigGen : public MLPayloadGen {
     public:
-        MLResSetLoraConfigGen(uint8_t errorCode);
+        MLAnsSetLoraConfigGen(uint8_t errorCode);
         int getPayload(uint8_t *payload);
         uint8_t getErrorCode() { return _errorCode; }
     private:
