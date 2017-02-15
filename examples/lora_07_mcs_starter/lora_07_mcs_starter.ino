@@ -20,7 +20,7 @@ float fTemperature, fHumidity;
 
 unsigned long tsSensor = millis();
 
-const char *strDevice = "Df1yWOef,7VzSiBty1sgYTGMt";  // usgmostlink
+const char *strDevice = "DAqjhn8J,oYWff0vnH0O8x4xr";  // usgmostlink
 const char *strDispTemperature = "DISP_T";
 const char *strDispHumidity = "DISP_H";
 
