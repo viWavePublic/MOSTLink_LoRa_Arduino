@@ -13,6 +13,7 @@
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"       // MOSTLora library 
+#include "MLutility.h"     // utility
 
 #ifdef USE_VINDUINO
 MOSTLora lora(3, 4, A7);  // Arduino Pro mini borad: D3 for P1, D4 for P2, A7 for BZ
@@ -40,6 +41,8 @@ void setup() {
   Serial.println(F("*** lora_05_vinduino ***"));  // app title
 #endif // DEBUG_LORA
 
+  MLutility::blinkLed(3, 200);
+
   /////////////////////
   // MOSTLink lora lib
   /////////////////////
@@ -47,8 +50,11 @@ void setup() {
   
   // config setting: frequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915000, 0, 0, 7, 5);
-  lora.setMode(E_LORA_POWERSAVING);    // module mode: power-saving
+  lora.setMode(E_LORA_WAKEUP);    // module mode: power-saving
 
+  MLutility::blinkSOS(200);
+  lora.sendData("Hi, Vinduino");  
+  MLutility::blinkLed(10, 120);
   // test data to Vinduino.io
   lora.sendPacketVinduino(loraApiKey, 10, 20, 30, 40, 50, 60, 70, 80);
 

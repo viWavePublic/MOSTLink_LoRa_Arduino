@@ -14,6 +14,8 @@
 // common utility
 class MLutility {
 public:
+    static void blinkLed(int nCount = 3, int msOn = 100, int msOff = 100, int idPin = 13);
+    static void blinkSOS(int msOn = 100);
     static int Fcopy(char* buf, const __FlashStringHelper *ifsh);
 
     static boolean parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus);

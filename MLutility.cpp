@@ -66,20 +66,27 @@ static double getIntNumber(const char *s)
     rev=atoi(buf);
     return rev;
 }
-/*
- void blink13()
- {
-     pinMode(13, OUTPUT);
-     digitalWrite(13, HIGH);
-     int i;
-     for (i = 0; i < 5; i++) {
-         delay(100);
-         digitalWrite(13, LOW);
-         delay(100);
-         digitalWrite(13, HIGH);
-     }
- }
- */
+
+void MLutility::blinkLed(int nCount, int msOn, int msOff, int idPin)
+{
+    pinMode(idPin, OUTPUT);
+    int i;
+    for (i = 0; i < nCount; i++) {
+        digitalWrite(idPin, HIGH);
+        delay(msOn);
+        digitalWrite(idPin, LOW);
+        delay(msOff);
+    }
+}
+
+void MLutility::blinkSOS(int msDot)
+{
+    blinkLed(3, msDot, msDot);
+    delay(msDot * 2);
+    blinkLed(3, msDot * 3, msDot);
+    delay(msDot * 2);
+    blinkLed(3, msDot, msDot);
+}
 
 // copy Flash string to SRAM
 int MLutility::Fcopy(char* buf, const __FlashStringHelper *ifsh)
