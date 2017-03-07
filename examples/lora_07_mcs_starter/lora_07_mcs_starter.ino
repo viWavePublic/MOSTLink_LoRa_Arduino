@@ -15,12 +15,14 @@ DHT dht(2, DHT22);      // DHT22, DHT11
 
 int szBuf = 0;
 byte buf[100] = {0};
-char *strTmp = buf;
+char *strTmp = (char*)buf;
 float fTemperature, fHumidity;
 
 unsigned long tsSensor = millis();
 
+// TODO: fill your own deviceKey, deviceID from MCS
 const char *strDevice = "DAqjhn8J,oYWff0vnH0O8x4xr";  // usgmostlink
+
 const char *strDispTemperature = "DISP_T";
 const char *strDispHumidity = "DISP_H";
 
@@ -37,8 +39,10 @@ void funcPacketReqData(unsigned char *data, int szData)
 
 //
 void setup() {
+#ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
-    
+  Serial.println(F("*** lora_07_mcs_starter ***"));
+#endif // DEBUG_LORA    
   lora.begin();
   // custom LoRa config by your environment setting
   // config setting: frequency, group, data-rate, power, wakeup-time

@@ -11,10 +11,13 @@
 #include "MOSTLora.h"
 #include "DHT.h"
 #include "MLutility.h"
-#include <EEPROM.h>
 
-#if !defined(__LINKIT_ONE__)
+#if defined(__LINKIT_ONE__)
+#include <LEEPROM.h>
+#else // __LINKIT_ONE__
+#include <EEPROM.h>
 #include <MemoryFree.h>
+
 #endif // __LINKIT_ONE__
 
 MOSTLora lora;
@@ -26,7 +29,7 @@ DHT dht(2, DHT22);      // DHT22, DHT11
 
 int szBuf = 0;
 byte buf[100] = {0};
-char *strTmp = buf;
+char *strTmp = (char*)buf;
 float fTemperature, fHumidity;
 
 #define TAG_SO    0x1234
@@ -39,7 +42,9 @@ DataSo dataSo;
 
 unsigned long tsSensor = millis();
 
+// TODO: fill your own deviceKey, deviceID from MCS
 const char *strDevice = "Df1yWOef,7VzSiBty1sgYTGMt";  // usgmostlink
+
 const char *strCtrlFan = "CTRL_FAN";
 const char *strCtrlLed = "CTRL_LED";
 const char *strCtrlUpdate = "CTRL_UPDATE";        // refresh sensor
@@ -48,6 +53,25 @@ const char *strCtrlSoWet = "CTRL_SO_WET";   // so wet
 const char *strDispTemperature = "DISP_TEMPERATURE";
 const char *strDispHumidity = "DISP_HUMIDITY";
 const char *strDispLog = "DISP_LOG";
+
+#define START_POS_EEPROM  0
+// for EEPROM.put(START_POS_EEPROM, dataSo);
+void putEEPROM(uint8_t *pSrc, int szData)
+{
+  int i;
+  for (i = 0; i < szData; i++) {
+    EEPROM.write(START_POS_EEPROM + i, pSrc[i]);
+  }
+}
+
+//  EEPROM.get(START_POS_EEPROM, dataSo);
+void getEEPROM(uint8_t *pDst, int szData)
+{
+  int i;
+  for (i = 0; i < szData; i++) {
+    pDst[i] = EEPROM.read(START_POS_EEPROM + i);
+  }
+}
 
 // callback for rece data
 void funcPacketReqData(unsigned char *data, int szData)
@@ -92,13 +116,15 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
   }
   else if (parseDownlink(strCtrlSoHot, nVal)) {
     dataSo.soHot = nVal;
-    EEPROM.put(0, dataSo);    
+    // write EEPROM
+    putEEPROM((uint8_t*)&dataSo, sizeof(DataSo));    
     sprintf(strTmp, "(Hot)T > %d", nVal);
     strValue = strTmp;
   }
   else if (parseDownlink(strCtrlSoWet, nVal)) {
     dataSo.soWet = nVal;
-    EEPROM.put(0, dataSo);  
+    // write EEPROM
+    putEEPROM((uint8_t*)&dataSo, sizeof(DataSo));
     sprintf(strTmp, "(Wet)H > %d", nVal);    
     strValue = strTmp;
   }
@@ -126,16 +152,20 @@ boolean parseDownlink(const char *strToken, int &nVal) {
 
 //
 void setup() {
+#ifdef DEBUG_LORA
   Serial.begin(9600);  // use serial port for log monitor
+  Serial.println(F("*** lora_07_mcs_sharecourse ***"));
+#endif // DEBUG_LORA
 
   // read EEPROM
-  EEPROM.get(0, dataSo);
+  getEEPROM((uint8_t*)&dataSo, sizeof(DataSo));
   if (dataSo.nTag != TAG_SO) {
     debugSerial.println(F("=== init so hot/wet!"));
     dataSo.nTag = TAG_SO;
     dataSo.soHot = 30;
     dataSo.soWet = 65;
-    EEPROM.put(0, dataSo);
+    // write EEPROM
+    putEEPROM((uint8_t*)&dataSo, sizeof(DataSo));
   }
   else {
     debugSerial.print(F("=== load: hot>"));
@@ -152,7 +182,7 @@ void setup() {
   lora.begin();
   // custom LoRa config by your environment setting
   // config setting: frequency, group, data-rate, power, wakeup-time
-  lora.writeConfig(915555, 0, 0, 7, 5);
+  lora.writeConfig(915000, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
@@ -197,7 +227,7 @@ void refreshControlState() {
   strCmd += MLutility::generateChannelData(strCtrlSoWet, dataSo.soWet);
 
   lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
-  delay(500);
+  delay(800);
 
   strCmd = strDevice;
   strCmd += ",";
@@ -208,7 +238,7 @@ void refreshControlState() {
   strCmd += MLutility::generateChannelData(strCtrlUpdate, "0");
   
   lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
-  delay(500);
+  delay(800);
 }
 
 void sendUplinkDHT() {
@@ -219,7 +249,7 @@ void sendUplinkDHT() {
   strCmd += MLutility::generateChannelData(strDispTemperature, fTemperature);
 
   lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
-  delay(500);
+  delay(600);
 
   Serial.print(strCmd.length());
   Serial.println(F(" count chars"));
