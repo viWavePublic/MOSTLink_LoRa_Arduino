@@ -125,6 +125,8 @@ int MOSTLora::parsePacket()
             }
             if (bForMe) // packet for me
             {
+                delay(100);    // delay to separate further send-data
+
                 if (cmdID == CMD_REQ_DATA) {
                     if (_cbPacketReqData) {
                         MLReqDataPayloadGen *pPayload = (MLReqDataPayloadGen*)pkGen.getMLPayload();
@@ -164,6 +166,9 @@ int MOSTLora::parsePacket()
                         MLNotifyMydevicesCommandPayloadGen *pPayload = (MLNotifyMydevicesCommandPayloadGen*)pkGen.getMLPayload();
                         _cbPacketNotifyMydevicesCommand(pPayload->getData(), pPayload->getDataLen());
                     }
+                }
+                else {
+                    // other command
                 }
             }
         }

@@ -36,7 +36,10 @@ class MLPayloadGen {
         }
     
         // payload = prefix + [custom] + postfix
-        virtual int getPayload(uint8_t *payload) = 0;
+        virtual int getPayload(uint8_t *payload) {
+            // prefix ... postfix
+            return getPayloadPrefix(payload);
+        }
         int getPayloadPrefix(uint8_t *payload) {
             // prefix
             payload[0] = _version;

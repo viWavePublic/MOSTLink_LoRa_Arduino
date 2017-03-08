@@ -130,6 +130,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             optionFlagsPos = CMD_NTF_VINDUINO_RESV_POS + 4;
             break;
         default:
+            mlpacket->setMLPayloadGen(new MLPayloadGen(cmdId));
             break;
     }
     uint8_t optionResFreqFlag = payload[optionFlagsPos++] & 0x01;
