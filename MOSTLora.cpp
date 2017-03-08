@@ -42,7 +42,7 @@ void MOSTLora::begin(long speed)
     LoraBase::begin();
     
 #ifdef DEBUG_LORA
-  debugSerial.println(F("== MOSTLink v1.5.4 =="));
+  debugSerial.println(F("== MOSTLink v1.5.5 =="));
   debugSerial.print(F("CPU: "));
   debugSerial.println(F_CPU);
     
@@ -347,35 +347,14 @@ void MOSTLora::sendPacketVinduino(const char *apiKey, float f0, float f1, float 
 // NTF_UPLOAD_THINKSPEAK_FIELD command for thingSpeak project
 void MOSTLora::sendPacketThingSpeak(const char *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
 {
-    int szPacket = 22 + 53;
-    MLUplink headUplink(0x0A, szPacket, 0, getMacAddress(), _receiverID);
+    MLPacketGen mlPacketGen(0,0,0,1,getMacAddress());
+    MLPayloadGen *pPayload = new MLNotifyThingspeakPayloadGen((uint8_t*)apiKey, f0, f1, f2, f3, f4, f5, f6, f7);
     
-    // prapare payload chunk
-    const float arrF[8] = {f0, f1, f2, f3, f4, f5, f6, f7};
-    byte payload[53], *ptr;
-    payload[0] = 0x0A;    // version
-    // 0x02A1 NTF_UPLOAD_THINKSPEAK_FIELD commandID
-    payload[1] = 0xA1;    payload[2] = 0x02;
-    memcpy(payload + 3, apiKey, 16);
-    
-    // 8 floats (4 bytes)
-    int i, index = 3 + 16;
-    for (i = 0; i < 8; i++) {
-        ptr = (byte*)(arrF + i);
-        memcpy(payload + index, ptr, 4);
-        index += 4;
-    }
-    
-    payload[index] = 0;      // option flag
-    payload[index + 1] = 0;  // payload CRC
-    
-    // fill packet: header and payload
-    memcpy(_buf, &headUplink, 22);
-    memcpy(_buf + 22, payload, 53);
-    _buf[szPacket - 1] =  getCrc(_buf, szPacket - 1);      // packet CRC
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
     
     /////////////////////
     // send packet is ready
-    sendPacket(_buf, szPacket);
+    sendPacket(_buf, packetLen);
 }
 

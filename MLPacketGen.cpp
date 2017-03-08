@@ -1,5 +1,7 @@
 #include "MLPacketGen.h"
 
+//////////////////////////////////////////////////////////////////////////////////
+
 MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId) : MLPayloadGen(CMD_REQ_SET_LORA_CONFIG) {
     memcpy(_frequency, frequency, ML_FREQUENCY_LEN);
     _dataRate = dataRate;
@@ -27,6 +29,8 @@ int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
 MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_REQ_DATA) {
     _resInterval = resInterval;
     _dataLen = dataLen;
@@ -50,6 +54,8 @@ int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
 
     return pos;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus) : MLPayloadGen(CMD_NOTIFY_LOCATION) {
     _dateTime = dateTime;
@@ -77,6 +83,8 @@ int MLNotifyLocationGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
 MLReqLocationGen::MLReqLocationGen(int32_t resInterval) : MLPayloadGen(CMD_REQ_LOCATION) {
     _resInterval = resInterval;
 }
@@ -95,6 +103,8 @@ int MLReqLocationGen::getPayload(uint8_t *payload) {
 
     return pos;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 MLSetGeoFenceConfigGen::MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval) : MLPayloadGen(CMD_SET_CONFIG_GEOF) {
     _geofRadius = geofRadius;
@@ -131,6 +141,8 @@ int MLGetGeoFenceConfigGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
 MLAnsSetLoraConfigGen::MLAnsSetLoraConfigGen(uint8_t errorCode) : MLPayloadGen(CMD_ANS_SET_LORA_CONFIG) {
     _errorCode = errorCode;
 }
@@ -148,6 +160,8 @@ int MLAnsSetLoraConfigGen::getPayload(uint8_t *payload) {
 
     return pos;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 MLAnsDataPayloadGen::MLAnsDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_ANS_DATA) {
     _errorCode = errorCode;
@@ -168,6 +182,8 @@ int MLAnsDataPayloadGen::getPayload(uint8_t *payload) {
     pos = getPayloadPostfix(payload, pos);
     return pos;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
 
 MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location) : MLPayloadGen(CMD_RET_CONFIG_GEOF) {
     _geofRadius = geofRadius;
@@ -195,9 +211,11 @@ int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
 MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
                 float sysVoltage, float humidity, float temperature, float reserved) : MLPayloadGen(CMD_NTF_UPLOAD_VINDUINO_FIELD) {
-    memcpy(_apiKey, apiKey, VINDUNO_API_KEY_LEN);
+    memcpy(_apiKey, apiKey, VINDUINO_API_KEY_LEN);
     _soil_1 = soil_1;
     _soil_2 = soil_2;
     _soil_3 = soil_3;
@@ -213,8 +231,8 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     payload[pos++] = _version;
     payload[pos++] = _cmdId & 0xFF;
     payload[pos++] = _cmdId >> 8;
-    memcpy(&payload[pos], _apiKey, VINDUNO_API_KEY_LEN);
-    pos += VINDUNO_API_KEY_LEN;
+    memcpy(&payload[pos], _apiKey, VINDUINO_API_KEY_LEN);
+    pos += VINDUINO_API_KEY_LEN;
     
     // assign 8 data to payload
     float arrDat[8] = {_soil_1, _soil_2, _soil_3, _soil_4, _sysVoltage, _humidity, _temperature, _reserved};
@@ -230,6 +248,13 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     pos += _optionDataLen;
     return pos;
 }
+
+MLNotifyThingspeakPayloadGen::MLNotifyThingspeakPayloadGen(uint8_t *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7) :
+MLNotifyVindunoPayloadGen(apiKey, f0, f1, f2, f3, f4, f5, f6, f7)
+{
+    _cmdId = CMD_NTF_UPLOAD_THINKSPEAK_FIELD;
+}
+//////////////////////////////////////////////////////////////////////////////////
 
 MLPacketGen::MLPacketGen(uint8_t version) {
     _ackBit = MAX_VAL_UINT8;

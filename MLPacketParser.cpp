@@ -53,7 +53,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
     uint8_t dataLen;
     uint8_t data[ML_MAX_DATA_SIZE] = {0};
     uint8_t errorCode;
-    uint8_t apikey[VINDUNO_API_KEY_LEN] = {0};
+    uint8_t apikey[VINDUINO_API_KEY_LEN] = {0};
     float soil1,soil2,soil3,soil4,systemVoltage,humidity,temperature,reserved;
 
     uint8_t cmdVersion = payload[CMD_VERSION_POS];
@@ -109,7 +109,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             mlpacket->setMLPayloadGen(new MLNotifyMydevicesCommandPayloadGen(dataLen, data));
             break;
         case CMD_NTF_UPLOAD_VINDUINO_FIELD:
-            memcpy(apikey, payload+CMD_NTF_VINDUINO_API_KEY_POS, VINDUNO_API_KEY_LEN);
+            memcpy(apikey, payload+CMD_NTF_VINDUINO_API_KEY_POS, VINDUINO_API_KEY_LEN);
             soil1 = payload[CMD_NTF_VINDUINO_SOIL1_POS+3] << 24 | payload[CMD_NTF_VINDUINO_SOIL1_POS+2] << 16
                 | payload[CMD_NTF_VINDUINO_SOIL1_POS+1] << 8 | payload[CMD_NTF_VINDUINO_SOIL1_POS];
             soil2 = payload[CMD_NTF_VINDUINO_SOIL2_POS+3] << 24 | payload[CMD_NTF_VINDUINO_SOIL2_POS+2] << 16

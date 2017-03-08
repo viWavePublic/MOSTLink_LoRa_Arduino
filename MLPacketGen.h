@@ -191,6 +191,8 @@ class MLRetConfigGeofGen : public MLPayloadGen {
         mllocation _location;
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+
 class MLNotifyVindunoPayloadGen : public MLPayloadGen {
     public:
         MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soli_4, 
@@ -206,7 +208,7 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
         float getTemperature() { return _temperature; }
         float getReserved() { return _reserved; }
     private:
-        uint8_t _apiKey[VINDUNO_API_KEY_LEN]; 
+        uint8_t _apiKey[VINDUINO_API_KEY_LEN]; 
         float _soil_1;
         float _soil_2;
         float _soil_3;
@@ -217,6 +219,11 @@ class MLNotifyVindunoPayloadGen : public MLPayloadGen {
         float _reserved;
 };
 
+class MLNotifyThingspeakPayloadGen : public MLNotifyVindunoPayloadGen {
+public:
+
+    MLNotifyThingspeakPayloadGen(uint8_t *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7);
+};
 //////////////////////////////////////////////////////////////////////////////////
 
 class MLReqAuthChallengePayloadGen : public MLPayloadGen {
