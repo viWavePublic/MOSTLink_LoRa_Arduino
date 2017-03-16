@@ -158,8 +158,11 @@ boolean MOSTLoraWAN::setTx(int port, char *confirm, char *payload)
 boolean MOSTLoraWAN::setTestMode(int mode)
 {
     sprintf(_strBuf, "AAT1 TestMode=%d", mode);
-    command(_strBuf);
+    char *strRet = command(_strBuf);
+    
+    return isOK(strRet);
 }
+
 int MOSTLoraWAN::getTestMode()
 {
     char *strRet = command(F("AAT1 TestMode=?"));
@@ -496,7 +499,7 @@ void MOSTLoraWAN::getTx_Band(int bandGroup, int &dutyCycle, int &idPower)
     debugSerial.print(F(", TxPower ID:"));
     debugSerial.println(idPower);
 
-#endif // DEBUG_LORA */
+#endif // DEBUG_LORA
 }
 
 /////////////////////////////////////////
