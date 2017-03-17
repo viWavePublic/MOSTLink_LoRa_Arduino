@@ -411,3 +411,17 @@ String MLutility::generateChannelData(const char *strID, int nVal)
     return strRet;
 }
 
+// parse downlink command from MCS
+boolean MLutility::parseDownlinkMCS(const char *strBuf, const char *strToken, int &nVal)
+{
+    boolean bRet = false;
+    if (strstr(strBuf, strToken) == strBuf) {
+        const int szToken = strlen(strToken);
+        if (',' == strBuf[szToken]) {
+            const char *strVal = strBuf + szToken + 1;
+            nVal = atoi(strVal);
+            bRet = true;
+        }
+    }
+    return bRet;
+}

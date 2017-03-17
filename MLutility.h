@@ -36,6 +36,7 @@ public:
     static String generateChannelData(const char *strID, const char *strValue);
     static String generateChannelData(const char *strID, float fVal);
     static String generateChannelData(const char *strID, int nVal);
+    static boolean parseDownlinkMCS(const char *strBuf, const char *strToken, int &nVal);
 };
 #if defined(__LINKIT_ONE__)
 extern void dtostrf(float fVal, int width, int precision, char *strBuf);
