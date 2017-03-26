@@ -142,8 +142,9 @@ void inputBySerial()
   }  
 }
 
-
-bool readSensorDHT(float &fTemp, float &fHumi, bool bShowResult)
+/////////////////////////////////////////////
+// read DHT sensor: Temperature and Humidity
+bool readSensorDHT(float &fHumi, float &fTemp, bool bShowResult)
 {
     bool bRet = true;
 #if defined(__LINKIT_ONE__)  

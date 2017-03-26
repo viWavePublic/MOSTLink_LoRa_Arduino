@@ -322,7 +322,7 @@ void inputBySerial()
 
 /////////////////////////////////////////////
 // read DHT sensor: Temperature and Humidity
-bool readSensorDHT(float &fTemp, float &fHumi, bool bShowResult)
+bool readSensorDHT(float &fHumi, float &fTemp, bool bShowResult)
 {
     bool bRet = true;
 #if defined(__LINKIT_ONE__)  
