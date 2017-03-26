@@ -7,11 +7,18 @@
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
-#include "DHT.h"
 #include "MLutility.h"
 
 MOSTLora lora;
+
+// DHT sensor related:
+#if defined(__LINKIT_ONE__)
+#include "LDHT.h"
+LDHT dht(2, DHT22);      // DHT22, DHT11
+#else     // __LINKIT_ONE__
+#include "DHT.h"
 DHT dht(2, DHT22);      // DHT22, DHT11
+#endif    // __LINKIT_ONE__
 
 int szBuf = 0;
 byte buf[100] = {0};
@@ -60,7 +67,7 @@ void setup() {
   boolean bReadDHT = false;
   while (!bReadDHT && i < 8) {
     delay(700);
-    bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
+    bReadDHT = readSensorDHT(fHumidity, fTemperature, true);
     i++;
   }
 }
@@ -97,7 +104,7 @@ void loop() {
   unsigned long tsCurr = millis();
   if (tsCurr > tsSensor + 5000) {
     tsSensor = tsCurr;
-    dht.readSensor(fHumidity, fTemperature, true);
+    readSensorDHT(fHumidity, fTemperature, true);
 
     Serial.print(F("timestamp: "));
     Serial.println(tsCurr);
@@ -126,7 +133,7 @@ void inputBySerial()
       else if (buf[1] == '4') {
       }
       else if (buf[1] == 's') {
-        dht.readSensor(fHumidity, fTemperature, true);
+        readSensorDHT(fHumidity, fTemperature, true);
       }
       else if (buf[1] == '9') {
         lora.sendPacketSendMCSCommand((buf + 2), strlen((char*)buf + 2));
@@ -135,4 +142,44 @@ void inputBySerial()
   }  
 }
 
+
+bool readSensorDHT(float &fTemp, float &fHumi, bool bShowResult)
+{
+    bool bRet = true;
+#if defined(__LINKIT_ONE__)  
+    // Reading temperature or humidity takes about 250 milliseconds!
+    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+    if(dht.read())
+    {
+        fTemp = dht.readTemperature();
+        fHumi = dht.readHumidity();
+        if (bShowResult) {
+            Serial.println("------------------------------");
+            Serial.print("Temperature Celcius = ");
+            Serial.print(dht.readTemperature());
+            Serial.println("C");
+    
+            Serial.print("Temperature Fahrenheit = ");
+            Serial.print(dht.readTemperature(false));
+            Serial.println("F");
+    
+            Serial.print("Humidity = ");
+            Serial.print(dht.readHumidity());
+            Serial.println("%");
+    
+            Serial.print("HeatIndex = ");
+            Serial.print(dht.readHeatIndex(fTemp,fHumi));
+            Serial.println("C");
+    
+            Serial.print("DewPoint = ");
+            Serial.print(dht.readDewPoint(fTemp,fHumi));
+            Serial.println("C");
+        }
+    }
+#else     // __LINKIT_ONE__
+    bRet = dht.readSensor(fHumidity, fTemperature, true);
+#endif    // __LINKIT_ONE__
+
+    return bRet;
+}
 

@@ -9,20 +9,24 @@
 //////////////////////////////////////////////////////
 
 #include "MOSTLora.h"
-#include "DHT.h"
 #include "MLutility.h"
 
 #if defined(__LINKIT_ONE__)
+
 #include <LEEPROM.h>
-#else // __LINKIT_ONE__
+#include "LDHT.h"
+LDHT dht(2, DHT22);      // DHT22, DHT11
+
+#else   // __LINKIT_ONE__
+
 #include <EEPROM.h>
 #include <MemoryFree.h>
+#include "DHT.h"
+DHT dht(2, DHT22);      // DHT22, DHT11
 
-#endif // __LINKIT_ONE__
+#endif  // __LINKIT_ONE__
 
 MOSTLora lora;
-DHT dht(2, DHT22);      // DHT22, DHT11
-//DHT dht(2, DHT11);       
 
 #define PIN_LED_CONTROL  13
 #define PIN_FAN_CONTROL  8
@@ -109,7 +113,7 @@ void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
       strValue += " on";    
   }
   else if (parseDownlink(strCtrlUpdate, nVal)) {
-    dht.readSensor(fHumidity, fTemperature, true);
+    readSensorDHT(fHumidity, fTemperature, true);
 
     sendUplinkDHT();
     refreshControlState(); 
@@ -197,7 +201,7 @@ void setup() {
   boolean bReadDHT = false;
   while (!bReadDHT && i < 8) {
     delay(700);
-    bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
+    bReadDHT = readSensorDHT(fHumidity, fTemperature, true);
     i++;
   }
 
@@ -205,7 +209,7 @@ void setup() {
   lora.sendPacketReqLoginMCS((uint8_t*)strDevice, strlen(strDevice));
 
   // init MCS control state:
-  refreshControlState();
+//  refreshControlState();
 }
 
 // send uplink command to MCS
@@ -262,7 +266,7 @@ void loop() {
   unsigned long tsCurr = millis();
   if (tsCurr > tsSensor + 5000) {
     tsSensor = tsCurr;
-    dht.readSensor(fHumidity, fTemperature, true);
+    readSensorDHT(fHumidity, fTemperature, true);
     if (fTemperature > dataSo.soHot && 0 == digitalRead(PIN_FAN_CONTROL)) {
       digitalWrite(PIN_FAN_CONTROL, 1);
       sendUplink(strCtrlFan, "1");
@@ -307,13 +311,55 @@ void inputBySerial()
         refreshControlState();
       }
       else if (buf[1] == 's') {
-        dht.readSensor(fHumidity, fTemperature, true);
+        readSensorDHT(fHumidity, fTemperature, true);
       }
       else if (buf[1] == '9') {
         lora.sendPacketSendMCSCommand((buf + 2), strlen((char*)buf + 2));
       }
     }
   }  
+}
+
+/////////////////////////////////////////////
+// read DHT sensor: Temperature and Humidity
+bool readSensorDHT(float &fTemp, float &fHumi, bool bShowResult)
+{
+    bool bRet = true;
+#if defined(__LINKIT_ONE__)  
+    // Reading temperature or humidity takes about 250 milliseconds!
+    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+    if(dht.read())
+    {
+        fTemp = dht.readTemperature();
+        fHumi = dht.readHumidity();
+        if (bShowResult) {
+            Serial.println("------------------------------");
+            Serial.print("Temperature Celcius = ");
+            Serial.print(dht.readTemperature());
+            Serial.println("C");
+    
+            Serial.print("Temperature Fahrenheit = ");
+            Serial.print(dht.readTemperature(false));
+            Serial.println("F");
+    
+            Serial.print("Humidity = ");
+            Serial.print(dht.readHumidity());
+            Serial.println("%");
+    
+            Serial.print("HeatIndex = ");
+            Serial.print(dht.readHeatIndex(fTemp,fHumi));
+            Serial.println("C");
+    
+            Serial.print("DewPoint = ");
+            Serial.print(dht.readDewPoint(fTemp,fHumi));
+            Serial.println("C");
+        }
+    }
+#else     // __LINKIT_ONE__
+    bRet = dht.readSensor(fHumidity, fTemperature, true);
+#endif    // __LINKIT_ONE__
+
+    return bRet;
 }
 
 
