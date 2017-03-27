@@ -14,15 +14,11 @@
 #if defined(__LINKIT_ONE__)
 
 #include <LEEPROM.h>
-#include "LDHT.h"
-LDHT dht(2, DHT22);      // DHT22, DHT11
 
 #else   // __LINKIT_ONE__
 
 #include <EEPROM.h>
 #include <MemoryFree.h>
-#include "DHT.h"
-DHT dht(2, DHT22);      // DHT22, DHT11
 
 #endif  // __LINKIT_ONE__
 
@@ -58,6 +54,9 @@ const char *strDispTemperature = "DISP_TEMPERATURE";
 const char *strDispHumidity = "DISP_HUMIDITY";
 const char *strDispLog = "DISP_LOG";
 
+/////////////////////////////////////////////
+// EEPROM for preset data
+/////////////////////////////////////////////
 #define START_POS_EEPROM  0
 // for EEPROM.put(START_POS_EEPROM, dataSo);
 void putEEPROM(uint8_t *pSrc, int szData)
@@ -77,7 +76,51 @@ void getEEPROM(uint8_t *pDst, int szData)
   }
 }
 
-// callback for rece data
+/////////////////////////////////////////////
+// DHT sensor related:
+#if defined(__LINKIT_ONE__)
+#include "LDHT.h"
+LDHT dht(2, DHT22);      // DHT22, DHT11
+#else     // __LINKIT_ONE__
+#include "DHT.h"
+DHT dht(2, DHT22);      // DHT22, DHT11
+#endif    // __LINKIT_ONE__
+/////////////////////////////////////////////
+// read DHT sensor: Temperature and Humidity
+bool readSensorDHT(float &fHumi, float &fTemp, bool bShowResult)
+{
+    bool bRet = true;
+#if defined(__LINKIT_ONE__)  
+    // Reading temperature or humidity takes about 250 milliseconds!
+    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+    if(dht.read())
+    {
+        fTemp = dht.readTemperature();
+        fHumi = dht.readHumidity();
+    }
+#else     // __LINKIT_ONE__
+    bRet = dht.readSensor(fHumi, fTemp);
+#endif    // __LINKIT_ONE__
+
+    if (bShowResult) {
+        debugSerial.print(F("ts("));
+        debugSerial.print(millis());
+        debugSerial.print(F("), "));
+        if (bRet) {
+            debugSerial.print(F("Humidity: "));
+            debugSerial.print(fHumi);
+            debugSerial.print(F(" %, Temperature: "));
+            debugSerial.print(fTemp);
+            debugSerial.println(F(" *C"));
+        }
+        else {
+            debugSerial.println(F("DHT Fail."));
+        }
+    }
+    return bRet;
+}
+/////////////////////////////////////////////
+// callback for REQ_DATA
 void funcPacketReqData(unsigned char *data, int szData)
 {
   memcpy(buf, data, szData);  
@@ -156,10 +199,8 @@ boolean parseDownlink(const char *strToken, int &nVal) {
 
 //
 void setup() {
-#ifdef DEBUG_LORA
-  Serial.begin(9600);  // use serial port for log monitor
-  Serial.println(F("*** lora_07_mcs_sharecourse ***"));
-#endif // DEBUG_LORA
+  debugSerial.begin(9600);  // use serial port for log monitor
+  debugSerial.println(F("*** lora_07_mcs_sharecourse ***"));
 
   // read EEPROM
   getEEPROM((uint8_t*)&dataSo, sizeof(DataSo));
@@ -255,8 +296,8 @@ void sendUplinkDHT() {
   lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(600);
 
-  Serial.print(strCmd.length());
-  Serial.println(F(" count chars"));
+  debugSerial.print(strCmd.length());
+  debugSerial.println(F(" count chars"));
 }
 
 void loop() {
@@ -283,15 +324,15 @@ void loop() {
       debugSerial.print(dataSo.soWet);
       debugSerial.println(F(", active led"));
     }
-    Serial.print(F("timestamp: "));
-    Serial.println(tsCurr);
   }
 
   // command to send (for debug)
-  if (Serial.available())
+  if (debugSerial.available())
     inputBySerial();
 }
 
+/////////////////////////////////////////////
+// test by input 
 void inputBySerial()
 {
   int countBuf = MLutility::readSerial((char*)buf);
@@ -319,47 +360,4 @@ void inputBySerial()
     }
   }  
 }
-
-/////////////////////////////////////////////
-// read DHT sensor: Temperature and Humidity
-bool readSensorDHT(float &fHumi, float &fTemp, bool bShowResult)
-{
-    bool bRet = true;
-#if defined(__LINKIT_ONE__)  
-    // Reading temperature or humidity takes about 250 milliseconds!
-    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-    if(dht.read())
-    {
-        fTemp = dht.readTemperature();
-        fHumi = dht.readHumidity();
-        if (bShowResult) {
-            Serial.println("------------------------------");
-            Serial.print("Temperature Celcius = ");
-            Serial.print(dht.readTemperature());
-            Serial.println("C");
-    
-            Serial.print("Temperature Fahrenheit = ");
-            Serial.print(dht.readTemperature(false));
-            Serial.println("F");
-    
-            Serial.print("Humidity = ");
-            Serial.print(dht.readHumidity());
-            Serial.println("%");
-    
-            Serial.print("HeatIndex = ");
-            Serial.print(dht.readHeatIndex(fTemp,fHumi));
-            Serial.println("C");
-    
-            Serial.print("DewPoint = ");
-            Serial.print(dht.readDewPoint(fTemp,fHumi));
-            Serial.println("C");
-        }
-    }
-#else     // __LINKIT_ONE__
-    bRet = dht.readSensor(fHumidity, fTemperature, true);
-#endif    // __LINKIT_ONE__
-
-    return bRet;
-}
-
 

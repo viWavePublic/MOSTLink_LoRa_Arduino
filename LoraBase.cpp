@@ -9,13 +9,17 @@
 #include "LoraBase.h"
 #include "MLutility.h"
 
+///////////////////////
 // LoRa Serial bus: RX/TX
+///////////////////////
 #if defined(__LINKIT_ONE__)
     #define loraSerial Serial1       // for LinkIt ONE
 
 #else // __LINKIT_ONE__
-#ifdef DEBUG_LORA
 
+#ifdef USE_VINDUINO
+#define loraSerial Serial       // for Vinduino
+#else // USE_VINDUINO
     // for arduino Uno
     #include <SoftwareSerial.h>
     const int pinLoraRX = 10;
@@ -24,13 +28,11 @@
     //      pinMode(pinLoraTX, OUTPUT);
     SoftwareSerial loraSerial(pinLoraRX, pinLoraTX);    // RX, TX
 
-#else // DEBUG_LORA
-
-    #define loraSerial Serial       // for Vinduino
-
-#endif // DEBUG_LORA
+#endif // USE_VINDUINO
 
 #endif // __LINKIT_ONE__
+
+/////////////////////////////////////////
 
 LoraBase::LoraBase(int pinP1, int pinP2, int pinBusy)
 {

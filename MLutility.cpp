@@ -150,7 +150,7 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
         second    = (GPGGAstr[tmp + 4] - '0') * 10 + (GPGGAstr[tmp + 5] - '0');
         
         sprintf(buff, "UTC %2d-%2d-%2d", hour, minute, second);
-        Serial.println(buff);
+        debugSerial.println(buff);
         
         // latitude
         tmp = getComma(2, GPGGAstr);
@@ -175,7 +175,7 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
         num = getIntNumber(&GPGGAstr[tmp]);
         
         sprintf(buff, "lat = %10.4f, lng = %10.4f, GPS num(%d), status:%d", latitude, longitude, num, gpsStatus);
-        Serial.println(buff);
+        debugSerial.println(buff);
         
         // get latitude, longitude data
         dbLat = latitude / 100;
@@ -194,13 +194,13 @@ void MLutility::printBinary(const uint8_t *data, const int szData)
     int i;
     for (i = 0; i < szData; i++) {
         if (data[i] < 16)
-            Serial.print("0");
+            debugSerial.print("0");
         
-        Serial.print(data[i], HEX);
+        debugSerial.print(data[i], HEX);
     }
-    Serial.print(F(" ("));
-    Serial.print(szData, DEC);
-    Serial.print(F(" bytes)\n"));
+    debugSerial.print(F(" ("));
+    debugSerial.print(szData, DEC);
+    debugSerial.print(F(" bytes)\n"));
 }
 
 void MLutility::stringHexToBytes(uint8_t *dst, const char *strSrc, const int szSrc)

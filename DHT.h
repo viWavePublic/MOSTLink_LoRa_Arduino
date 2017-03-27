@@ -47,6 +47,6 @@ class DHT {
   float readHumidity(void);
 
     // Macbear added:
-    boolean readSensor(float &h, float &t, boolean bShowResult);
+    boolean readSensor(float &h, float &t);
 };
 #endif

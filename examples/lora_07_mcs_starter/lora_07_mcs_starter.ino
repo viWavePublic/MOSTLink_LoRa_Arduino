@@ -11,15 +11,6 @@
 
 MOSTLora lora;
 
-// DHT sensor related:
-#if defined(__LINKIT_ONE__)
-#include "LDHT.h"
-LDHT dht(2, DHT22);      // DHT22, DHT11
-#else     // __LINKIT_ONE__
-#include "DHT.h"
-DHT dht(2, DHT22);      // DHT22, DHT11
-#endif    // __LINKIT_ONE__
-
 int szBuf = 0;
 byte buf[100] = {0};
 char *strTmp = (char*)buf;
@@ -33,9 +24,56 @@ const char *strDevice = "DAqjhn8J,oYWff0vnH0O8x4xr";  // usgmostlink
 const char *strDispTemperature = "DISP_T";
 const char *strDispHumidity = "DISP_H";
 
+/////////////////////////////////////////////
+// DHT sensor related:
+#if defined(__LINKIT_ONE__)
+#include "LDHT.h"
+LDHT dht(2, DHT22);      // DHT22, DHT11
+#else     // __LINKIT_ONE__
+#include "DHT.h"
+DHT dht(2, DHT22);      // DHT22, DHT11
+#endif    // __LINKIT_ONE__
+/////////////////////////////////////////////
+// read DHT sensor: Temperature and Humidity
+bool readSensorDHT(float &fHumi, float &fTemp, bool bShowResult)
+{
+    bool bRet = true;
+#if defined(__LINKIT_ONE__)  
+    // Reading temperature or humidity takes about 250 milliseconds!
+    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+    if(dht.read())
+    {
+        fTemp = dht.readTemperature();
+        fHumi = dht.readHumidity();
+    }
+#else     // __LINKIT_ONE__
+    bRet = dht.readSensor(fHumi, fTemp);
+#endif    // __LINKIT_ONE__
+
+    if (bShowResult) {
+        debugSerial.print(F("ts("));
+        debugSerial.print(millis());
+        debugSerial.print(F("), "));
+        if (bRet) {
+            debugSerial.print(F("Humidity: "));
+            debugSerial.print(fHumi);
+            debugSerial.print(F(" %, Temperature: "));
+            debugSerial.print(fTemp);
+            debugSerial.println(F(" *C"));
+        }
+        else {
+            debugSerial.println(F("DHT Fail."));
+        }
+    }
+    return bRet;
+}
+/////////////////////////////////////////////
+
+/////////////////////////////////////////////
 // callback for rece data
 void funcPacketReqData(unsigned char *data, int szData)
 {
+  MLutility::blinkSOS(50);
   memcpy(buf, data, szData);  
   buf[szData] = 0;
   debugSerial.print(F("ReqData= "));
@@ -44,19 +82,23 @@ void funcPacketReqData(unsigned char *data, int szData)
   sendUplinkDHT();
 }
 
-//
+/////////////////////////////////////////////
+
 void setup() {
-#ifdef DEBUG_LORA
-  Serial.begin(9600);  // use serial port for log monitor
-  Serial.println(F("*** lora_07_mcs_starter ***"));
-#endif // DEBUG_LORA    
+
+  debugSerial.begin(9600);  // use serial port for log monitor
+  debugSerial.println(F("*** lora_07_mcs_starter ***"));
+
   lora.begin();
   // custom LoRa config by your environment setting
   // config setting: frequency, group, data-rate, power, wakeup-time
   lora.writeConfig(915000, 0, 0, 7, 5);
-  lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
+  lora.setMode(E_LORA_WAKEUP);         // E_LORA_POWERSAVING
+  lora.sendData("MCS_starter");
+  lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
+
 
   // custom callback
   lora.setCallbackPacketReqData(funcPacketReqData);
@@ -93,28 +135,35 @@ void sendUplinkDHT() {
   lora.sendPacketSendMCSCommand((uint8_t*)strCmd.c_str(), strCmd.length());
   delay(500);
 
-  Serial.print(strCmd.length());
-  Serial.println(F(" count chars"));
+  debugSerial.print(strCmd.length());
+  debugSerial.println(F(" count chars"));
 }
+
+/////////////////////////////////////////////
 
 void loop() {
   lora.run();
   delay(100);
 
   unsigned long tsCurr = millis();
-  if (tsCurr > tsSensor + 5000) {
+  if (tsCurr > tsSensor + 6000) {
     tsSensor = tsCurr;
     readSensorDHT(fHumidity, fTemperature, true);
-
-    Serial.print(F("timestamp: "));
-    Serial.println(tsCurr);
+  }
+  
+  static unsigned long tsLive = 0;
+  if (tsCurr > tsLive + 2000) {
+    tsLive = tsCurr;
+    MLutility::blinkLed(2, 30);
   }
 
   // command to send (for debug)
-  if (Serial.available())
+  if (debugSerial.available())
     inputBySerial();
 }
 
+/////////////////////////////////////////////
+// test by input command
 void inputBySerial()
 {
   int countBuf = MLutility::readSerial((char*)buf);
@@ -140,47 +189,5 @@ void inputBySerial()
       }
     }
   }  
-}
-
-/////////////////////////////////////////////
-// read DHT sensor: Temperature and Humidity
-bool readSensorDHT(float &fHumi, float &fTemp, bool bShowResult)
-{
-    bool bRet = true;
-#if defined(__LINKIT_ONE__)  
-    // Reading temperature or humidity takes about 250 milliseconds!
-    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-    if(dht.read())
-    {
-        fTemp = dht.readTemperature();
-        fHumi = dht.readHumidity();
-        if (bShowResult) {
-            Serial.println("------------------------------");
-            Serial.print("Temperature Celcius = ");
-            Serial.print(dht.readTemperature());
-            Serial.println("C");
-    
-            Serial.print("Temperature Fahrenheit = ");
-            Serial.print(dht.readTemperature(false));
-            Serial.println("F");
-    
-            Serial.print("Humidity = ");
-            Serial.print(dht.readHumidity());
-            Serial.println("%");
-    
-            Serial.print("HeatIndex = ");
-            Serial.print(dht.readHeatIndex(fTemp,fHumi));
-            Serial.println("C");
-    
-            Serial.print("DewPoint = ");
-            Serial.print(dht.readDewPoint(fTemp,fHumi));
-            Serial.println("C");
-        }
-    }
-#else     // __LINKIT_ONE__
-    bRet = dht.readSensor(fHumidity, fTemperature, true);
-#endif    // __LINKIT_ONE__
-
-    return bRet;
 }
 

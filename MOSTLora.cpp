@@ -20,6 +20,8 @@
 const char KEY_AES128[16] = {'1','2','3','4','5','6','7','8','9','0','A','B','C','D','E','F'};
 const char IV_AES128[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
 
+/////////////////////////////////////////
+
 MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 : LoraBase(pinP1, pinP2, pinBusy)
 {
@@ -42,7 +44,7 @@ void MOSTLora::begin(long speed)
     LoraBase::begin();
     
 #ifdef DEBUG_LORA
-  debugSerial.println(F("== MOSTLink v1.5.5 =="));
+  debugSerial.println(F("== MOSTLink v1.5.6 =="));
   debugSerial.print(F("CPU: "));
   debugSerial.println(F_CPU);
     
