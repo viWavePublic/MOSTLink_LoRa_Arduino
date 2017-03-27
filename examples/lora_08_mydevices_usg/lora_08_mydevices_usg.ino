@@ -88,7 +88,7 @@ void funcPacketNotifyMydevicesCommand(unsigned char *data, int szData)
 //
 void setup() {
 #ifdef DEBUG_LORA
-  Serial.begin(9600);  // use serial port for log monitor
+  debugSerial.begin(9600);  // use serial port for log monitor
 #endif // DEBUG_LORA
 
   pinMode(PIN_SENSOR_REED, INPUT);
@@ -106,7 +106,7 @@ void setup() {
   lora.begin();
   // custom LoRa config by your environment setting
   // config setting: frequency, group, data-rate, power, wakeup-time
-  lora.writeConfig(915111, 0, 0, 7, 5);
+  lora.writeConfig(915000, 0, 0, 7, 5);
   lora.setMode(E_LORA_POWERSAVING);         // E_LORA_POWERSAVING
 
   delay(1000);
@@ -120,7 +120,7 @@ void setup() {
   boolean bReadDHT = false;
   while (!bReadDHT && i < 8) {
     delay(700);
-    bReadDHT = dht.readSensor(fHumidity, fTemperature, true);
+    bReadDHT = dht.readSensor(fHumidity, fTemperature);
     i++;
   }
 
@@ -163,7 +163,7 @@ void refreshControlState() {
 }
 
 void sendUplinkDHT() {
-  dht.readSensor(fHumidity, fTemperature, false);
+  dht.readSensor(fHumidity, fTemperature);
 
   String strCmd = "2,temp,f,";
   int nVal = dht.convertCtoF(fTemperature);
@@ -194,7 +194,7 @@ void loop() {
   unsigned long tsCurr = millis();
   if (tsCurr > tsSensor + 5000) {
     tsSensor = tsCurr;
-    dht.readSensor(fHumidity, fTemperature, true);
+    dht.readSensor(fHumidity, fTemperature);
     fTemperature = dht.convertCtoF(fTemperature);
 
     Serial.print(fTemperature);
@@ -233,7 +233,6 @@ void inputBySerial()
         refreshControlState();  // test uplink:
       }
       else if (buf[1] == 's') {
-        dht.readSensor(fHumidity, fTemperature, true);
       }
     }
   }  
