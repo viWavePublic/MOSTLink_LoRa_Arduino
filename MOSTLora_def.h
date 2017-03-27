@@ -43,23 +43,22 @@
 
 #endif // for Arduino board
 
+///////////////////////
+// debug for Serial monitor
+///////////////////////
+#ifndef USE_VINDUINO     // debug only for non-Vinduino project
 
-//#define USE_VINDUINO  // for Vinduino project (unmark the line)
-#ifdef USE_VINDUINO     // for Vinduino project
+#define DEBUG_LORA     // <--- debug by Serial Monitor, NOTICE: remark for RELEASE
 
-#else // USE_VINDUINO
-#define DEBUG_LORA     // debug by Serial Monitor
 #endif // USE_VINDUINO
 
 // debug LoRa to serial-monitor
 #ifdef DEBUG_LORA
 #define debugSerial Serial
 #else // DEBUG_LORA
-// not ready yet
-class DummySerial {
-    
-};
-//#define debugSerial DummySerial
+
+#include "DummySerial.h"
+#define debugSerial dummySerial
 
 #endif // DEBUG_LORA
 
