@@ -20,28 +20,24 @@ MOSTLoraWAN loraWAN;
 
 void setup() {
   // put your setup code here, to run once:
-  loraWAN.begin(57600);
   debugSerial.begin(9600);
-
   debugSerial.println(F("*** loraWAN_01 ***"));
 
-  // get device data
-  const char *strSend = "AAT2 Tx=3,cnf,ccddeeff11223344";
+  loraWAN.begin(57600);
 
-  // send command to LoraWan module
-//  loraWAN.testAll();
+  ////////////////////
+  // get node info
+  ////////////////////
+//  const char *strFwVer = loraWAN.getFwVersion();    // firmware version
+//  const char *strDevDui = loraWAN.getDevEui();      // dev EUI
+//  const char *strDevAddr =loraWAN.getDevAddr();     // dev address
 
-  loraWAN.setRxDelay1(123000);
-  long resDelay = loraWAN.getRxDelay1();
-  long freq = 0;
-  int dataRate = 0;
-  int channelOpen = 0, bandGroup = 0;
-  loraWAN.getRx2_Freq_DR(freq, dataRate);
-  loraWAN.getTx_Channel(2, freq, dataRate, channelOpen, bandGroup);
-
-  // send Tx
-//  loraWAN.command(strSend);
-  loraWAN.setTx(3, "cnf", "1122339900AA");
+//  int nADR = loraWAN.getADR();
+//  loraWAN.setADR(1);
+  
+  // send Tx: payload by HEX encode
+  const char *payload = "aabbcc1122334488";
+  loraWAN.setTx(3, "cnf", payload);
 }
 
 
