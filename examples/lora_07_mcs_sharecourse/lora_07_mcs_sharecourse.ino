@@ -127,6 +127,8 @@ void funcPacketReqData(unsigned char *data, int szData)
   buf[szData] = 0;
   debugSerial.print(F("ReqData= "));
   debugSerial.println((const char*)buf);
+
+  sendUplinkDHT();
 }
 
 void funcPacketNotifyMcsCommand(unsigned char *data, int szData)
