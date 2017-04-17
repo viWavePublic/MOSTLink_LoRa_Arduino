@@ -150,7 +150,17 @@ boolean MOSTLoraWAN::setTx(int port, char *confirm, char *payload)
     sprintf(_strBuf, "AAT2 Tx=%d,%s,%s", port, confirm, payload);
     char *strRet = command(_strBuf);
     
-    return isOK(strRet);
+    boolean bTxCmd = isOK(strRet);
+    if (bTxCmd) {
+        const int nLen = strlen(strRet);
+        if (nLen > 4) {
+            const char *strRet2 = strRet + 4;
+            if (strstr(strRet2, "Tx_no_free_ch") == strRet2) {
+                bTxCmd = false;
+            }
+        }
+    }
+    return bTxCmd;
 }
 
 /////////////////////////////////////////
