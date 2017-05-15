@@ -189,6 +189,7 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
     return bRet;
 }
 
+// output ASC as HEX char
 void MLutility::printBinary(const uint8_t *data, const int szData)
 {
     int i;
@@ -201,6 +202,16 @@ void MLutility::printBinary(const uint8_t *data, const int szData)
     debugSerial.print(F(" ("));
     debugSerial.print(szData, DEC);
     debugSerial.print(F(" bytes)\n"));
+}
+
+// string convert: src to dst by Hex
+void MLutility::stringToHex(char *dst, const char *strSrc, const int szSrc)
+{
+    int i;
+    for (i = 0; i < szSrc; i++) {
+        sprintf(dst, "%02X", strSrc[i]);
+        dst += 2;
+    }
 }
 
 void MLutility::stringHexToBytes(uint8_t *dst, const char *strSrc, const int szSrc)

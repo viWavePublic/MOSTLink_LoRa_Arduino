@@ -22,6 +22,7 @@ public:
     
     static int readSerial(char *buf);
     static void printBinary(const uint8_t *data, const int szData);
+    static void MLutility::stringToHex(char *dst, const char *strSrc, const int szSrc);
     static void stringHexToBytes(uint8_t *dst, const char *strSrc, const int szSrc);
     static int convertMQTTtoHex(uint8_t *dst, const char *username, const char *password, const char *clientID);
     
