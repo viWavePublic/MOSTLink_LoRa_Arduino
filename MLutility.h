@@ -18,6 +18,10 @@ public:
     static void blinkSOS(int msOn = 100);
     static int Fcopy(char* buf, const __FlashStringHelper *ifsh);
 
+    // PH sensor related
+    static float measurePH(int pinPh);  // analog-pin for PH sensor
+
+    
     static boolean parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus);
     
     static int readSerial(char *buf);

@@ -102,6 +102,35 @@ int MLutility::Fcopy(char* buf, const __FlashStringHelper *ifsh)
     return i;
 }
 
+// analog-pin for PH sensor
+// PHSensor <---> Arduino UNO board connection
+// Vcc <---> 5V
+// Gnd <---> GND
+// Gnd <---> GND    (optional)
+// Po <---> A0      (output PH)
+// T1 <---> A1      (temperature T1, not work?)
+// T2 <---> A2      (temperature T2, not work?)
+float MLutility::measurePH(int pinPh)
+{
+    int measure = analogRead(pinPh);
+    
+    double voltage = 5 / 1024.0 * measure; //classic digital to voltage conversion
+    
+    // PH_step = (voltage@PH7 - voltage@PH4) / (PH7 - PH4)
+    // PH_probe = PH7 - ((voltage@PH7 - voltage@probe) / PH_step)
+    float Po = 7 + ((2.5 - voltage) / 0.18);
+    
+    debugSerial.print("Measure: ");
+    debugSerial.print(measure);
+    debugSerial.print("\tVoltage: ");
+    debugSerial.print(voltage, 3);
+    debugSerial.print("\tPH: ");
+    debugSerial.print(Po, 3);
+    debugSerial.println("");
+    
+    return Po;
+}
+
 // Linkit GPS library
 // init GPS
 //    LGPS.powerOn();
