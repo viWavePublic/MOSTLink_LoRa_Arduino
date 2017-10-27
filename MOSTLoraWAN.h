@@ -18,11 +18,7 @@ public:
     void begin(long speed = 57600) {
         LoraBase::begin(speed);
     }
-    
-    // AT command
-    char *command(const __FlashStringHelper *strCmd);
-    char *command(const char PROGMEM *strCmd);
-    
+
     // response
     boolean isOK(const char *strResponse);
     void testAll();

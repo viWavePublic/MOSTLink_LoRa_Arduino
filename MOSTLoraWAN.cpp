@@ -11,46 +11,6 @@
 #include "MOSTLoraWAN.h"
 #include "MLutility.h"
 
-#define MAX_SIZE_CMD     60
-
-// Flash string (to reduce memory usage in SRAM)
-char *MOSTLoraWAN::command(const __FlashStringHelper *strCmd)
-{
-    // read back a char
-    MLutility::Fcopy(_strBuf, strCmd);
-    return command(_strBuf);
-}
-
-char *MOSTLoraWAN::command(const char *strCmd)
-{
-    if (NULL == strCmd || strlen(strCmd) > MAX_SIZE_CMD - 3)
-        return NULL;
-    
-    char strFull[MAX_SIZE_CMD] = {0};
-    sprintf(strFull, "%s\r\n", strCmd);     // add CR,LR
-    sendData(strFull);
-    
-    unsigned long tsStart = millis();
-    int szRece = 0;
-    while (millis() - tsStart < 6000) {
-        szRece = receData();
-        if (szRece > 0) {
-            break;
-        }
-        delay(100);
-    }
-    _strBuf[szRece] = 0;
-#ifdef DEBUG_LORA
-    if (szRece > 0) {
-        debugSerial.println(F("+++ AT Response is OK."));
-    }
-    else {
-        debugSerial.println(F("!!! AT Response nothing."));
-    }
-#endif // DEBUG_LORA
-
-    return _strBuf;
-}
 /////////////////////////////////////////
 // response "ok", return true
 boolean MOSTLoraWAN::isOK(const char *strResponse)

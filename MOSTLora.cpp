@@ -224,7 +224,9 @@ boolean MOSTLora::receConfig(DataLora &data)
 // receive data via LoRa
 int MOSTLora::receData()
 {
-    if (LoraBase::receData() > 0) {
+    int szRece = LoraBase::receData();
+    
+    if (szRece > 0) {
       
         if (_buf[0] == '/') {  // ACK message (as Echo)
             char *strBuf = (char*)_buf;
@@ -238,7 +240,7 @@ int MOSTLora::receData()
         int szParse = parsePacket();  // parse Packet by your code
     }
 
-    return _szBuf;
+    return szRece;
 }
 
 // ANS_DATA command for humidity & temperature
