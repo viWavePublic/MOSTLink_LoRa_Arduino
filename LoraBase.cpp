@@ -8,6 +8,7 @@
 
 #include "LoraBase.h"
 #include "MLutility.h"
+#include "MOSTLora.h"
 
 ///////////////////////
 // LoRa Serial bus: RX/TX
@@ -72,7 +73,7 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
             {
                 // Firmware: AAT MOST --> LoRaWAN
                 command("AAT1 LW=0");
-                command("AAT1 Save");
+                command("AAT1 Save", 10000);    // cmd "save" cost more time
                 command("AAT1 Reset");
             }
             else if (E_FW_P1P2_MOST == eModeCurr)
@@ -93,7 +94,7 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
 #endif
             if (E_FW_AAT_LORAWAN == eModeCurr) {
                 command("AAT1 LW=1");
-                command("AAT1 Save");
+                command("AAT1 Save", 10000);    // cmd "save" cost more time
                 command("AAT1 Reset");
             }
             else if (E_FW_P1P2_MOST == eModeCurr) {
@@ -108,7 +109,7 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
 #endif
             if (E_FW_AAT_LORAWAN == eModeCurr) {
                 command("AAT2 Lora_Most_Switch=1");
-                command("AAT1 Save");
+                command("AAT1 Save", 10000);    // cmd "save" cost more time
                 command("AAT1 Reset");
                 loraSerial.begin(9600);
             }
@@ -137,8 +138,12 @@ E_LORA_FW_MODE LoraBase::getFirmwareMode()
             nRet = E_FW_AAT_LORAWAN;
         }
     }
-    else {
-        nRet = E_FW_P1P2_MOST;
+    if (E_UNKNOWN_FW_MODE == nRet) {
+        MOSTLora loraP1P2;
+        loraSerial.begin(9600);
+        if (loraP1P2.readConfig(3)) {
+            nRet = E_FW_P1P2_MOST;            
+        }
     }
     return nRet;
 }
@@ -320,14 +325,14 @@ boolean LoraBase::waitUntilReady(unsigned long timeout)
 #define MAX_SIZE_CMD     60
 
 // Flash string (to reduce memory usage in SRAM)
-char *LoraBase::command(const __FlashStringHelper *strCmd)
+char *LoraBase::command(const __FlashStringHelper *strCmd, int waitResponse)
 {
     // read back a char
     MLutility::Fcopy(_strBuf, strCmd);
-    return command(_strBuf);
+    return command(_strBuf, waitResponse);
 }
 
-char *LoraBase::command(const char *strCmd)
+char *LoraBase::command(const char *strCmd, int waitResponse)
 {
     if (NULL == strCmd || strlen(strCmd) > MAX_SIZE_CMD - 3)
         return NULL;
@@ -339,7 +344,7 @@ char *LoraBase::command(const char *strCmd)
     unsigned long tsStart = millis();
 
     int szRece = 0;
-    while (millis() - tsStart < 6000) {     // response in 6000ms
+    while (millis() - tsStart < waitResponse) {     // response in 6000ms
         szRece = receData();
         if (szRece > 0) {
             break;

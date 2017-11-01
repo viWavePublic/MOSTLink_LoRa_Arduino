@@ -22,10 +22,10 @@ enum E_LORA_MODE {
 
 //
 enum E_LORA_FW_MODE {
-    E_UNKNOWN_FW_MODE = -1,
-    E_FW_AAT_LORAWAN = 0,
-    E_FW_AAT_MOST = 1,
-    E_FW_P1P2_MOST = 2,
+    E_UNKNOWN_FW_MODE = 0,
+    E_FW_AAT_LORAWAN = 1,
+    E_FW_AAT_MOST = 2,
+    E_FW_P1P2_MOST = 3,
 };
 
 class LoraBase
@@ -69,8 +69,8 @@ public:
     boolean waitUntilReady(unsigned long timeout);
     
     // AT command
-    char *command(const __FlashStringHelper *strCmd);
-    char *command(const char PROGMEM *strCmd);
+    char *command(const __FlashStringHelper *strCmd, int waitResponse = 6000);
+    char *command(const char PROGMEM *strCmd, int waitResponse = 6000);
 };
 
 

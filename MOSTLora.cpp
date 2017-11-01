@@ -49,7 +49,7 @@ void MOSTLora::begin(long speed)
   debugSerial.println(F_CPU);
     
 #endif // DEBUG_LORA
-
+/*
     setMode(E_LORA_SETUP);          // E_LORA_SETUP
     // read setting in lora shield
     int i;
@@ -60,6 +60,8 @@ void MOSTLora::begin(long speed)
         }
     }
     setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
+ */
+    readConfig(5);
 }
 
 boolean MOSTLora::printConfig(DataLora &data)
@@ -163,15 +165,26 @@ boolean MOSTLora::setReceiverID(const char *strID)
 /////////////////////////////////////////
 // config setting
 /////////////////////////////////////////
-boolean MOSTLora::readConfig()
+boolean MOSTLora::readConfig(const int nRetry)
 {
-  setMode(E_LORA_SETUP);    // setup(1,1), normal(0,0)
+    boolean bRet = false;
+    int i;
+    for (i = 0; i < nRetry; i++) {
+        setMode(E_LORA_NORMAL);     // setup(1,1), normal(0,0)
+        setMode(E_LORA_SETUP);      // setup(1,1), normal(0,0)
   
-  uint8_t cmdRead[] = {0xFF,0x4C,0xCF,0x52,0xA1,0x52,0xF0};
-  sendData(cmdRead, 7);
+        uint8_t cmdRead[] = {0xFF,0x4C,0xCF,0x52,0xA1,0x52,0xF0};
+        sendData(cmdRead, 7);
+        
+        // receive setting
+        if (receConfig(_data)) {
+            bRet = true;
+            break;
+        }
+  }
+  setMode(E_LORA_NORMAL);           // setup(1,1), normal(0,0)
 
-  // receive setting
-  return receConfig(_data);
+  return bRet;
 }
 
 boolean MOSTLora::writeConfig(long freq, unsigned char group_id, char data_rate, char power, char wakeup_time)

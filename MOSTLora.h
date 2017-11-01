@@ -81,7 +81,7 @@ public:
   boolean setReceiverID(const char *strID);
 
   // config setting: drequency, group, data-rate, power, wakeup-time
-  boolean readConfig();
+  boolean readConfig(const int nRetry = 1);
   boolean writeConfig(long freq, unsigned char group_id = 0, char data_rate = 0, char power = 7, char wakeup_time = 5);
   boolean receConfig(DataLora &data);
     
