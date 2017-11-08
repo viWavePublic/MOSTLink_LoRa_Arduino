@@ -49,18 +49,7 @@ void MOSTLora::begin(long speed)
   debugSerial.println(F_CPU);
     
 #endif // DEBUG_LORA
-/*
-    setMode(E_LORA_SETUP);          // E_LORA_SETUP
-    // read setting in lora shield
-    int i;
-    for (i = 0; i < 5; i++) {
-        setMode(E_LORA_NORMAL);     // E_LORA_NORMAL
-        if (readConfig()) {
-            break;
-        }
-    }
-    setMode(E_LORA_NORMAL);         // E_LORA_NORMAL
- */
+
     readConfig(5);
 }
 

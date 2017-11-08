@@ -23,8 +23,8 @@ enum E_LORA_MODE {
 //
 enum E_LORA_FW_MODE {
     E_UNKNOWN_FW_MODE = 0,
-    E_FW_AAT_LORAWAN = 1,
-    E_FW_AAT_MOST = 2,
+    E_FW_AAT_LORAWAN = 1,   // Program start
+    E_FW_AAT_MOST = 2,      // Main start: mode1
     E_FW_P1P2_MOST = 3,
 };
 
@@ -63,7 +63,8 @@ public:
     int sendData(uint8_t *data, int szData);
     int sendData(const char *strData);
     virtual int receData();
-    
+    bool waitRece(const char *strWait = NULL, int waitResponse = 6000);
+
     // LoRa busy state
     boolean isBusy();
     boolean waitUntilReady(unsigned long timeout);

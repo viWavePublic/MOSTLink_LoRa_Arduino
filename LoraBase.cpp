@@ -52,6 +52,11 @@ void LoraBase::begin(long speed)
     pinMode(_pinBZ, INPUT);
     
     loraSerial.begin(speed);
+#ifdef DEBUG_LORA
+    debugSerial.print(F("(rx/tx)baud-rate="));
+    debugSerial.println(speed);
+#endif // DEBUG_LORA
+    
 }
 
 // LM-110H1 module for 3 firmware mode:
@@ -63,12 +68,11 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
     unsigned char arrayLORAWAN[8] = {0XFF,0X4C,0XCF,0X52,0XA1,0X64,0X47,0X00};
     E_LORA_FW_MODE eModeCurr = E_UNKNOWN_FW_MODE;
     eModeCurr = getFirmwareMode();
+    if (eModeCurr == modeFW)
+        return;
     
     switch (modeFW) {
         case E_FW_AAT_LORAWAN:
-#ifdef DEBUG_LORA
-            debugSerial.print(F("*** FW ---> AAT LoRaWAN ***\n"));
-#endif
             if (E_FW_AAT_MOST == eModeCurr)
             {
                 // Firmware: AAT MOST --> LoRaWAN
@@ -80,43 +84,50 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
             {
                 // Firmware: p1p2--> LoRaWAN
                 loraSerial.begin(9600);
+
                 setMode(E_LORA_NORMAL);     // p1(0 -> 1) pin for setup
+                delay(1000);
                 setMode(E_LORA_SETUP);
                 sendData(arrayLORAWAN, 8);
                 // success: 41 43 4B 18 21 C9
                 loraSerial.begin(57600);
+                const bool bReceResponse = waitRece("Program start", 10000);
             }
+#ifdef DEBUG_LORA
+            debugSerial.println(F("*** AAT LoRaWAN ***"));
+#endif // DEBUG_LORA
             break;
             
         case E_FW_AAT_MOST:
-#ifdef DEBUG_LORA
-            debugSerial.print(F("*** FW ---> AAT MOST ***\n"));
-#endif
-            if (E_FW_AAT_LORAWAN == eModeCurr) {
+            if (E_FW_P1P2_MOST == eModeCurr) {
+                setFirmwareMode(E_FW_AAT_LORAWAN);
+            }
+            
+            if (E_FW_P1P2_MOST == eModeCurr || E_FW_AAT_LORAWAN == eModeCurr) {
                 command("AAT1 LW=1");
                 command("AAT1 Save", 10000);    // cmd "save" cost more time
                 command("AAT1 Reset");
             }
-            else if (E_FW_P1P2_MOST == eModeCurr) {
-                setFirmwareMode(E_FW_AAT_LORAWAN);
-                setFirmwareMode(E_FW_AAT_MOST);
-            }
-            break;
-            
-        case E_FW_P1P2_MOST:
 #ifdef DEBUG_LORA
-            debugSerial.print(F("*** FW ---> P1P2 MOSTLink ***\n"));
-#endif
-            if (E_FW_AAT_LORAWAN == eModeCurr) {
+            debugSerial.println(F("*** AAT MOST ***"));
+#endif // DEBUG_LORA
+            break;
+
+        case E_FW_P1P2_MOST:
+            if (E_FW_AAT_MOST == eModeCurr) {
+                setFirmwareMode(E_FW_AAT_LORAWAN);
+            }
+            
+            if (E_FW_AAT_MOST == eModeCurr || E_FW_AAT_LORAWAN == eModeCurr) {
                 command("AAT2 Lora_Most_Switch=1");
                 command("AAT1 Save", 10000);    // cmd "save" cost more time
                 command("AAT1 Reset");
+                //MOSTLora loraP1P2;
                 loraSerial.begin(9600);
             }
-            else if (E_FW_AAT_MOST == eModeCurr) {
-                setFirmwareMode(E_FW_AAT_LORAWAN);
-                setFirmwareMode(E_FW_P1P2_MOST);
-            }
+#ifdef DEBUG_LORA
+            debugSerial.println(F("*** p1p2 MOSTLink ***"));
+#endif // DEBUG_LORA
             break;
         default:
             break;
@@ -127,7 +138,6 @@ E_LORA_FW_MODE LoraBase::getFirmwareMode()
 {
     E_LORA_FW_MODE nRet = E_UNKNOWN_FW_MODE;
     loraSerial.begin(57600);
-    delay(100);
     const char *strResult = command("AAT1 LW=?");
     if (strlen(strResult) > 0)
     {
@@ -262,16 +272,16 @@ int LoraBase::receData()
             }
         }
     }
-    if (_szBuf > 0) {
-        _buf[_szBuf] = 0;
-        
+    _buf[_szBuf] = 0;
+    
 #ifdef DEBUG_LORA
+    if (_szBuf > 0) {
         debugSerial.print(F("\nRece < "));
         MLutility::printBinary(_buf, _szBuf);
         debugSerial.print(F("<<< "));
         debugSerial.println((char*)_buf);
-#endif // DEBUG_LORA
     }
+#endif // DEBUG_LORA
 
     return _szBuf;
 }
@@ -341,19 +351,9 @@ char *LoraBase::command(const char *strCmd, int waitResponse)
     sprintf(strFull, "%s\r\n", strCmd);     // add CR,LR
     sendData(strFull);
     
-    unsigned long tsStart = millis();
-
-    int szRece = 0;
-    while (millis() - tsStart < waitResponse) {     // response in 6000ms
-        szRece = receData();
-        if (szRece > 0) {
-            break;
-        }
-        delay(100);
-    }
-    _strBuf[szRece] = 0;
+    const bool bReceResponse = waitRece(NULL, waitResponse);
 #ifdef DEBUG_LORA
-    if (szRece > 0) {
+    if (bReceResponse) {
         debugSerial.println(F("+++ AT Response is OK."));
     }
     else {
@@ -364,3 +364,22 @@ char *LoraBase::command(const char *strCmd, int waitResponse)
     return _strBuf;
 }
 
+bool LoraBase::waitRece(const char *strWait, int waitResponse)
+{
+    bool bRet = false;
+    unsigned long tsStart = millis();
+    
+    int szRece = 0;
+    _strBuf[szRece] = 0;
+    while (millis() - tsStart < waitResponse) {     // response in 6000ms
+        szRece = receData();
+        if (szRece > 0) {
+            if ((NULL == strWait) || (NULL != strstr(_strBuf, strWait))) {
+                bRet = true;
+                break;
+            }
+        }
+        delay(100);
+    }
+    return bRet;
+}
