@@ -16,7 +16,7 @@ class MOSTLoraAT : public MOSTLora
 public:
     // initialize for begin baud-rate
     void begin(long speed = 57600) {
-        MOSTLora::begin(speed);
+        LoraBase::begin(speed);
     }
     
     int sendDataAT(uint8_t *data, int szData);

@@ -41,7 +41,7 @@ MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 void MOSTLora::begin(long speed)
 {
     // call parent-class function
-    LoraBase::begin();
+    LoraBase::begin(speed);
     
 #ifdef DEBUG_LORA
   debugSerial.println(F("== MOSTLink v1.5.6 =="));

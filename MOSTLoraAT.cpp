@@ -24,7 +24,29 @@ int MOSTLoraAT::sendDataAT(uint8_t *data, int szData)
 
 int MOSTLoraAT::receData()
 {
-    return MOSTLora::receData();
+    int szRece = LoraBase::receData();
+    if (strstr(_strBuf, "AAT1 R1=") == _strBuf)
+    {
+        const char *strRssi = _strBuf + 8;
+        int rssi = atoi(strRssi) - 159;
+        debugSerial.print("rssi=");
+        debugSerial.print(rssi);
+
+        // rece from LoRa Module
+        const char *dataHex = strstr(strRssi, ",");
+        if (NULL != dataHex)
+        {
+            dataHex++;
+            uint8_t dataBuf[100];
+            int szHex = strlen(dataHex);
+            MLutility::stringHexToBytes(dataBuf, dataHex, szHex);
+            memcpy(_strBuf, dataBuf, szHex / 2);
+            debugSerial.print(", Binary=");
+            debugSerial.println(_strBuf);
+        }
+    }
+   
+    return szRece;
 }
 /////////////////////////////////////////
 // get LoRa Device info
