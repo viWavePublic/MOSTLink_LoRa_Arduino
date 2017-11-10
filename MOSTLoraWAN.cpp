@@ -80,27 +80,15 @@ void MOSTLoraWAN::updateFW()
 {
     command(F("AAT1 UpdateFW"));
 }
-void MOSTLoraWAN::saveSetting()
-{
-    command(F("AAT1 Save"));
-}
+
 char *MOSTLoraWAN::getFwVersion()
 {
     return command(F("AAT1 FwVersion"));
-}
-void MOSTLoraWAN::reset()
-{
-    command(F("AAT1 Reset"));
 }
 
 void MOSTLoraWAN::setSLEEP()
 {
     command(F("AAT1 SLEEP"));
-}
-
-void MOSTLoraWAN::restore()
-{
-    command(F("AAT1 Restore"));
 }
 
 /////////////////////////////////////////

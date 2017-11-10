@@ -46,9 +46,38 @@ public:
     void begin(long speed = 9600);
     unsigned char *getBuffer() { return _buf; }
 
+    // AT command related:
+    //////////////////////////////////////////
+    // All parameters are saved.
+    // Response ok after parameters are saved.
+    void saveSetting()
+    {
+        command(F("AAT1 Save"), 10000);
+    }
+    // Resets and restarts the LM-130 module.
+    // Response ok after entering the command.
+    void reset()
+    {
+        command(F("AAT1 Reset"));
+    }
+    // Restore the defaults of FW.
+    // Response ok after entering the command.
+    void restore()
+    {
+        command(F("AAT1 Restore"));
+    }
+    void setProtocol(int nProtocol)
+    {
+        sprintf(_strBuf, "AAT1 LW=%d", nProtocol);
+        command(_strBuf);
+    }
+    const char *getProtocol()
+    {
+        return command(F("AAT1 LW=?"));
+    }
     void setFirmwareMode(E_LORA_FW_MODE modeFW);
     E_LORA_FW_MODE getFirmwareMode();
-
+  
 protected:
     // setup(1,1), normal(0,0), wakeup(0,1), powersaving(1,0)
     void setMode(int p1, int p2);

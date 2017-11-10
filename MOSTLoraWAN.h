@@ -27,26 +27,14 @@ public:
     // Response ok after entering the command.
     void updateFW();
     
-    // All parameters are saved.
-    // Response ok after parameters are saved.
-    void saveSetting();
-    
     // Show up firmware version.
     char *getFwVersion();
-    
-    // Resets and restarts the LM-130 module.
-    // Response ok after entering the command.
-    void reset();
     
     // Put LM-130 into sleep mode.
     // To leave sleep mode, just Input 0xFF by UART to wake up LM-130.
     // Response ok after entering the command.
     void setSLEEP();
-    
-    // Restore the defaults of FW.
-    // Response ok after entering the command.
-    void restore();
-    
+        
     // send payload by Tx: port: 1~223, cnf/uncnf, Hex-payload(11 bytes)
     // AAT2 Tx=[parameter1], [parameter2], [parameter3]
     // [parameter1]: decimal number representing the port number, from 1 to 223.

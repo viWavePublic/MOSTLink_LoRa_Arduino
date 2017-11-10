@@ -76,9 +76,9 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
             if (E_FW_AAT_MOST == eModeCurr)
             {
                 // Firmware: AAT MOST --> LoRaWAN
-                command("AAT1 LW=0");
-                command("AAT1 Save", 10000);    // cmd "save" cost more time
-                command("AAT1 Reset");
+                command(F("AAT1 LW=0"));
+                saveSetting();
+                reset();
             }
             else if (E_FW_P1P2_MOST == eModeCurr)
             {
@@ -104,9 +104,9 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
             }
             
             if (E_FW_P1P2_MOST == eModeCurr || E_FW_AAT_LORAWAN == eModeCurr) {
-                command("AAT1 LW=1");
-                command("AAT1 Save", 10000);    // cmd "save" cost more time
-                command("AAT1 Reset");
+                command(F("AAT1 LW=1"));
+                saveSetting();
+                reset();
             }
 #ifdef DEBUG_LORA
             debugSerial.println(F("*** AAT MOST ***"));
@@ -119,9 +119,9 @@ void LoraBase::setFirmwareMode(E_LORA_FW_MODE modeFW)
             }
             
             if (E_FW_AAT_MOST == eModeCurr || E_FW_AAT_LORAWAN == eModeCurr) {
-                command("AAT2 Lora_Most_Switch=1");
-                command("AAT1 Save", 10000);    // cmd "save" cost more time
-                command("AAT1 Reset");
+                command(F("AAT2 Lora_Most_Switch=1"));
+                saveSetting();
+                reset();
                 //MOSTLora loraP1P2;
                 loraSerial.begin(9600);
             }
@@ -138,7 +138,7 @@ E_LORA_FW_MODE LoraBase::getFirmwareMode()
 {
     E_LORA_FW_MODE nRet = E_UNKNOWN_FW_MODE;
     loraSerial.begin(57600);
-    const char *strResult = command("AAT1 LW=?");
+    const char *strResult = getProtocol();
     if (strlen(strResult) > 0)
     {
         if ('1' == strResult[0]) {
@@ -158,6 +158,8 @@ E_LORA_FW_MODE LoraBase::getFirmwareMode()
     return nRet;
 }
 
+/////////////////////////////////////////
+// p1p2 MOST
 void LoraBase::setMode(int mode)
 {
     if (_eMode == mode)
