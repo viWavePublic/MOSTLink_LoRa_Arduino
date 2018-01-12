@@ -1,0 +1,114 @@
+{
+  "prototype": {
+    "prodName": "Starter",
+    "description": "MOSTLink gateway for LoRa Application.",
+    "developmentNote": null,
+    "prodAppTypeId": 14,
+    "prodRlsStatusTypeId": 1,
+    "version": "1.0",
+    "displayConfigs": [
+      {
+        "format": {
+          "unitTypes": 10
+        },
+        "displayType": 5,
+        "displayOrder": 1,
+        "streamTypeId": 2,
+        "dataChnIds": [
+          "DISP_T"
+        ],
+        "showHistory": false,
+        "configs": {
+          "history": true,
+          "graph": "line",
+          "format": {
+            "unitTypes": {
+              "displayName": "UnitTypes",
+              "type": "category-units",
+              "required": true
+            }
+          },
+          "block": {}
+        },
+        "directiveName": "float",
+        "type": 2
+      },
+      {
+        "format": {
+          "unitTypes": 39
+        },
+        "displayType": 5,
+        "displayOrder": 2,
+        "streamTypeId": 2,
+        "dataChnIds": [
+          "DISP_H"
+        ],
+        "showHistory": false,
+        "configs": {
+          "history": true,
+          "graph": "line",
+          "format": {
+            "unitTypes": {
+              "displayName": "UnitTypes",
+              "type": "category-units",
+              "required": true
+            }
+          },
+          "block": {}
+        },
+        "directiveName": "float",
+        "type": 2
+      }
+    ],
+    "saleReleaseDate": null,
+    "saleDiscontinuousDate": null,
+    "isLongConnectionNeeded": true,
+    "isSerialNeeded": false,
+    "isInterpreterCloudNeeded": false,
+    "status": true,
+    "prodImgURL": "",
+    "prodDesc": "MOSTLink gateway for LoRa Application.",
+    "chipId": 2
+  },
+  "dataChannels": [
+    {
+      "dataChnId": "DISP_H",
+      "name": "Humidity by sensor",
+      "description": "Sensor DHT22",
+      "channelType": {
+        "dataChnTypeId": 2,
+        "name": "Float"
+      },
+      "streamId": 28868,
+      "format": {
+        "unitTypes": 39
+      },
+      "isHidden": false,
+      "isControllable": false,
+      "unitType": {
+        "id": 39,
+        "name": "percent"
+      }
+    },
+    {
+      "dataChnId": "DISP_T",
+      "name": "Temperature by sensor",
+      "description": "Sensor DHT22",
+      "channelType": {
+        "dataChnTypeId": 2,
+        "name": "Float"
+      },
+      "streamId": 28867,
+      "format": {
+        "unitTypes": 10
+      },
+      "isHidden": false,
+      "isControllable": false,
+      "unitType": {
+        "id": 10,
+        "name": "degree Celsius"
+      }
+    }
+  ],
+  "triggerActions": []
+}

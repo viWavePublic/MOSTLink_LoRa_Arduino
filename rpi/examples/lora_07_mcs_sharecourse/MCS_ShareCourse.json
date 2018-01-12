@@ -1,0 +1,374 @@
+{
+  "prototype": {
+    "prodName": "ShareCourse",
+    "description": "LinkIt One use MOUSTLink gateway for LoRa Application.",
+    "developmentNote": null,
+    "prodAppTypeId": 14,
+    "prodRlsStatusTypeId": 1,
+    "version": "1.0",
+    "displayConfigs": [
+      {
+        "format": {
+          "unitTypes": 10
+        },
+        "displayType": 5,
+        "displayOrder": 1,
+        "streamTypeId": 2,
+        "dataChnIds": [
+          "DISP_TEMPERATURE"
+        ],
+        "showHistory": false,
+        "configs": {
+          "history": true,
+          "graph": "line",
+          "format": {
+            "unitTypes": {
+              "displayName": "單位",
+              "type": "category-units",
+              "required": true
+            }
+          },
+          "block": {}
+        }
+      },
+      {
+        "format": {
+          "unitTypes": 39
+        },
+        "displayType": 5,
+        "displayOrder": 2,
+        "streamTypeId": 2,
+        "dataChnIds": [
+          "DISP_HUMIDITY"
+        ],
+        "showHistory": false,
+        "configs": {
+          "history": true,
+          "graph": "line",
+          "format": {
+            "unitTypes": {
+              "displayName": "單位",
+              "type": "category-units",
+              "required": true
+            }
+          },
+          "block": {}
+        }
+      },
+      {
+        "format": {},
+        "displayType": 1,
+        "displayOrder": 3,
+        "streamTypeId": 7,
+        "dataChnIds": [
+          "CTRL_FAN"
+        ],
+        "showHistory": false,
+        "configs": {}
+      },      
+      {
+        "format": {},
+        "displayType": 1,
+        "displayOrder": 4,
+        "streamTypeId": 7,
+        "dataChnIds": [
+          "CTRL_LED"
+        ],
+        "showHistory": false,
+        "configs": {}
+      },
+      {
+        "format": {},
+        "displayType": 6,
+        "displayOrder": 5,
+        "streamTypeId": 5,
+        "dataChnIds": [
+          "DISP_LOG"
+        ],
+        "showHistory": false,
+        "configs": {
+          "history": false
+        }
+      },
+      {
+        "displayType": 10,
+        "displayOrder": 6,
+        "streamTypeId": 10,
+        "dataChnIds": [
+          "CTRL_UPDATE"
+        ],
+        "showHistory": false,
+        "configs": {
+          "numberOfCategory": 2,
+          "format": {
+            "key1 name": {
+              "displayName": "Key1 名稱",
+              "type": "key1",
+              "required": true
+            },
+            "key1 value": {
+              "displayName": "Key1 值",
+              "type": "string",
+              "required": true
+            },
+            "key2 name": {
+              "displayName": "Key2 名稱",
+              "type": "key2",
+              "required": true
+            },
+            "key2 value": {
+              "displayName": "Key2 值",
+              "type": "string",
+              "required": true
+            }
+          },
+          "limit": {
+            "key1 name": 5,
+            "key2 name": 5
+          }
+        },
+        "format": [
+          {
+            "name": "ready",
+            "value": "0"
+          },
+          {
+            "name": "query",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "format": {
+          "lowerbound": "5",
+          "upperbound": "80",
+          "unitTypes": 10
+        },
+        "displayType": 14,
+        "displayOrder": 7,
+        "streamTypeId": 1,
+        "dataChnIds": [
+          "CTRL_SO_HOT"
+        ],
+        "showHistory": false,
+        "configs": {
+          "format": {
+            "lowerbound": {
+              "displayName": "下限",
+              "type": "number",
+              "required": true,
+              "name": "lowerbound"
+            },
+            "upperbound": {
+              "displayName": "上限",
+              "type": "number",
+              "required": true,
+              "name": "upperbound"
+            },
+            "unitTypes": {
+              "displayName": "單位",
+              "type": "category-units",
+              "required": true,
+              "name": "unitTypes"
+            }
+          }
+        }
+      },
+      {
+        "format": {
+          "lowerbound": "10",
+          "upperbound": "100",
+          "unitTypes": 39
+        },
+        "displayType": 14,
+        "displayOrder": 8,
+        "streamTypeId": 1,
+        "dataChnIds": [
+          "CTRL_SO_WET"
+        ],
+        "showHistory": false
+      }
+    ],
+    "saleReleaseDate": null,
+    "saleDiscontinuousDate": null,
+    "isLongConnectionNeeded": true,
+    "isSerialNeeded": false,
+    "isInterpreterCloudNeeded": false,
+    "status": true,
+    "prodImgURL": "",
+    "prodDesc": "LinkIt One use MOUSTLink gateway for LoRa Application.",
+    "chipId": 2
+  },
+  "dataChannels": [
+    {
+      "dataChnId": "CTRL_SO_WET",
+      "name": "so wet",
+      "description": "so wet, active led",
+      "channelType": {
+        "dataChnTypeId": 1,
+        "name": "Integer"
+      },
+      "streamId": 26899,
+      "format": {
+        "lowerbound": "10",
+        "upperbound": "100",
+        "unitTypes": 39
+      },
+      "isHidden": false,
+      "isControllable": true,
+      "unitType": {
+        "id": 39,
+        "name": "percent"
+      }
+    },
+    {
+      "dataChnId": "CTRL_SO_HOT",
+      "name": "so hot",
+      "description": "so hot, active fan",
+      "channelType": {
+        "dataChnTypeId": 1,
+        "name": "Integer"
+      },
+      "streamId": 26898,
+      "format": {
+        "lowerbound": "5",
+        "upperbound": "80",
+        "unitTypes": 10
+      },
+      "isHidden": false,
+      "isControllable": true,
+      "unitType": {
+        "id": 10,
+        "name": "degree Celsius"
+      }
+    },
+    {
+      "dataChnId": "DISP_TEMPERATURE",
+      "name": "Temperature by sensor",
+      "description": "Sensor DHT22",
+      "channelType": {
+        "dataChnTypeId": 2,
+        "name": "Float"
+      },
+      "streamId": 26868,
+      "format": {
+        "unitTypes": 10
+      },
+      "isHidden": false,
+      "isControllable": false,
+      "unitType": {
+        "id": 10,
+        "name": "degree Celsius"
+      }
+    },
+    {
+      "dataChnId": "DISP_HUMIDITY",
+      "name": "Humidity by sensor",
+      "description": "Sensor DHT22",
+      "channelType": {
+        "dataChnTypeId": 2,
+        "name": "Float"
+      },
+      "streamId": 26869,
+      "format": {
+        "unitTypes": 39
+      },
+      "isHidden": false,
+      "isControllable": false,
+      "unitType": {
+        "id": 39,
+        "name": "percent"
+      }
+    },
+    {
+      "dataChnId": "DISP_LOG",
+      "name": "Log",
+      "description": "Message Log",
+      "channelType": {
+        "dataChnTypeId": 5,
+        "name": "String"
+      },
+      "streamId": 26873,
+      "format": {},
+      "isHidden": false,
+      "isControllable": false,
+      "unitType": {
+        "id": null,
+        "name": null
+      }
+    },
+    {
+      "dataChnId": "CTRL_LED",
+      "name": "LED",
+      "description": "LED control",
+      "channelType": {
+        "dataChnTypeId": 7,
+        "name": "Switch"
+      },
+      "streamId": 26871,
+      "format": {},
+      "isHidden": false,
+      "isControllable": true,
+      "unitType": {
+        "id": null,
+        "name": null
+      }
+    },
+    {
+      "dataChnId": "CTRL_FAN",
+      "name": "FAN",
+      "description": "Fan Control",
+      "channelType": {
+        "dataChnTypeId": 7,
+        "name": "Switch"
+      },
+      "streamId": 26872,
+      "format": {},
+      "isHidden": false,
+      "isControllable": true,
+      "unitType": {
+        "id": null,
+        "name": null
+      }
+    },
+    {
+      "dataChnId": "CTRL_UPDATE",
+      "name": "Sensor Update",
+      "description": "Update sensor result to server",
+      "channelType": {
+        "dataChnTypeId": 10,
+        "name": "Category"
+      },
+      "streamId": 26885,
+      "format": {
+        "results": [
+          {
+            "name": "ready",
+            "value": "0"
+          },
+          {
+            "name": "query",
+            "value": "1"
+          }
+        ],
+        "fulfillmentValue": [
+          {
+            "name": "ready",
+            "value": "0"
+          },
+          {
+            "name": "query",
+            "value": "1"
+          }
+        ]
+      },
+      "isHidden": false,
+      "isControllable": true,
+      "unitType": {
+        "id": null,
+        "name": null
+      }
+    }
+  ],
+  "triggerActions": []
+}

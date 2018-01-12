@@ -62,6 +62,12 @@ Examples in Arduino IDE: [File] -> [Examples] -> [installed MOSTLora lib] folder
 9.  LoRaWAN module
   - **loraWAN_01** GlobalSAT LoRa module, and GTIoT network
 
+10.  use LM-110H1 as 3 mode: LoRaWAN/MOST_p1p2/MOST_AT
+  - **lora_aat** LM-110H1 (LM130) switch 3 mode
+        LoRaWAN mode: connect to LoRaWAN
+        MOST_p1p2 mode: set mode by p1/p2 pin
+        MOST_AT: set mode by AT command
+
 Reference
 ----
 * Arduino: https://www.arduino.cc
