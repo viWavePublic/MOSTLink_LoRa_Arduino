@@ -1,5 +1,6 @@
 #include "MLPacketParser.h"
 #include "MLPacketGen.h"
+#include "MLPacketGen2.h"
 
 #define _DEBUG_MSG_ 0
 
@@ -24,26 +25,26 @@ int MLPacketParser::mostloraPacketParse(MLPacketGen *mlpacket, const uint8_t *pa
             memcpy(id, &packet[ML_PK_ID_POS], ML_PK_ID_SIZE);
             mlpacket->setMLPacket(ackBit, receiverFlag, packetType, direction, id, version);
             uint8_t packetCRCPos = nPacketLen - 1;
-            uint8_t payloadLen = nPacketLen-ML_PK_HEADER_SIZE;
+            int payloadLen = nPacketLen-ML_PK_PAYLOAD_START_POS;
 #if _DEBUG_MSG_
             printf("packetLen:%d, payloadLen:%d\n", nPacketLen, payloadLen);
 #endif
             if (packet[packetCRCPos] == getCrc(packet, nPacketLen-1)) {
                 memcpy(payload, packet+ML_PK_PAYLOAD_START_POS, payloadLen);
-                mostloraPayloadParse(mlpacket, payload);
+                mostloraPayloadParse(mlpacket, payload, payloadLen);
             } else {
 #if _DEBUG_MSG_
                 printf("CRC error 2\n");
 #endif                
                 return ML_PK_PARSE_PACKET_CRC_ERR;
             }
-            return 0;
+            return ML_PK_PARSE_OK;
         }
     } else
         return ML_PK_PARSE_NOT_VAILD_DATA;
 }
 
-int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *payload) {
+int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *payload, const int szPayload) {
     uint8_t frequency[ML_FREQUENCY_LEN] = {0};
     uint8_t dataRate;
     uint8_t power;
@@ -128,6 +129,26 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
                 | payload[CMD_NTF_VINDUINO_RESV_POS+1] << 8 | payload[CMD_NTF_VINDUINO_RESV_POS];
             mlpacket->setMLPayloadGen(new MLNotifyVindunoPayloadGen(apikey, soil1, soil2, soil3, soil4, systemVoltage, humidity, temperature, reserved));
             optionFlagsPos = CMD_NTF_VINDUINO_RESV_POS + 4;
+            break;
+        case CMD_ANS_NDCALL:
+        case CMD_REQ_SOS:
+            if (szPayload >= 19)
+            {
+                MLPayloadGen *pPayloadGPS;
+                if (CMD_ANS_NDCALL == cmdId)
+                    pPayloadGPS = new MLAnsNDCallPayloadGen();
+                else
+                    pPayloadGPS = new MLReqSOSPayloadGen();
+                pPayloadGPS->setPayload(payload, szPayload);
+                mlpacket->setMLPayloadGen(pPayloadGPS);
+            }
+            break;
+        case CMD_ANS_SOS:
+        {
+            MLAnsSOSPayloadGen *pPayloadSOS = new MLAnsSOSPayloadGen();
+            pPayloadSOS->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadSOS);
+        }
             break;
         default:
             mlpacket->setMLPayloadGen(new MLPayloadGen(cmdId));

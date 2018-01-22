@@ -11,7 +11,7 @@ class MLPacketParser {
     public:
         int mostloraPacketParse(MLPacketGen *mlpacket, const uint8_t *packet);
     private:
-        int mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *payload);
+        int mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *payload, const int szPayload);
 };
 
 #endif /* MLPACKETPARSER_H */
