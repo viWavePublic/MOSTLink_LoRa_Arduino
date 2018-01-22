@@ -44,6 +44,11 @@
 #define CMD_NTF_UPLOAD_VINDUINO_FIELD   0x1002
 #define VINDUINO_API_KEY_LEN     16
 
+// iMOST
+#define CMD_REQ_SOS             0x0330
+#define CMD_REQ_NDCALL          0x0331
+#define CMD_ANS_SOS             0x0384
+#define CMD_ANS_NDCALL          0x0385
 
 #define ML_PK_PARSE_OK  0
 #define ML_PK_PARSE_NOT_VAILD_DATA -1
@@ -109,5 +114,10 @@ namespace {
         return crc;
     }
 }
+
+typedef struct MLLocation {
+    int32_t longtitude;
+    int32_t latitude;
+} mllocation;
 
 #endif /* MLPACKETCOMM_H */

@@ -271,7 +271,9 @@ MLPacketGen::MLPacketGen(uint8_t ackBit, uint8_t receiverFlag, uint8_t packetTyp
     _receiverFlag = receiverFlag;
     _packetType = packetType;
     _direction = direction;
-    memcpy(_id, id, ML_PK_ID_SIZE);
+    if (id != NULL) {
+        memcpy(_id, id, ML_PK_ID_SIZE);
+    }
     _version = version;
     _mlPayloadGen = NULL;
 }
@@ -281,7 +283,9 @@ void MLPacketGen::setMLPacket(uint8_t ackBit, uint8_t receiverFlag, uint8_t pack
     _receiverFlag = receiverFlag;
     _packetType = packetType;
     _direction = direction;
-    memcpy(_id, id, ML_PK_ID_SIZE);
+    if (id != NULL) {
+        memcpy(_id, id, ML_PK_ID_SIZE);
+    }
     _version = version;
 }
 

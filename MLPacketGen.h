@@ -6,11 +6,6 @@
 #include <string.h>
 #include "MLPacketComm.h"
 
-typedef struct MLLocation {
-    uint32_t longtitude;
-    uint32_t latitude;
-} mllocation;
-
 class MLPayloadGen {
     public:
         MLPayloadGen(uint16_t cmdId = 0, uint8_t optionFlags = 0, uint8_t *optionData = NULL, uint8_t version = 0x0B) {
@@ -34,7 +29,8 @@ class MLPayloadGen {
                 _optionDataLen = 0;
             }
         }
-    
+        virtual void setPayload(const uint8_t *payload, int szPayload) {}   // should implement for assign payload from buffer
+
         // payload = prefix + [custom] + postfix
         virtual int getPayload(uint8_t *payload) {
             // prefix ... postfix
