@@ -123,32 +123,6 @@ class MLNotifyLocationGen : public MLPayloadGen {
         uint8_t _gpsStatus;
 };
 
-class MLReqLocationGen : public MLPayloadGen {
-    public:
-        MLReqLocationGen(int32_t resInterval);
-        int getPayload(uint8_t *payload);
-        int32_t getResInterval() { return _resInterval; }
-    private:
-        int32_t _resInterval;
-};
-
-class MLSetGeoFenceConfigGen : public MLPayloadGen {
-    public:
-        MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval);
-        int getPayload(uint8_t *payload);
-        uint16_t getGeoRadius() { return _geofRadius; }
-        uint16_t getResInterval() { return _resInterval; }
-    private:
-        uint16_t _geofRadius;
-        uint16_t _resInterval;
-};
-
-class MLGetGeoFenceConfigGen : public MLPayloadGen {
-    public:
-        MLGetGeoFenceConfigGen() : MLPayloadGen(CMD_GET_CONFIG_GEOF) {};
-        int getPayload(uint8_t *payload);
-};
-
 class MLAnsSetLoraConfigGen : public MLPayloadGen {
     public:
         MLAnsSetLoraConfigGen(uint8_t errorCode);

@@ -15,8 +15,8 @@
 #define CMD_REQ_DATA            0x0004
 #define CMD_NOTIFY_LOCATION     0x0005
 #define CMD_REQ_LOCATION        0x0006
-#define CMD_SET_CONFIG_GEOF     0x0007
-#define CMD_GET_CONFIG_GEOF     0x0008
+#define CMD_REQ_ALARM_BEACON    0x0007
+#define CMD_REQ_GTR_COMMAND     0x0008
 #define CMD_REQ_AUTH_JOIN       0x0009
 #define CMD_REQ_AUTH_CHALLENGE  0x000A
 

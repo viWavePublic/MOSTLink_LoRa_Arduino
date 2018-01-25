@@ -20,7 +20,7 @@ class MLReqNDCallPayloadGen : public MLPayloadGen {
 public:
     MLReqNDCallPayloadGen(uint8_t ansType = 44, uint8_t action = 3, uint16_t ansTypeEx_ResInterval = 10, uint16_t ansTypeEx_DelayTime = 30);
     int getPayload(uint8_t *payload);
-    uint8_t getAndType() { return _ansType; }
+    uint8_t getAnsType() { return _ansType; }
     uint8_t getAction() { return _action; }
     uint16_t getResInterval() { return _resInterval; }
     uint16_t getDelayTime() { return _delayTime; }

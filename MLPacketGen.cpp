@@ -85,64 +85,6 @@ int MLNotifyLocationGen::getPayload(uint8_t *payload) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLReqLocationGen::MLReqLocationGen(int32_t resInterval) : MLPayloadGen(CMD_REQ_LOCATION) {
-    _resInterval = resInterval;
-}
-
-int MLReqLocationGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
-    memcpy(payload + pos, &_resInterval, 4);
-    pos = pos + 4;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[++pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
-    return pos;
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
-MLSetGeoFenceConfigGen::MLSetGeoFenceConfigGen(uint16_t geofRadius, uint16_t resInterval) : MLPayloadGen(CMD_SET_CONFIG_GEOF) {
-    _geofRadius = geofRadius;
-    _resInterval = resInterval;
-}
-
-int MLSetGeoFenceConfigGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _geofRadius & 0xFF;
-    payload[pos++] = _geofRadius >> 8;
-    payload[pos++] = _resInterval & 0xFF;
-    payload[pos++] = _resInterval >> 8;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[++pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
-    return pos;
-}
-
-int MLGetGeoFenceConfigGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[++pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
-    return pos;
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
 MLAnsSetLoraConfigGen::MLAnsSetLoraConfigGen(uint8_t errorCode) : MLPayloadGen(CMD_ANS_SET_LORA_CONFIG) {
     _errorCode = errorCode;
 }

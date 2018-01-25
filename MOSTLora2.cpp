@@ -49,10 +49,7 @@ void MOSTLora::setCallbackParseMOSTLink(CALLBACK_ParseCommand cbFunc)
 /////////////////////////////////////////////////////////////
 // 1: set normal mode, 2: send data 3: recover original mode
 int MOSTLora::sendPacket(byte *pPacket, int szPacket)
-{
-    int nModeBackup = getMode();
-    setMode(E_LORA_NORMAL);
-    
+{   
     // AES/CBC encrypt
     if (_bPacketAES) {
         pPacket[4] |= 0x10;    // add AES flag
@@ -64,8 +61,6 @@ int MOSTLora::sendPacket(byte *pPacket, int szPacket)
     /////////////////////
     // send data is ready
     int nRet = sendData(pPacket, szPacket);
-    
-    setMode(nModeBackup);
     return nRet;
 }
 
@@ -166,6 +161,9 @@ int MOSTLora::parsePacket()
                         MLNotifyMydevicesCommandPayloadGen *pPayload = (MLNotifyMydevicesCommandPayloadGen*)pkGen.getMLPayload();
                         _cbPacketNotifyMydevicesCommand(pPayload->getData(), pPayload->getDataLen());
                     }
+                }
+                else if (cmdID == CMD_NOTIFY_MYDEVICES_COMMAND) {
+                    
                 }
                 else {
                     // other command
