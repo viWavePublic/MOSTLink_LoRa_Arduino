@@ -2,6 +2,10 @@
 #define __MLPACKETGEN3_H
 
 #include "MLPacketGen.h"
+
+/////////////////////////////////////////
+// Downlink: for gateway
+/////////////////////////////////////////
 /*
  reportType
  BIT0 - BIT1 : ( One time report : 0x01, Periodic report : 0x02 : Motion Mode : 0x03 )
@@ -30,5 +34,27 @@ private:
     uint16_t _resInterval;
     uint16_t _delayTime;
 };
+
+/*
+ CONDITION_FLAG
+    BIT0 : FROCE_HELP_STOP 1 : Tracker should force stop REQ_ALARM_GPS Help
+    BIT1 : FORCE_MANDOWN_STOP 1 : Tracker should force stop REQ_ALARM_GPS mandown
+ */
+
+class MLAnsAlarmPayloadGen : public MLPayloadGen {
+public:
+    MLAnsAlarmPayloadGen(uint8_t *idAnswerer, uint8_t conditionFlag = 0x01);
+    int getPayload(uint8_t *payload);
+    uint8_t getConditionFlag() { return _conditionFlag; }
+    
+private:
+    uint8_t _idAnswerer[ML_PK_ID_SIZE];
+    uint8_t _conditionFlag;
+
+};
+
+/////////////////////////////////////////
+// Uplink: for tracker-node
+/////////////////////////////////////////
 
 #endif /* __MLPACKETGEN3_H */

@@ -14,8 +14,18 @@
 #define CMD_REQ_SET_LORA_CONFIG 0x0001
 #define CMD_REQ_DATA            0x0004
 #define CMD_NOTIFY_LOCATION     0x0005
-#define CMD_REQ_LOCATION        0x0006
-#define CMD_REQ_ALARM_BEACON    0x0007
+
+// protocol v1.5 for LT601
+#define CMD_REQ_LOCATION        0x0006      // Downlink
+#define CMD_REQ_ALARM_BEACON    0x0007      // Uplink
+#define CMD_REQ_ALARM_GPS       0x000B      // Uplink
+#define CMD_REQ_CANCEL_ALARM    0x000C      // Uplink
+
+#define CMD_REP_LOCATION        0x0210      // Uplink
+#define CMD_ANS_ALARM           0x0211      // Downlink
+#define CMD_REP_BEACON          0x0213      // Uplink
+
+
 #define CMD_REQ_GTR_COMMAND     0x0008
 #define CMD_REQ_AUTH_JOIN       0x0009
 #define CMD_REQ_AUTH_CHALLENGE  0x000A

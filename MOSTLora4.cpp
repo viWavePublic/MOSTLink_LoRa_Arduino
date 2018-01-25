@@ -47,3 +47,17 @@ void MOSTLora::sendPacketReqLocation(uint8_t *idMac, uint8_t reportType, uint8_t
     // send packet is ready
     sendPacket(_buf, packetLen);
 }
+
+// ANS_ALARM (Downlink)
+void MOSTLora::sendPacketAnsAlarm(uint8_t *idMac, uint8_t conditionFlag)
+{
+    MLPacketGen mlPacketGen(0,0,0,0,idMac);
+    MLPayloadGen *pPayload = new MLAnsAlarmPayloadGen(getMacAddress(), conditionFlag);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}

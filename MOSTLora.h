@@ -117,10 +117,13 @@ public:
   void sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery);
   void sendPacketAnsSOS();
 
+
     // REQ_NDCALL
     void sendPacketReqNDCall(uint8_t *idMac, uint8_t ansType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime);
     // REQ_LOCATION
     void sendPacketReqLocation(uint8_t *idMac, uint8_t reportType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime);
+    // ANS_ALARM
+    void sendPacketAnsAlarm(uint8_t *idMac, uint8_t conditionFlag);
 
     // auth related: challenge-reponse
     void sendPacketReqAuthJoin();       // send REQ_AUTH_JOIN to gateway, then will receive REQ_AUTH_CHALLENGE

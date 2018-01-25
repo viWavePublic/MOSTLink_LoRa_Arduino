@@ -43,3 +43,27 @@ int MLReqLocationPayloadGen::getPayload(uint8_t *payload)
 
 ////////////////////////////////////////////////////////////////////////////
 
+MLAnsAlarmPayloadGen::MLAnsAlarmPayloadGen(uint8_t *idAnswerer, uint8_t conditionFlag)
+: MLPayloadGen(CMD_ANS_ALARM, 0, NULL, 0x0C)
+{
+    if (idAnswerer != NULL) {
+        memcpy(_idAnswerer, idAnswerer, ML_PK_ID_SIZE);
+    }
+    _conditionFlag = conditionFlag;
+}
+
+int MLAnsAlarmPayloadGen::getPayload(uint8_t *payload)
+{
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
+    memcpy(payload + pos, _idAnswerer, ML_PK_ID_SIZE);
+    pos += 8;
+    
+    payload[pos++] = _conditionFlag;
+   
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
+    return pos;
+}
+
