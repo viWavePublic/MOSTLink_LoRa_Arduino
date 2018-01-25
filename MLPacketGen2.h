@@ -44,7 +44,7 @@ public:
     double getLat() { return _loc.latitude / 1000000.0; }
     double getLng() { return _loc.longtitude / 1000000.0; }
     
-private:
+protected:
     uint32_t _dateTime;
     uint8_t _statusGPS;
     mllocation _loc;

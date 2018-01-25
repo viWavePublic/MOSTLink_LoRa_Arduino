@@ -67,3 +67,35 @@ int MLAnsAlarmPayloadGen::getPayload(uint8_t *payload)
     return pos;
 }
 
+////////////////////////////////////////////////////////////////////////////
+// set member variable by decode payload
+void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayload)
+{
+    int pos = 3;
+  
+    _loc.longtitude = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
+    pos += 4;
+    
+    _loc.latitude = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
+    pos += 4;
+
+    _statusGPS = payload[pos];
+    pos ++;
+
+    _batteryLevel = payload[pos];
+    pos ++;
+    
+    _dateTime = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
+    pos += 4;
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+// set member variable by decode payload
+void MLReportBeaconPayloadGen::setPayload(const uint8_t *payload, int szPayload)
+{
+    int pos = 3;  
+
+}
+

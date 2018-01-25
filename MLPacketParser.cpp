@@ -1,8 +1,9 @@
 #include "MLPacketParser.h"
 #include "MLPacketGen.h"
 #include "MLPacketGen2.h"
+#include "MLPacketGen3.h"
 
-#define _DEBUG_MSG_ 0
+#define _DEBUG_MSG_ 1
 
 int MLPacketParser::mostloraPacketParse(MLPacketGen *mlpacket, const uint8_t *packet) {
     uint8_t nPacketLen;
@@ -148,6 +149,20 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             MLAnsSOSPayloadGen *pPayloadSOS = new MLAnsSOSPayloadGen();
             pPayloadSOS->setPayload(payload, szPayload);
             mlpacket->setMLPayloadGen(pPayloadSOS);
+        }
+            // MOSTLink 1.5
+        case CMD_REP_LOCATION:
+        {
+            MLReportLocationPayloadGen *pPayloadRepLoc = new MLReportLocationPayloadGen();
+            pPayloadRepLoc->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadRepLoc);
+        }
+            break;
+        case CMD_REP_BEACON:
+        {
+            MLReportBeaconPayloadGen *pPayloadRepBeacon = new MLReportBeaconPayloadGen();
+            pPayloadRepBeacon->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadRepBeacon);
         }
             break;
         default:

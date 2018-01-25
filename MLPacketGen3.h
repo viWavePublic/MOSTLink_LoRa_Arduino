@@ -1,7 +1,7 @@
 #ifndef __MLPACKETGEN3_H
 #define __MLPACKETGEN3_H
 
-#include "MLPacketGen.h"
+#include "MLPacketGen2.h"
 
 /////////////////////////////////////////
 // Downlink: for gateway
@@ -56,5 +56,28 @@ private:
 /////////////////////////////////////////
 // Uplink: for tracker-node
 /////////////////////////////////////////
+
+class MLReportLocationPayloadGen : public MLAnsNDCallPayloadGen {
+public:
+    MLReportLocationPayloadGen(uint32_t dateTime = 0, uint8_t statusGPS = 0, uint32_t lng = 0, uint32_t lat = 0, uint8_t batteryLevel = 0)
+    : MLAnsNDCallPayloadGen(dateTime, statusGPS, lng, lat, batteryLevel)
+    {
+        _cmdId = CMD_REP_LOCATION;
+    }
+    int getPayload(uint8_t *payload) { return 0; };
+    void setPayload(const uint8_t *payload, int szPayload);
+};
+
+class MLReportBeaconPayloadGen : public MLPayloadGen {
+public:
+    MLReportBeaconPayloadGen()
+    : MLPayloadGen(CMD_REP_LOCATION)
+    {
+        _cmdId = CMD_REP_LOCATION;
+    }
+    int getPayload(uint8_t *payload) { return 0; };
+    void setPayload(const uint8_t *payload, int szPayload);
+};
+
 
 #endif /* __MLPACKETGEN3_H */
