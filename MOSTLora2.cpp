@@ -15,6 +15,8 @@
 #include "MOSTLora.h"
 #include "MLutility.h"
 #include "MLPacketGen.h"
+#include "MLPacketGen2.h"
+#include "MLPacketGen3.h"
 #include "MLPacketParser.h"
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +120,40 @@ int MOSTLora::parsePacket()
             if (_cbParseMOSTLink) {
                 _cbParseMOSTLink(cmdID);
             }
+            // uplink for gateway
+            if (cmdID == CMD_REP_LOCATION) {
+                debugSerial.println("CMD_REP_LOCATION");
+                MLReportLocationPayloadGen *pPayload = (MLReportLocationPayloadGen*)pkGen.getMLPayload();
+                double fLat = pPayload->getLat();
+                double fLng = pPayload->getLng();
+                char strFmt[32] = {0};
+                sprintf(strFmt, "%7.6f", fLat);
+                debugSerial.println(strFmt);
+                
+            }
+            else if (cmdID == CMD_REP_BEACON) {
+                debugSerial.println("CMD_REP_BEACON");
+
+            }
+            else if (cmdID == CMD_REQ_ALARM_BEACON) {
+                debugSerial.println("CMD_REQ_ALARM_BEACON");
+
+            }
+            else if (cmdID == CMD_REQ_ALARM_GPS) {
+                debugSerial.println("CMD_REQ_ALARM_GPS");
+                MLAlarmGPSPayloadGen *pPayload = (MLAlarmGPSPayloadGen*)pkGen.getMLPayload();
+                double fLat = pPayload->getLat();
+                double fLng = pPayload->getLng();
+                uint8_t batteryLvl = pPayload->getBatteryLevel();
+                uint8_t gpsStatus = pPayload->getStatusGPS();
+                uint32_t dateTime = pPayload->getDataTime();
+
+                char strFmt[128] = {0};
+                sprintf(strFmt, "battery=%d, GPS(%d)", batteryLvl, gpsStatus);
+                debugSerial.println(strFmt);
+            }
+            
+            // downlink
             if (bForMe) // packet for me
             {
                 delay(100);    // delay to separate further send-data
@@ -161,9 +197,6 @@ int MOSTLora::parsePacket()
                         MLNotifyMydevicesCommandPayloadGen *pPayload = (MLNotifyMydevicesCommandPayloadGen*)pkGen.getMLPayload();
                         _cbPacketNotifyMydevicesCommand(pPayload->getData(), pPayload->getDataLen());
                     }
-                }
-                else if (cmdID == CMD_NOTIFY_MYDEVICES_COMMAND) {
-                    
                 }
                 else {
                     // other command

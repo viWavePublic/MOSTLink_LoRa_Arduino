@@ -1,4 +1,5 @@
 #include "MLPacketGen3.h"
+#include "MLutility.h"
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -73,6 +74,7 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
 {
     int pos = 3;
   
+    long lng = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
     _loc.longtitude = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
     pos += 4;
     
@@ -88,6 +90,17 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
     _dateTime = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
     pos += 4;
 
+    char strFmt[128], strInt[16], strLat[16], strLng[16];
+    ltoa(_loc.longtitude, strLat, 10);
+    ltoa(_loc.latitude, strLng, 10);
+    ltoa(_dateTime, strInt, 10);
+
+    Serial.println((long)lng);
+    Serial.println((long)_loc.longtitude);
+
+//    MLutility::printBinary(payload, szPayload);
+    sprintf(strFmt, "(%ld, %ld), GPS=%d, battery=%d, datetime:%ld %s ======", _loc.latitude, _loc.longtitude, (int)_statusGPS, (int)_batteryLevel, _dateTime, strInt);
+    Serial.println(strFmt);
 }
 
 

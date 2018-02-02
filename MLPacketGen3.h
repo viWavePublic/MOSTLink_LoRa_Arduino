@@ -56,7 +56,7 @@ private:
 /////////////////////////////////////////
 // Uplink: for tracker-node
 /////////////////////////////////////////
-
+// GPS Location
 class MLReportLocationPayloadGen : public MLAnsNDCallPayloadGen {
 public:
     MLReportLocationPayloadGen(uint32_t dateTime = 0, uint8_t statusGPS = 0, uint32_t lng = 0, uint32_t lat = 0, uint8_t batteryLevel = 0)
@@ -68,12 +68,22 @@ public:
     void setPayload(const uint8_t *payload, int szPayload);
 };
 
+class MLAlarmGPSPayloadGen : public MLReportLocationPayloadGen {
+public:
+    MLAlarmGPSPayloadGen(uint32_t dateTime = 0, uint8_t statusGPS = 0, uint32_t lng = 0, uint32_t lat = 0, uint8_t batteryLevel = 0)
+    : MLReportLocationPayloadGen(dateTime, statusGPS, lng, lat, batteryLevel)
+    {
+        _cmdId = CMD_REQ_ALARM_GPS;
+    }
+};
+
+// iBeacon, EddyStone
 class MLReportBeaconPayloadGen : public MLPayloadGen {
 public:
     MLReportBeaconPayloadGen()
-    : MLPayloadGen(CMD_REP_LOCATION)
+    : MLPayloadGen(CMD_REP_BEACON)
     {
-        _cmdId = CMD_REP_LOCATION;
+        _cmdId = CMD_REP_BEACON;
     }
     int getPayload(uint8_t *payload) { return 0; };
     void setPayload(const uint8_t *payload, int szPayload);

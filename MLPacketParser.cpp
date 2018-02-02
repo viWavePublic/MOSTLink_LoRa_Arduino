@@ -153,16 +153,30 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             // MOSTLink 1.5
         case CMD_REP_LOCATION:
         {
-            MLReportLocationPayloadGen *pPayloadRepLoc = new MLReportLocationPayloadGen();
-            pPayloadRepLoc->setPayload(payload, szPayload);
-            mlpacket->setMLPayloadGen(pPayloadRepLoc);
+            MLReportLocationPayloadGen *pPayloadLoc = new MLReportLocationPayloadGen();
+            pPayloadLoc->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadLoc);
         }
             break;
         case CMD_REP_BEACON:
         {
-            MLReportBeaconPayloadGen *pPayloadRepBeacon = new MLReportBeaconPayloadGen();
-            pPayloadRepBeacon->setPayload(payload, szPayload);
-            mlpacket->setMLPayloadGen(pPayloadRepBeacon);
+            MLReportBeaconPayloadGen *pPayloadBeacon = new MLReportBeaconPayloadGen();
+            pPayloadBeacon->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadBeacon);
+        }
+            break;
+        case CMD_REQ_ALARM_GPS:
+        {
+            MLAlarmGPSPayloadGen *pPayloadLoc = new MLAlarmGPSPayloadGen();
+            pPayloadLoc->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadLoc);
+        }
+            break;
+        case CMD_REQ_ALARM_BEACON:
+        {
+            MLReportBeaconPayloadGen *pPayloadBeacon = new MLReportBeaconPayloadGen();
+            pPayloadBeacon->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadBeacon);
         }
             break;
         default:
