@@ -127,16 +127,17 @@ int MOSTLora::parsePacket()
                 double fLat = pPayload->getLat();
                 double fLng = pPayload->getLng();
                 char strFmt[32] = {0};
-                sprintf(strFmt, "%7.6f", fLat);
+                sprintf(strFmt, "Lat:%8.6f, Lng:%8.6f", fLat, fLng);
                 debugSerial.println(strFmt);
                 
             }
             else if (cmdID == CMD_REP_BEACON) {
                 debugSerial.println("CMD_REP_BEACON");
-
+                MLReportBeaconPayloadGen *pPayload = (MLReportBeaconPayloadGen*)pkGen.getMLPayload();
             }
             else if (cmdID == CMD_REQ_ALARM_BEACON) {
                 debugSerial.println("CMD_REQ_ALARM_BEACON");
+                MLReqAlarmBeaconPayloadGen *pPayload = (MLReqAlarmBeaconPayloadGen*)pkGen.getMLPayload();
 
             }
             else if (cmdID == CMD_REQ_ALARM_GPS) {

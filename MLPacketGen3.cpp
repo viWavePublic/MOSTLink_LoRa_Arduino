@@ -98,6 +98,7 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
     Serial.println((long)lng);
     Serial.println((long)_loc.longtitude);
 
+//    debugSerial.print("payload=");
 //    MLutility::printBinary(payload, szPayload);
     sprintf(strFmt, "(%ld, %ld), GPS=%d, battery=%d, datetime:%ld %s ======", _loc.latitude, _loc.longtitude, (int)_statusGPS, (int)_batteryLevel, _dateTime, strInt);
     Serial.println(strFmt);
@@ -108,7 +109,28 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
 // set member variable by decode payload
 void MLReportBeaconPayloadGen::setPayload(const uint8_t *payload, int szPayload)
 {
-    int pos = 3;  
+    int pos = 3;
+    memcpy(_uuid, payload + pos, 20);
+    pos += 20;
+    
+    _type = payload[pos];
+    pos++;
+    
+    _rssi = payload[pos];
+    pos++;
 
+    _txPower = payload[pos];
+    pos++;
+    
+    _batteryLevel = payload[pos];
+    pos++;
+
+    ///////////////////////////
+    // output for debug string
+    char strFmt[100];
+    debugSerial.print("UUID=");
+    MLutility::printBinary(_uuid, 20);
+    sprintf(strFmt, "typeReport=%d, typeBeacon=%d, rssi=%d, tx=%d, battery=%d", _typeReport,  _typeBeacon, _rssi, _txPower, _batteryLevel);
+    debugSerial.println(strFmt);
 }
 

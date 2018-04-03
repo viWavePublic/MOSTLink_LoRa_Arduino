@@ -87,7 +87,28 @@ public:
     }
     int getPayload(uint8_t *payload) { return 0; };
     void setPayload(const uint8_t *payload, int szPayload);
+private:
+    uint8_t _uuid[20];
+    union {
+        uint8_t _type;
+        struct {
+            uint8_t _typeReport:5;
+            uint8_t _typeBeacon:3;
+        };
+    };
+
+    uint8_t _rssi;
+    uint8_t _txPower;
+    uint8_t _batteryLevel;
 };
 
+
+class MLReqAlarmBeaconPayloadGen : public MLReportBeaconPayloadGen {
+public:
+    MLReqAlarmBeaconPayloadGen()
+    {
+        _cmdId = CMD_REQ_ALARM_BEACON;
+    }
+};
 
 #endif /* __MLPACKETGEN3_H */

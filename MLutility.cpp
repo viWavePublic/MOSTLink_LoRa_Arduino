@@ -19,7 +19,7 @@
 
 void dtostrf(float fVal, int width, int precision, char *strBuf)
 {
-    char strFormat[32];
+    char strFormat[16];
     sprintf(strFormat, "%%%d.%df", width, precision);
     sprintf(strBuf, strFormat, fVal);
 }
@@ -216,6 +216,19 @@ boolean MLutility::parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &d
         bRet = true;
     }
     return bRet;
+}
+
+// output HH:MM:SS.mmm, (param as milliseconds millis())
+void MLutility::printTime(unsigned long msTime)
+{
+    const unsigned long sec = msTime / 1000;
+    int ms = msTime % 1000;
+    int ss = sec % 60;
+    int mm = (sec % 3600) / 60;
+    int hh = sec / 3600;
+    char strTime[16] = {0};
+    sprintf(strTime, "%02d:%02d:%02d.%03d", hh, mm, ss, ms);
+    debugSerial.print(strTime);
 }
 
 // output ASC as HEX char

@@ -278,6 +278,7 @@ int LoraBase::receData()
     
 #ifdef DEBUG_LORA
     if (_szBuf > 0) {
+        MLutility::printTime(millis());
         debugSerial.print(F("\nRece < "));
         MLutility::printBinary(_buf, _szBuf);
         debugSerial.print(F("<<< "));

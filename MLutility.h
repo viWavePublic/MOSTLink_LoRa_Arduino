@@ -25,6 +25,7 @@ public:
     static boolean parseGPGGA(const char *GPGGAstr, unsigned long &ts, double &dbLat, double &dbLng, char &gpsStatus);
     
     static int readSerial(char *buf);
+    static void printTime(unsigned long msTime);
     static void printBinary(const uint8_t *data, const int szData);
     static void MLutility::stringToHex(char *dst, const char *strSrc, const int szSrc);
     static void stringHexToBytes(uint8_t *dst, const char *strSrc, const int szSrc);

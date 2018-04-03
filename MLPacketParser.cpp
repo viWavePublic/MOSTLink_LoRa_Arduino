@@ -174,7 +174,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             break;
         case CMD_REQ_ALARM_BEACON:
         {
-            MLReportBeaconPayloadGen *pPayloadBeacon = new MLReportBeaconPayloadGen();
+            MLReqAlarmBeaconPayloadGen *pPayloadBeacon = new MLReqAlarmBeaconPayloadGen();
             pPayloadBeacon->setPayload(payload, szPayload);
             mlpacket->setMLPayloadGen(pPayloadBeacon);
         }
