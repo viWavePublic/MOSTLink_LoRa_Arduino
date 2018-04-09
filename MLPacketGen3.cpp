@@ -74,11 +74,10 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
 {
     int pos = 3;
   
-    long lng = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
-    _loc.longtitude = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
+    _loc.longtitude = MLutility::convertHexToDec(payload + pos, 4, true);
     pos += 4;
     
-    _loc.latitude = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
+    _loc.latitude = MLutility::convertHexToDec(payload + pos, 4, true);
     pos += 4;
 
     _statusGPS = payload[pos];
@@ -87,20 +86,11 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
     _batteryLevel = payload[pos];
     pos ++;
     
-    _dateTime = payload[pos+3] << 24 | payload[pos+2] << 16 | payload[pos+1] << 8 | payload[pos];
+    _dateTime = MLutility::convertHexToDec(payload + pos, 4, true);
     pos += 4;
 
-    char strFmt[128], strInt[16], strLat[16], strLng[16];
-    ltoa(_loc.longtitude, strLat, 10);
-    ltoa(_loc.latitude, strLng, 10);
-    ltoa(_dateTime, strInt, 10);
-
-    Serial.println((long)lng);
-    Serial.println((long)_loc.longtitude);
-
-//    debugSerial.print("payload=");
-//    MLutility::printBinary(payload, szPayload);
-    sprintf(strFmt, "(%ld, %ld), GPS=%d, battery=%d, datetime:%ld %s ======", _loc.latitude, _loc.longtitude, (int)_statusGPS, (int)_batteryLevel, _dateTime, strInt);
+    char strFmt[128];
+    sprintf(strFmt, "(%ld, %ld), typeReport=%d, typeGPS=%d, battery=%d, datetime:%ld ======", _loc.latitude, _loc.longtitude, _typeReport, _typeGPS, (int)_batteryLevel, _dateTime);
     Serial.println(strFmt);
 }
 

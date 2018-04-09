@@ -124,12 +124,6 @@ int MOSTLora::parsePacket()
             if (cmdID == CMD_REP_LOCATION) {
                 debugSerial.println("CMD_REP_LOCATION");
                 MLReportLocationPayloadGen *pPayload = (MLReportLocationPayloadGen*)pkGen.getMLPayload();
-                double fLat = pPayload->getLat();
-                double fLng = pPayload->getLng();
-                char strFmt[32] = {0};
-                sprintf(strFmt, "Lat:%8.6f, Lng:%8.6f", fLat, fLng);
-                debugSerial.println(strFmt);
-                
             }
             else if (cmdID == CMD_REP_BEACON) {
                 debugSerial.println("CMD_REP_BEACON");

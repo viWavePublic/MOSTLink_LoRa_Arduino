@@ -46,7 +46,13 @@ public:
     
 protected:
     uint32_t _dateTime;
-    uint8_t _statusGPS;
+    union {
+        uint8_t _statusGPS;
+        struct {
+            uint8_t _typeReport:5;
+            uint8_t _typeGPS:3;
+        };
+    };
     mllocation _loc;
     uint8_t _batteryLevel;
 };

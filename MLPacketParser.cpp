@@ -2,6 +2,7 @@
 #include "MLPacketGen.h"
 #include "MLPacketGen2.h"
 #include "MLPacketGen3.h"
+#include "MLutility.h"
 
 #define _DEBUG_MSG_ 1
 
@@ -112,6 +113,15 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             break;
         case CMD_NTF_UPLOAD_VINDUINO_FIELD:
             memcpy(apikey, payload+CMD_NTF_VINDUINO_API_KEY_POS, VINDUINO_API_KEY_LEN);
+            soil1 = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_SOIL1_POS, 4, true);
+            soil2 = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_SOIL2_POS, 4, true);
+            soil3 = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_SOIL3_POS, 4, true);
+            soil4 = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_SOIL4_POS, 4, true);
+            systemVoltage = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_SYS_VOL_POS, 4, true);
+            humidity = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_HUMIDITY_POS, 4, true);
+            temperature = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_TEMP_POS, 4, true);
+            reserved = MLutility::convertHexToDec(payload + CMD_NTF_VINDUINO_RESV_POS, 4, true);
+/*
             soil1 = payload[CMD_NTF_VINDUINO_SOIL1_POS+3] << 24 | payload[CMD_NTF_VINDUINO_SOIL1_POS+2] << 16
                 | payload[CMD_NTF_VINDUINO_SOIL1_POS+1] << 8 | payload[CMD_NTF_VINDUINO_SOIL1_POS];
             soil2 = payload[CMD_NTF_VINDUINO_SOIL2_POS+3] << 24 | payload[CMD_NTF_VINDUINO_SOIL2_POS+2] << 16
@@ -128,6 +138,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
                 | payload[CMD_NTF_VINDUINO_TEMP_POS+1] << 8 | payload[CMD_NTF_VINDUINO_TEMP_POS];
             reserved = payload[CMD_NTF_VINDUINO_RESV_POS+3] << 24 | payload[CMD_NTF_VINDUINO_RESV_POS+2] << 16
                 | payload[CMD_NTF_VINDUINO_RESV_POS+1] << 8 | payload[CMD_NTF_VINDUINO_RESV_POS];
+ */
             mlpacket->setMLPayloadGen(new MLNotifyVindunoPayloadGen(apikey, soil1, soil2, soil3, soil4, systemVoltage, humidity, temperature, reserved));
             optionFlagsPos = CMD_NTF_VINDUINO_RESV_POS + 4;
             break;
