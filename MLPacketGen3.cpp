@@ -3,7 +3,8 @@
 
 ////////////////////////////////////////////////////////////////////////////
 
-MLReqLocationPayloadGen::MLReqLocationPayloadGen(uint8_t reportType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime) :  MLPayloadGen(CMD_REQ_LOCATION, 0, NULL, 0x0C)
+MLReqLocationPayloadGen::MLReqLocationPayloadGen(uint8_t reportType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime)
+: MLPayloadGen(CMD_REQ_LOCATION, 0, NULL, 0x0C)
 {
     _reportType = reportType;
     _action = action;
@@ -67,6 +68,31 @@ int MLAnsAlarmPayloadGen::getPayload(uint8_t *payload)
     pos = getPayloadPostfix(payload, pos);
     return pos;
 }
+////////////////////////////////////////////////////////////////////////////
+// SetDevice Command: "L2(param)" + "\r\n" as (0D0A)
+MLReqGtrCommandPayloadGen::MLReqGtrCommandPayloadGen(char *cmdParam)
+: MLPayloadGen(CMD_REQ_GTR_COMMAND, 0, NULL, 0x0C)
+{
+    _dataLen = strlen(cmdParam) + 6;
+    sprintf((char*)_data, "L2(%s)\r\n", cmdParam);
+}
+
+int MLReqGtrCommandPayloadGen::getPayload(uint8_t *payload)
+{
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
+    payload[pos] = _dataLen;
+    pos++;
+
+    memcpy(payload + pos, _data, _dataLen);
+    pos += _dataLen;
+        
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
+    return pos;
+    
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // set member variable by decode payload
@@ -88,10 +114,6 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
     
     _dateTime = MLutility::convertHexToDec(payload + pos, 4, true);
     pos += 4;
-
-    char strFmt[128];
-    sprintf(strFmt, "(%ld, %ld), typeReport=%d, typeGPS=%d, battery=%d, datetime:%ld ======", _loc.latitude, _loc.longtitude, _typeReport, _typeGPS, (int)_batteryLevel, _dateTime);
-    Serial.println(strFmt);
 }
 
 
@@ -114,13 +136,5 @@ void MLReportBeaconPayloadGen::setPayload(const uint8_t *payload, int szPayload)
     
     _batteryLevel = payload[pos];
     pos++;
-
-    ///////////////////////////
-    // output for debug string
-    char strFmt[100];
-    debugSerial.print("UUID=");
-    MLutility::printBinary(_uuid, 20);
-    sprintf(strFmt, "typeReport=%d, typeBeacon=%d, rssi=%d, tx=%d, battery=%d", _typeReport,  _typeBeacon, _rssi, _txPower, _batteryLevel);
-    debugSerial.println(strFmt);
 }
 

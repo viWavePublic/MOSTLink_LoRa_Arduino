@@ -2,7 +2,9 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId) : MLPayloadGen(CMD_REQ_SET_LORA_CONFIG) {
+MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId)
+: MLPayloadGen(CMD_REQ_SET_LORA_CONFIG)
+{
     memcpy(_frequency, frequency, ML_FREQUENCY_LEN);
     _dataRate = dataRate;
     _power = power;
@@ -31,7 +33,9 @@ int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_REQ_DATA) {
+MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, uint8_t *data)
+: MLPayloadGen(CMD_REQ_DATA)
+{
     _resInterval = resInterval;
     _dataLen = dataLen;
     memcpy(_data, data, _dataLen);
@@ -57,7 +61,9 @@ int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus) : MLPayloadGen(CMD_NOTIFY_LOCATION) {
+MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location, uint8_t notifyType, uint8_t gpsStatus)
+: MLPayloadGen(CMD_NOTIFY_LOCATION)
+{
     _dateTime = dateTime;
     _location.longtitude = location.longtitude;
     _location.latitude = location.latitude;
@@ -105,7 +111,9 @@ int MLAnsSetLoraConfigGen::getPayload(uint8_t *payload) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLAnsDataPayloadGen::MLAnsDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data) : MLPayloadGen(CMD_ANS_DATA) {
+MLAnsDataPayloadGen::MLAnsDataPayloadGen(uint8_t errorCode, uint8_t dataLen, uint8_t *data)
+: MLPayloadGen(CMD_ANS_DATA)
+{
     _errorCode = errorCode;
     _dataLen = dataLen;
     memcpy(_data, data, _dataLen);
@@ -127,7 +135,9 @@ int MLAnsDataPayloadGen::getPayload(uint8_t *payload) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location) : MLPayloadGen(CMD_RET_CONFIG_GEOF) {
+MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval, mllocation location)
+: MLPayloadGen(CMD_RET_CONFIG_GEOF)
+{
     _geofRadius = geofRadius;
     _resInterval = resInterval;
     _location.longtitude = location.longtitude;
@@ -155,8 +165,10 @@ int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4, 
-                float sysVoltage, float humidity, float temperature, float reserved) : MLPayloadGen(CMD_NTF_UPLOAD_VINDUINO_FIELD) {
+MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil_1, float soil_2, float soil_3, float soil_4,
+                                                     float sysVoltage, float humidity, float temperature, float reserved)
+: MLPayloadGen(CMD_NTF_UPLOAD_VINDUINO_FIELD)
+{
     memcpy(_apiKey, apiKey, VINDUINO_API_KEY_LEN);
     _soil_1 = soil_1;
     _soil_2 = soil_2;
@@ -191,8 +203,8 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
     return pos;
 }
 
-MLNotifyThingspeakPayloadGen::MLNotifyThingspeakPayloadGen(uint8_t *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7) :
-MLNotifyVindunoPayloadGen(apiKey, f0, f1, f2, f3, f4, f5, f6, f7)
+MLNotifyThingspeakPayloadGen::MLNotifyThingspeakPayloadGen(uint8_t *apiKey, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7)
+: MLNotifyVindunoPayloadGen(apiKey, f0, f1, f2, f3, f4, f5, f6, f7)
 {
     _cmdId = CMD_NTF_UPLOAD_THINKSPEAK_FIELD;
 }

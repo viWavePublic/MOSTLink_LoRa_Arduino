@@ -18,6 +18,7 @@
 // protocol v1.5 for LT601
 #define CMD_REQ_LOCATION        0x0006      // Downlink
 #define CMD_REQ_ALARM_BEACON    0x0007      // Uplink
+#define CMD_REQ_GTR_COMMAND     0x0008      // Downlink
 #define CMD_REQ_ALARM_GPS       0x000B      // Uplink
 #define CMD_REQ_CANCEL_ALARM    0x000C      // Uplink
 
@@ -26,7 +27,6 @@
 #define CMD_REP_BEACON          0x0213      // Uplink
 
 
-#define CMD_REQ_GTR_COMMAND     0x0008
 #define CMD_REQ_AUTH_JOIN       0x0009
 #define CMD_REQ_AUTH_CHALLENGE  0x000A
 

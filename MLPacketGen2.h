@@ -39,7 +39,9 @@ public:
     int getPayload(uint8_t *payload);
     uint32_t getDataTime() { return _dateTime; }
     uint8_t getStatusGPS() { return _statusGPS; }
-    
+    uint8_t getTypeReport() { return _typeReport; }
+    uint8_t getTypeGPS() { return _typeGPS; }
+
     uint8_t getBatteryLevel() { return _batteryLevel; }
     double getLat() { return _loc.latitude / 1000000.0; }
     double getLng() { return _loc.longtitude / 1000000.0; }

@@ -53,6 +53,18 @@ private:
 
 };
 
+// CMD_REQ_GTR_COMMAND
+class MLReqGtrCommandPayloadGen : public MLPayloadGen {
+public:
+    MLReqGtrCommandPayloadGen(char *cmdParam);
+
+    int getPayload(uint8_t *payload);
+
+private:
+    uint8_t _dataLen;
+    uint8_t _data[ML_MAX_DATA_SIZE];
+};
+
 /////////////////////////////////////////
 // Uplink: for tracker-node
 /////////////////////////////////////////
@@ -87,6 +99,13 @@ public:
     }
     int getPayload(uint8_t *payload) { return 0; };
     void setPayload(const uint8_t *payload, int szPayload);
+    
+    uint8_t *getUuid() { return _uuid; }
+    uint8_t getTypeReport() { return _typeReport; }
+    uint8_t getTypeBeacon() { return _typeBeacon; }
+    uint8_t getRssi() { return _rssi; }
+    uint8_t getTxpower() { return _txPower; }
+    uint8_t getBatteryLevel() { return _batteryLevel; }
 private:
     uint8_t _uuid[20];
     union {

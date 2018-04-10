@@ -15,7 +15,6 @@
 #include "MOSTLora.h"
 #include "MLPacketGen2.h"
 #include "MLPacketGen3.h"
-#include "MLutility.h"
 
 /////////////////////////////////////////
 // KOSTLink 1.5 protocol
@@ -39,6 +38,20 @@ void MOSTLora::sendPacketReqLocation(uint8_t *idMac, uint8_t reportType, uint8_t
 {
     MLPacketGen mlPacketGen(0,0,0,0,idMac);
     MLPayloadGen *pPayload = new MLReqLocationPayloadGen(reportType, action, ansTypeEx_ResInterval, ansTypeEx_DelayTime);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}
+
+//CMD_REQ_GTR_COMMAND
+void MOSTLora::sendPacketReqGtrCommand(uint8_t *idMac, char *cmdParam)
+{
+    MLPacketGen mlPacketGen(0,0,0,0,idMac);
+    MLPayloadGen *pPayload = new MLReqGtrCommandPayloadGen(cmdParam);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
