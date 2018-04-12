@@ -1,5 +1,4 @@
 #include "MLPacketGen2.h"
-#include "MLutility.h"
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -58,16 +57,16 @@ MLAnsNDCallPayloadGen::MLAnsNDCallPayloadGen(uint32_t dateTime, uint8_t statusGP
 void MLAnsNDCallPayloadGen::setPayload(const uint8_t *payload, int szPayload)
 {
     int pos = 3;
-    _dateTime = MLutility::convertHexToDec(payload + pos, 4, true);
+    _dateTime = MLPayloadGen::convertHexToDec(payload + pos, 4, true);
     pos += 4;
     
     _statusGPS = payload[pos];
     pos ++;
 
-    _loc.longtitude = MLutility::convertHexToDec(payload + pos, 4, true);
+    _loc.longtitude = MLPayloadGen::convertHexToDec(payload + pos, 4, true);
     pos += 4;
     
-    _loc.latitude = MLutility::convertHexToDec(payload + pos, 4, true);
+    _loc.latitude = MLPayloadGen::convertHexToDec(payload + pos, 4, true);
     pos += 4;
     
     _batteryLevel = payload[pos];

@@ -6,71 +6,78 @@
 #include <string.h>
 #include "MLPacketComm.h"
 
+////////////////////////////////////////////////////////////////////////////
+
 class MLPayloadGen {
-    public:
-        MLPayloadGen(uint16_t cmdId = 0, uint8_t optionFlags = 0, uint8_t *optionData = NULL, uint8_t version = 0x0B) {
-            _version = version;
-            _cmdId = cmdId;
-            _optionFlags = optionFlags;
-            if (_optionFlags & 0x01 && optionData != NULL) {
-                _optionDataLen = 3;
-                memcpy(_optionData, optionData, _optionDataLen);
-            } else {
-                _optionDataLen = 0;
-            }
-        }
-
-        void setMLPayloadOption(uint8_t optionFlags, uint8_t* optionData) {
-            _optionFlags = optionFlags;
-            if (_optionFlags & 0x01 && optionData != NULL) {
-                _optionDataLen = 3;
-                memcpy(_optionData, optionData, _optionDataLen);
-            } else {
-                _optionDataLen = 0;
-            }
-        }
-        virtual void setPayload(const uint8_t *payload, int szPayload) {}   // should implement for assign payload from buffer
-
-        // payload = prefix + [custom] + postfix
-        virtual int getPayload(uint8_t *payload) {
-            // prefix ... postfix
-            return getPayloadPrefix(payload);
-        }
-        int getPayloadPrefix(uint8_t *payload) {
-            // prefix
-            payload[0] = _version;
-            payload[1] = _cmdId & 0xFF;
-            payload[2] = _cmdId >> 8;
-            return 3;
-        }
-        int getPayloadPostfix(uint8_t *payload, int pos) {
-            // postfix
-            payload[pos++] = _optionFlags;
-            if (_optionDataLen > 0) {
-                memcpy(&payload[pos], _optionData, _optionDataLen);
-                pos += _optionDataLen;
-            }
-            return pos;
-        }
-
-        uint8_t getVersion() { return _version; }
-        uint16_t getCmdId() { return _cmdId; }
-        uint8_t getOptionFlags() { return _optionFlags; }
-        uint8_t* getOptionData(uint8_t& optionDataLen) {
-            optionDataLen = _optionDataLen;
-            return _optionData;
-        }
-        uint8_t getOptionDataLen() { return _optionDataLen; }
-    protected:
-        // prefix
-        uint8_t _version;
-        uint16_t _cmdId;
+public:
+    static uint32_t convertHexToDec(const uint8_t *src, int numSrc, bool littleEndian = true);
     
+public:
+    MLPayloadGen(uint16_t cmdId = 0, uint8_t optionFlags = 0, uint8_t *optionData = NULL, uint8_t version = 0x0B) {
+        _version = version;
+        _cmdId = cmdId;
+        _optionFlags = optionFlags;
+        if (_optionFlags & 0x01 && optionData != NULL) {
+            _optionDataLen = 3;
+            memcpy(_optionData, optionData, _optionDataLen);
+        } else {
+            _optionDataLen = 0;
+        }
+    }
+
+    void setMLPayloadOption(uint8_t optionFlags, uint8_t* optionData) {
+        _optionFlags = optionFlags;
+        if (_optionFlags & 0x01 && optionData != NULL) {
+            _optionDataLen = 3;
+            memcpy(_optionData, optionData, _optionDataLen);
+        } else {
+            _optionDataLen = 0;
+        }
+    }
+    virtual void setPayload(const uint8_t *payload, int szPayload) {}   // should implement for assign payload from buffer
+
+    // payload = prefix + [custom] + postfix
+    virtual int getPayload(uint8_t *payload) {
+        // prefix ... postfix
+        return getPayloadPrefix(payload);
+    }
+    int getPayloadPrefix(uint8_t *payload) {
+        // prefix
+        payload[0] = _version;
+        payload[1] = _cmdId & 0xFF;
+        payload[2] = _cmdId >> 8;
+        return 3;
+    }
+    int getPayloadPostfix(uint8_t *payload, int pos) {
         // postfix
-        uint8_t _optionFlags;
-        uint8_t _optionData[ML_MAX_OPTION_DATA_SIZE];
-        uint8_t _optionDataLen;
+        payload[pos++] = _optionFlags;
+        if (_optionDataLen > 0) {
+            memcpy(&payload[pos], _optionData, _optionDataLen);
+            pos += _optionDataLen;
+        }
+        return pos;
+    }
+
+    uint8_t getVersion() { return _version; }
+    uint16_t getCmdId() { return _cmdId; }
+    uint8_t getOptionFlags() { return _optionFlags; }
+    uint8_t* getOptionData(uint8_t& optionDataLen) {
+        optionDataLen = _optionDataLen;
+        return _optionData;
+    }
+    uint8_t getOptionDataLen() { return _optionDataLen; }
+protected:
+    // prefix
+    uint8_t _version;
+    uint16_t _cmdId;
+
+    // postfix
+    uint8_t _optionFlags;
+    uint8_t _optionData[ML_MAX_OPTION_DATA_SIZE];
+    uint8_t _optionDataLen;
 };
+
+////////////////////////////////////////////////////////////////////////////
 
 class MLReqSetLoraConfigGen : public MLPayloadGen {
     public:

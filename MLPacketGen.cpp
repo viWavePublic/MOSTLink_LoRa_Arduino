@@ -2,6 +2,29 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
+uint32_t MLPayloadGen::convertHexToDec(const uint8_t *src, int numSrc, bool littleEndian)
+{
+    uint32_t nRet = 0;
+    if (numSrc > 4) // only for 4 bytes (32bit) integer
+        numSrc = 4;
+    
+    int i;
+    if (littleEndian) {
+        for (i = 0; i < numSrc; i++) {
+            nRet = nRet | ((uint32_t)src[i] << (i * 8));
+        }
+    }
+    else {
+        for (i = 0; i < numSrc; i++) {
+            nRet = nRet | ((uint32_t)src[numSrc - i - 1] << (i * 8));
+        }
+    }
+    
+    return nRet;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
 MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId)
 : MLPayloadGen(CMD_REQ_SET_LORA_CONFIG)
 {

@@ -267,25 +267,6 @@ void MLutility::stringHexToBytes(uint8_t *dst, const char *strSrc, const int szS
     }
 }
 
-uint32_t MLutility::convertHexToDec(const uint8_t *src, int numSrc, boolean littleEndian)
-{
-    uint32_t nRet = 0;
-    numSrc = min(4, numSrc);
-    int i;
-    if (littleEndian) {
-        for (i = 0; i < numSrc; i++) {
-            nRet = nRet | ((uint32_t)src[i] << (i * 8));
-        }
-    }
-    else {
-        for (i = 0; i < numSrc; i++) {
-            nRet = nRet | ((uint32_t)src[numSrc - i - 1] << (i * 8));
-        }
-    }
-
-    return nRet;
-}
-
 // myDevices Cayenne: username, password, clientID
 int MLutility::convertMQTTtoHex(uint8_t *dst, const char *username, const char *password, const char *clientID)
 {

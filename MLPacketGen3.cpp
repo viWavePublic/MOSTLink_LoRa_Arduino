@@ -1,5 +1,4 @@
 #include "MLPacketGen3.h"
-#include "MLutility.h"
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -100,10 +99,10 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
 {
     int pos = 3;
   
-    _loc.longtitude = MLutility::convertHexToDec(payload + pos, 4, true);
+    _loc.longtitude = MLPayloadGen::convertHexToDec(payload + pos, 4, true);
     pos += 4;
     
-    _loc.latitude = MLutility::convertHexToDec(payload + pos, 4, true);
+    _loc.latitude = MLPayloadGen::convertHexToDec(payload + pos, 4, true);
     pos += 4;
 
     _statusGPS = payload[pos];
@@ -112,7 +111,7 @@ void MLReportLocationPayloadGen::setPayload(const uint8_t *payload, int szPayloa
     _batteryLevel = payload[pos];
     pos ++;
     
-    _dateTime = MLutility::convertHexToDec(payload + pos, 4, true);
+    _dateTime = MLPayloadGen::convertHexToDec(payload + pos, 4, true);
     pos += 4;
 }
 
