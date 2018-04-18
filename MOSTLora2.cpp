@@ -122,10 +122,17 @@ int MOSTLora::parsePacket()
                 _cbParseMOSTLink(cmdID);
             }
             // uplink for gateway
-            if (cmdID == CMD_REP_LOCATION) {
-                debugSerial.println(F("CMD_REP_LOCATION"));
-                MLReportLocationPayloadGen *pPayload = (MLReportLocationPayloadGen*)pkGen.getMLPayload();
+            if (cmdID == CMD_REP_LOCATION || cmdID == CMD_REQ_ALARM_GPS || cmdID == CMD_ANS_NDCALL || cmdID == CMD_REQ_SOS) {
+                if (cmdID == CMD_REP_LOCATION)
+                    debugSerial.println(F("CMD_REP_LOCATION"));
+                else if (cmdID == CMD_REQ_ALARM_GPS)
+                    debugSerial.println(F("CMD_REQ_ALARM_GPS"));
+                else if (cmdID == CMD_ANS_NDCALL)
+                    debugSerial.println(F("CMD_ANS_NDCALL"));
+                else if (cmdID == CMD_REQ_SOS)
+                    debugSerial.println(F("CMD_REQ_SOS"));
                 
+                MLAnsNDCallPayloadGen *pPayload = (MLAnsNDCallPayloadGen*)pkGen.getMLPayload();
                 ///////////////////////////
                 // output for debug string
                 char strLat[16], strLng[16];
@@ -133,10 +140,14 @@ int MOSTLora::parsePacket()
                 dtostrf(pPayload->getLng(), 8, 6, strLng);
                 sprintf(strFmt, "(%s, %s), tReport=%d, tGPS=%d, battery=%d, timeUX:%ld ======", \
                         strLat, strLng, pPayload->getTypeReport(), pPayload->getTypeGPS(), (int)pPayload->getBatteryLevel(), pPayload->getDataTime());
-                Serial.println(strFmt);
+                debugSerial.println(strFmt);
             }
-            else if (cmdID == CMD_REP_BEACON) {
-                debugSerial.println(F("CMD_REP_BEACON"));
+            else if (cmdID == CMD_REP_BEACON || cmdID == CMD_REQ_ALARM_BEACON) {
+                if (cmdID == CMD_REP_BEACON)
+                    debugSerial.println(F("CMD_REP_BEACON"));
+                else if (cmdID == CMD_REQ_ALARM_BEACON)
+                    debugSerial.println(F("CMD_REQ_ALARM_BEACON"));
+
                 MLReportBeaconPayloadGen *pPayload = (MLReportBeaconPayloadGen*)pkGen.getMLPayload();
                 ///////////////////////////
                 // output for debug string
@@ -144,25 +155,6 @@ int MOSTLora::parsePacket()
                 MLutility::printBinary(pPayload->getUuid(), 20);
                 sprintf(strFmt, "tReport=%d, tBeacon=%d, rssi=%d, tx=%d, battery=%d", \
                         pPayload->getTypeReport(), pPayload->getTypeBeacon(), pPayload->getRssi(), pPayload->getTxpower(), pPayload->getBatteryLevel());
-                debugSerial.println(strFmt);
-            }
-            else if (cmdID == CMD_REQ_ALARM_BEACON) {
-                debugSerial.println(F("CMD_REQ_ALARM_BEACON"));
-                MLReqAlarmBeaconPayloadGen *pPayload = (MLReqAlarmBeaconPayloadGen*)pkGen.getMLPayload();
-
-            }
-            else if (cmdID == CMD_REQ_ALARM_GPS) {
-                debugSerial.println(F("CMD_REQ_ALARM_GPS"));
-                MLAlarmGPSPayloadGen *pPayload = (MLAlarmGPSPayloadGen*)pkGen.getMLPayload();
-                ///////////////////////////
-                // output for debug string
-                double fLat = pPayload->getLat();
-                double fLng = pPayload->getLng();
-                uint8_t batteryLvl = pPayload->getBatteryLevel();
-                uint8_t gpsStatus = pPayload->getStatusGPS();
-                uint32_t dateTime = pPayload->getDataTime();
-
-                sprintf(strFmt, "battery=%d, GPS(%d)", batteryLvl, gpsStatus);
                 debugSerial.println(strFmt);
             }
             

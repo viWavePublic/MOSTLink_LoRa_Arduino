@@ -72,8 +72,8 @@ int MLAnsAlarmPayloadGen::getPayload(uint8_t *payload)
 MLReqGtrCommandPayloadGen::MLReqGtrCommandPayloadGen(char *cmdParam)
 : MLPayloadGen(CMD_REQ_GTR_COMMAND, 0, NULL, 0x0C)
 {
-    _dataLen = strlen(cmdParam) + 5;
     sprintf((char*)_data, "L2(%s)", cmdParam);
+    _dataLen = strlen((char*)_data) + 1;
 }
 
 int MLReqGtrCommandPayloadGen::getPayload(uint8_t *payload)

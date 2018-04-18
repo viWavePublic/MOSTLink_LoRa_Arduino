@@ -89,6 +89,7 @@ public:
     }
 };
 
+/////////////////////////////////////////
 // iBeacon, EddyStone
 class MLReportBeaconPayloadGen : public MLPayloadGen {
 public:
