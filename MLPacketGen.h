@@ -49,13 +49,17 @@ public:
         return 3;
     }
     int getPayloadPostfix(uint8_t *payload, int pos) {
-        // postfix
-        payload[pos++] = _optionFlags;
-        if (_optionDataLen > 0) {
-            memcpy(&payload[pos], _optionData, _optionDataLen);
-            pos += _optionDataLen;
+        if (_version >= 0x0C)   // MOSTLink 1.5: ver 0x0C, no optional-info
+            return pos;
+        else {                  // MOSTLink 1.4: ver 0x0B, use optinal-info
+            // postfix
+            payload[pos++] = _optionFlags;
+            if (_optionDataLen > 0) {
+                memcpy(&payload[pos], _optionData, _optionDataLen);
+                pos += _optionDataLen;
+            }
+            return pos;
         }
-        return pos;
     }
 
     uint8_t getVersion() { return _version; }

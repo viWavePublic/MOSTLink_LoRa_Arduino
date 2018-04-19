@@ -208,7 +208,8 @@ int LoraBase::sendData(uint8_t *data, int szData)
     int nRet = loraSerial.write(data, szData);
     delay(100);
 #ifdef DEBUG_LORA
-    debugSerial.print(F("Send > "));
+    MLutility::printTime(millis());
+    debugSerial.println(F(" Send_HEX>>> "));
     MLutility::printBinary(data, szData);
 #endif // DEBUG_LORA
     return nRet;
@@ -220,13 +221,14 @@ int LoraBase::sendData(const char *strData)
 {
     if (NULL == strData)
         return 0;
-    
+
     int nRet = sendData((uint8_t*)strData, strlen(strData));
-    
+
 #ifdef DEBUG_LORA
     debugSerial.print(F(">>> "));
     debugSerial.println(strData);
 #endif // DEBUG_LORA
+    
     return nRet;
 }
 
@@ -278,11 +280,11 @@ int LoraBase::receData()
     
 #ifdef DEBUG_LORA
     if (_szBuf > 0) {
+        debugSerial.println("");
         MLutility::printTime(millis());
-        debugSerial.print(F("\nRece < "));
-        MLutility::printBinary(_buf, _szBuf);
-        debugSerial.print(F("<<< "));
+        debugSerial.print(F(" Rece_TXT<<< "));
         debugSerial.println((char*)_buf);
+        MLutility::printBinary(_buf, _szBuf);
     }
 #endif // DEBUG_LORA
 

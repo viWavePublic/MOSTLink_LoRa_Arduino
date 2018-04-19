@@ -2,17 +2,18 @@
 #include "MLPacketGen.h"
 #include "MLPacketGen2.h"
 #include "MLPacketGen3.h"
+#include "MLutility.h"
 
-#define _DEBUG_MSG_ 1
+#define _DEBUG_MSG_ 0
 
 int MLPacketParser::mostloraPacketParse(MLPacketGen *mlpacket, const uint8_t *packet) {
     uint8_t nPacketLen;
     uint8_t payload[ML_MAX_PAYLOAD_SIZE] = {0};
     
-    if(packet[ML_PK_PREAMBLE_1_POS] == 0xFB && packet[ML_PK_PREAMBLE_2_POS] == 0xFC){
+    if (packet[ML_PK_PREAMBLE_1_POS] == 0xFB && packet[ML_PK_PREAMBLE_2_POS] == 0xFC) {
         if (packet[ML_PK_HEADER_CRC_POS] != getCrc(packet, ML_PK_HEADER_SIZE-ML_PK_HEADER_CRC_SIZE-ML_PK_CRC_SIZE)) {
 #if _DEBUG_MSG_
-            printf("CRC error 1\n");
+            printf("HeaderCRC error(-2)\n");
 #endif
             return ML_PK_PARSE_HEADER_CRC_ERR;
         } else {
@@ -35,7 +36,7 @@ int MLPacketParser::mostloraPacketParse(MLPacketGen *mlpacket, const uint8_t *pa
                 mostloraPayloadParse(mlpacket, payload, payloadLen);
             } else {
 #if _DEBUG_MSG_
-                printf("CRC error 2\n");
+                printf("PacketCRC error(-3)\n");
 #endif                
                 return ML_PK_PARSE_PACKET_CRC_ERR;
             }
@@ -160,7 +161,7 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
             pPayloadSOS->setPayload(payload, szPayload);
             mlpacket->setMLPayloadGen(pPayloadSOS);
         }
-            // MOSTLink 1.5
+        // MOSTLink 1.5
         case CMD_REP_LOCATION:
         {
             MLReportLocationPayloadGen *pPayloadLoc = new MLReportLocationPayloadGen();

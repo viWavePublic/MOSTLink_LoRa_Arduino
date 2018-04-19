@@ -93,9 +93,11 @@ int MOSTLora::parsePacket()
             szRet = szAES + 5;  // packet with AES
         }
 #endif // USE_LIB_CRYPTO_AES128
-        
+
         // packet header
         int nResult = pkParser.mostloraPacketParse(&pkGen, _buf);
+        
+        
         if (nResult == 0) {     // packet CRC correct
             const byte *pNodeID = pkGen.getID();
             const uint16_t cmdID = pkGen.getMLPayload()->getCmdId();
@@ -105,13 +107,20 @@ int MOSTLora::parsePacket()
                 debugSerial.print(F("DnLink"));
             else
                 debugSerial.print(F("UpLink"));
+
+            if (pkGen.getAckBit() != 0)
+                debugSerial.print(F("+ACK"));
             
-            debugSerial.print(F(": cmd("));
-            debugSerial.print(cmdID, DEC);
-            debugSerial.print(F(") 0x"));
-            debugSerial.print(cmdID, HEX);
-            
-            debugSerial.print(F(", nodeID:"));
+            if (pkGen.getPacketType() != 0) {
+                debugSerial.print(F("=ACK"));
+            }
+            else {
+                debugSerial.print(F(": cmd("));
+                debugSerial.print(cmdID, DEC);
+                debugSerial.print(F(") 0x"));
+                debugSerial.print(cmdID, HEX);
+            }
+            debugSerial.print(F(", MAC:"));
             MLutility::printBinary(pNodeID, 8);
 #endif // DEBUG_LORA
             
@@ -138,7 +147,7 @@ int MOSTLora::parsePacket()
                 char strLat[16], strLng[16];
                 dtostrf(pPayload->getLat(), 8, 6, strLat);
                 dtostrf(pPayload->getLng(), 8, 6, strLng);
-                sprintf(strFmt, "(%s, %s), tReport=%d, tGPS=%d, battery=%d, timeUX:%ld ======", \
+                sprintf(strFmt, "(%s, %s), tReport=%d, tGPS=%d, battery=%d, timeUX:%ld ===", \
                         strLat, strLng, pPayload->getTypeReport(), pPayload->getTypeGPS(), (int)pPayload->getBatteryLevel(), pPayload->getDataTime());
                 debugSerial.println(strFmt);
             }
@@ -210,7 +219,8 @@ int MOSTLora::parsePacket()
         }
         else {
 #ifdef DEBUG_LORA
-            debugSerial.println(F("ERROR: parse packet."));
+            debugSerial.print(nResult);
+            debugSerial.println(F(")ERROR: parse packet."));
 #endif // DEBUG_LORA
         }
     }
