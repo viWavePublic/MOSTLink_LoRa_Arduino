@@ -49,7 +49,7 @@ void setup() {
   lora.sendData("--- ready for debug LT601");
 
   // custom callback
-  lora.setCallbackReceData(funcCustomRece);
+//  lora.setCallbackReceData(funcCustomRece);
   lora.setCallbackPacketReqData(funcPacketReqData);
 }
 
@@ -87,20 +87,46 @@ void inputBySerial()
 
       }
       else if (('s' == strCmd[0]) || ('S' == strCmd[0]))  {
+        // 922222, 925555
         strMac = "9B667C110A001B80";
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
         Serial.println(F("---sendReqNDCall---"));
         lora.sendPacketReqNDCall(bufSend, 0x0c, 3, 10, 5);
       }
-      else if (('t' == strCmd[0]) || ('T' == strCmd[0]))  {
-        char *strHex = "FBFC0B15009B667C110A001B80180B31030C030036";
-        MLutility::stringHexToBytes(bufSend, strHex, 42);
+      else if ('+' == strCmd[0])  {
+        char *strHex = strCmd + 1;
+        int nLen = strlen(strHex);
+        MLutility::stringHexToBytes(bufSend, strHex, nLen);
 
         Serial.println(F("---send-Preset---"));
-        lora.sendData(bufSend, 21);
+        lora.sendData(bufSend, nLen / 2);
+      }
+      
+      else if (('t' == strCmd[0]) || ('T' == strCmd[0]))  {
+        // for test preset
+//        char *strHex = "FBFC0B15009B667C110A001B80180B31030C030036";  // NDCall
+        char *strHex = "FBFC0B2200000DB53802703668820C08000F4C322844303D393135303030290D0A37";  // SET device freq
+        if (strCmd[1] == '1') {
+           strHex[35] = 'E';
+           strHex[67] = '6';
+        }
+        else if (strCmd[1] == '2') {
+           strHex[35] = '8';
+           strHex[67] = '0';
+        }          
+        else if (strCmd[1] == '9') {
+           strHex[35] = 'A';
+           strHex[67] = '0';
+        }  
+        int nLen = strlen(strHex);
+        MLutility::stringHexToBytes(bufSend, strHex, nLen);
+
+        Serial.println(F("---send-Preset---"));
+        lora.sendData(bufSend, nLen / 2);
       }
       else if (('i' == strCmd[0]) || ('I' == strCmd[0]))  {
+        // 915000, 915600
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
         int nDelay = 30;
@@ -108,7 +134,6 @@ void inputBySerial()
           nDelay = atoi(strCmd + 1);
         }
         
-        MLutility::printTime(millis());
         Serial.print(F("---REQ_LOC: ONE TIME="));
         Serial.println(nDelay);
         // report type: 0x21 - one time: response location after delay time
@@ -125,7 +150,6 @@ void inputBySerial()
           nPeriod = atoi(strCmd + 1);
         }
         
-        MLutility::printTime(millis());
         Serial.print(F("---REQ_LOC: PERIODIC="));
         Serial.println(nPeriod);
         // report type: 0x21 - one time
@@ -135,13 +159,19 @@ void inputBySerial()
       else if ('0' == strCmd[0])  {   // ans alarm to STOP tracker
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
-        MLutility::printTime(millis());
         Serial.println(F("---sendAnsAlarm---"));
         // condition flag: 0x01 stop help
         //                 0x02 
-        lora.sendPacketAnsAlarm(bufSend, 0x03);        
-      }
+        lora.sendPacketAnsAlarm(bufSend, 0x03);
+      }      
+      else if ('7' == strCmd[0])  {   // req gtr command "M7
+        MLutility::stringHexToBytes(bufSend, strMac, 16);
+        lora.sendPacketReqGtrCommand(bufSend, "M7", false);
+      }      
       else if ('-' == strCmd[0])  {   // req gtr command
+        // command "M7" to standby mode (stop periodic report)
+        // command "D0=915000" to change frequency
+
         MLutility::stringHexToBytes(bufSend, strMac, 16);
         char *cmdParam = strCmd + 1;
         if (strlen(cmdParam) > 0) {

@@ -48,10 +48,10 @@ void MOSTLora::sendPacketReqLocation(uint8_t *idMac, uint8_t reportType, uint8_t
 }
 
 //CMD_REQ_GTR_COMMAND
-void MOSTLora::sendPacketReqGtrCommand(uint8_t *idMac, char *cmdParam)
+void MOSTLora::sendPacketReqGtrCommand(uint8_t *idMac, char *cmdParam, bool bPresetL2)
 {
     MLPacketGen mlPacketGen(0,0,0,0,idMac);
-    MLPayloadGen *pPayload = new MLReqGtrCommandPayloadGen(cmdParam);
+    MLPayloadGen *pPayload = new MLReqGtrCommandPayloadGen(cmdParam, bPresetL2);
     
     mlPacketGen.setMLPayloadGen(pPayload);
     uint8_t packetLen = mlPacketGen.getMLPacket(_buf);

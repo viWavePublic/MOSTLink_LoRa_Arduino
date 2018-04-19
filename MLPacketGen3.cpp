@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////////////////////////////
+// MOSTLink v1.5 for LT-601 tracker
+//
+//    payload version 0x0C, no more optional-flag at payload-end
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "MLPacketGen3.h"
 
 ////////////////////////////////////////////////////////////////////////////
@@ -69,10 +76,17 @@ int MLAnsAlarmPayloadGen::getPayload(uint8_t *payload)
 }
 ////////////////////////////////////////////////////////////////////////////
 // SetDevice Command: "L2(param)" + "\r\n" as (0D0A)
-MLReqGtrCommandPayloadGen::MLReqGtrCommandPayloadGen(char *cmdParam)
+MLReqGtrCommandPayloadGen::MLReqGtrCommandPayloadGen(char *cmdParam, bool bPresetL2)
 : MLPayloadGen(CMD_REQ_GTR_COMMAND, 0, NULL, 0x0C)
 {
-    sprintf((char*)_data, "L2(%s)\r\n", cmdParam);
+    char *strFmt;
+    if (bPresetL2) {       // L2(XXX)\r\n
+        strFmt = "L2(%s)\r\n";
+    }
+    else {              // cmd\r\n
+        strFmt = "%s\r\n";
+    }
+    sprintf((char*)_data, strFmt, cmdParam);
     _dataLen = strlen((char*)_data);
 }
 

@@ -147,7 +147,7 @@ int MOSTLora::parsePacket()
                 char strLat[16], strLng[16];
                 dtostrf(pPayload->getLat(), 8, 6, strLat);
                 dtostrf(pPayload->getLng(), 8, 6, strLng);
-                sprintf(strFmt, "(%s, %s), tReport=%d, tGPS=%d, battery=%d, timeUX:%ld ===", \
+                sprintf(strFmt, "(%s, %s), tReport=%d, tGPS=%d, battery=%d, timeUX:%ld", \
                         strLat, strLng, pPayload->getTypeReport(), pPayload->getTypeGPS(), (int)pPayload->getBatteryLevel(), pPayload->getDataTime());
                 debugSerial.println(strFmt);
             }

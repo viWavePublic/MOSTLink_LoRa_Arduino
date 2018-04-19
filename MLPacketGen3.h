@@ -56,7 +56,7 @@ private:
 // CMD_REQ_GTR_COMMAND
 class MLReqGtrCommandPayloadGen : public MLPayloadGen {
 public:
-    MLReqGtrCommandPayloadGen(char *cmdParam);
+    MLReqGtrCommandPayloadGen(char *cmdParam, bool bPresetL2);
 
     int getPayload(uint8_t *payload);
 

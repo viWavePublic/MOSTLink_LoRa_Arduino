@@ -123,7 +123,7 @@ public:
     // REQ_LOCATION
     void sendPacketReqLocation(uint8_t *idMac, uint8_t reportType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime);
     //CMD_REQ_GTR_COMMAND
-    void sendPacketReqGtrCommand(uint8_t *idMac, char *cmdParam);
+    void sendPacketReqGtrCommand(uint8_t *idMac, char *cmdParam, bool bPresetL2 = true);
 
     // ANS_ALARM
     void sendPacketAnsAlarm(uint8_t *idMac, uint8_t conditionFlag);
