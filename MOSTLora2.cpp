@@ -99,7 +99,7 @@ int MOSTLora::parsePacket()
         
         
         if (nResult == 0) {     // packet CRC correct
-            const byte *pNodeID = pkGen.getID();
+            const uint8_t *pNodeID = pkGen.getID();
             const uint16_t cmdID = pkGen.getMLPayload()->getCmdId();
             
 #ifdef DEBUG_LORA
@@ -123,6 +123,10 @@ int MOSTLora::parsePacket()
             debugSerial.print(F(", MAC:"));
             MLutility::printBinary(pNodeID, 8);
 #endif // DEBUG_LORA
+            // reply ACK_packet when rece need_ACK
+            if (pkGen.getAckBit() && _bReplyACK) {
+                sendPacketACK(pNodeID, !pkGen.getDirection());
+            }
             
             char strFmt[128] = {0};
             const boolean bForMe = (memcmp(pNodeID, _data.mac_addr, 8) == 0);

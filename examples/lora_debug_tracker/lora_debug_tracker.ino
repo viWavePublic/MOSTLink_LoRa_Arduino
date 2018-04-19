@@ -76,7 +76,8 @@ void inputBySerial()
       char bufSend[32] = {0};
       const char *strCmd = buf + 1;
       const char *strResult;
-      if (('f' == strCmd[0]) || ('F' == strCmd[0]))  {
+      const char cCmd = tolower(strCmd[0]);
+      if ('f' == cCmd)  {
         const char *strFreq = buf + 2;
         long freq = atol(strFreq);
        
@@ -86,7 +87,7 @@ void inputBySerial()
         lora.setMode(E_LORA_WAKEUP);         // E_LORA_WAKEUP
 
       }
-      else if (('s' == strCmd[0]) || ('S' == strCmd[0]))  {
+      else if ('s' == cCmd)  {
         // 922222, 925555
         strMac = "9B667C110A001B80";
         MLutility::stringHexToBytes(bufSend, strMac, 16);
@@ -94,7 +95,7 @@ void inputBySerial()
         Serial.println(F("---sendReqNDCall---"));
         lora.sendPacketReqNDCall(bufSend, 0x0c, 3, 10, 5);
       }
-      else if ('+' == strCmd[0])  {
+      else if ('+' == cCmd)  {
         char *strHex = strCmd + 1;
         int nLen = strlen(strHex);
         MLutility::stringHexToBytes(bufSend, strHex, nLen);
@@ -103,7 +104,7 @@ void inputBySerial()
         lora.sendData(bufSend, nLen / 2);
       }
       
-      else if (('t' == strCmd[0]) || ('T' == strCmd[0]))  {
+      else if ('t' == cCmd)  {
         // for test preset
 //        char *strHex = "FBFC0B15009B667C110A001B80180B31030C030036";  // NDCall
         char *strHex = "FBFC0B2200000DB53802703668820C08000F4C322844303D393135303030290D0A37";  // SET device freq
@@ -118,14 +119,24 @@ void inputBySerial()
         else if (strCmd[1] == '9') {
            strHex[35] = 'A';
            strHex[67] = '0';
-        }  
+        }
         int nLen = strlen(strHex);
         MLutility::stringHexToBytes(bufSend, strHex, nLen);
 
-        Serial.println(F("---send-Preset---"));
+        Serial.println(F("---send_TEST"));
         lora.sendData(bufSend, nLen / 2);
       }
-      else if (('i' == strCmd[0]) || ('I' == strCmd[0]))  {
+      else if ('a' == cCmd)  {   // ans alarm to STOP tracker
+        if (strCmd[1] == '0')
+          lora.setReplyACK(false);
+        else if (strCmd[1] == '1')
+          lora.setReplyACK(true);
+        else {
+          MLutility::stringHexToBytes(bufSend, strMac, 16);
+          lora.sendPacketACK(bufSend, true);
+        }
+      }
+      else if ('i' == cCmd)  {
         // 915000, 915600
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
@@ -141,7 +152,7 @@ void inputBySerial()
         //              0x02 periodic
         lora.sendPacketReqLocation(bufSend, 0x21, 0x02, 0, nDelay);
       }
-      else if (('j' == strCmd[0]) || ('J' == strCmd[0]))  {
+      else if ('j' == cCmd)  {
         // command: "/j30" - periodic 30 sec
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
@@ -156,7 +167,7 @@ void inputBySerial()
         //              0x02 periodic
         lora.sendPacketReqLocation(bufSend, 0x02, 0x03, nPeriod, 20);
       }
-      else if ('0' == strCmd[0])  {   // ans alarm to STOP tracker
+      else if ('0' == cCmd)  {   // ans alarm to STOP tracker
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
         Serial.println(F("---sendAnsAlarm---"));
@@ -164,13 +175,19 @@ void inputBySerial()
         //                 0x02 
         lora.sendPacketAnsAlarm(bufSend, 0x03);
       }      
-      else if ('7' == strCmd[0])  {   // req gtr command "M7
+      else if ('7' == cCmd)  {   // req gtr command "M7
         MLutility::stringHexToBytes(bufSend, strMac, 16);
         lora.sendPacketReqGtrCommand(bufSend, "M7", false);
       }      
-      else if ('-' == strCmd[0])  {   // req gtr command
-        // command "M7" to standby mode (stop periodic report)
-        // command "D0=915000" to change frequency
+      else if ('-' == cCmd)  {   // req gtr command
+        //////////////////////////////////
+        // command sample:
+        //   "M7" to standby mode (stop periodic report)
+        //   "D0=915000" to change frequency
+        //   "O2" DisableBLE:    0=enable, 1=disable
+        //   "CD" disableGPS:    0=enable, 1=disable
+        //   "C0" GPS always on: 0=disable, 1=enable
+        //   "A1" wait ACK: 0=disable, 1=enable
 
         MLutility::stringHexToBytes(bufSend, strMac, 16);
         char *cmdParam = strCmd + 1;

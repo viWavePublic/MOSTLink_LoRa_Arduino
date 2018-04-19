@@ -25,6 +25,8 @@ const char IV_AES128[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
 MOSTLora::MOSTLora(int pinP1, int pinP2, int pinBusy)
 : LoraBase(pinP1, pinP2, pinBusy)
 {
+    _bReplyACK = false; // when rece need_ACK, reply ACK_packet
+    
     _bPacketAES = false;
     setKeyHMAC("PublicKey");
     setKeyAES(KEY_AES128);
@@ -59,11 +61,11 @@ boolean MOSTLora::printConfig(DataLora &data)
 #ifdef DEBUG_LORA
   int i;
   if (!data.isValid()) {
-    debugSerial.print(F("+++ invalid config"));
+    debugSerial.print(F("*** invalid config"));
     return bRet;
   }
   bRet = true;
-  debugSerial.print(F("*LoRa*"));
+  debugSerial.print(F("LoRa:"));
   debugSerial.write(data.module_no, 4);
 
   debugSerial.print(F(", Ver:"));
@@ -245,6 +247,7 @@ int MOSTLora::receData()
     return szRece;
 }
 
+/////////////////////////////////////////
 // ANS_DATA command for humidity & temperature
 void MOSTLora::sendPacketAnsData(float h, float t)
 {

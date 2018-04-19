@@ -16,8 +16,21 @@
 #include "MLPacketGen2.h"
 #include "MLPacketGen3.h"
 
+// ACK: Acknowledgement, for reply ACK-packet
+void MOSTLora::sendPacketACK(uint8_t *idMac, bool bUplink)
+{
+    int nDirection = bUplink ? 1 : 0;
+    MLPacketGen mlPacketGen(0, 0, 1, nDirection, idMac);
+    
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}
+
 /////////////////////////////////////////
-// KOSTLink 1.5 protocol
+// KOSTLink 1.5 protocol (payload ver: 0x0C)
 /////////////////////////////////////////
 // REQ_NDCALL (Downlink)
 void MOSTLora::sendPacketReqNDCall(uint8_t *idMac, uint8_t ansType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime)

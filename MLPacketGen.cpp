@@ -290,9 +290,9 @@ int MLPacketGen::getMLPacket(uint8_t *mlpacket) {
     mlpacket[ML_PK_FLAGS_POS] = (_direction & 0x01) << 3 | (_packetType & 0x01) << 2 | (_receiverFlag & 0x01) << 1 | (_ackBit & 0x01);
     memcpy(&mlpacket[ML_PK_ID_POS], _id, ML_PK_ID_SIZE);
     pos = ML_PK_ID_POS+ML_PK_ID_SIZE;
-    uint8_t payloadLen = getMLPayload(mlpayload);
-    if (payloadLen <=0)
-        return -1;
+    
+    uint8_t payloadLen = getMLPayload(mlpayload);   // payload is 0 mean ACK_packet, packet_len=15
+    
     uint8_t totalLen = payloadLen + ML_PK_HEADER_SIZE;
     mlpacket[3] = totalLen;
     mlpacket[pos] = getCrc(mlpacket, pos);

@@ -47,8 +47,9 @@ struct DataLora {
 class MOSTLora : public LoraBase
 {
 private:
-  DataLora _data;
-  unsigned char _receiverID[8];   // receiver ID
+    bool _bReplyACK;
+    DataLora _data;
+    unsigned char _receiverID[8];   // receiver ID
     
     boolean _bPacketAES;    // send packet by AES encrypt
 //  String _keyHMAC;   // key of HMAC (challenge-response)
@@ -79,6 +80,10 @@ private:
 public:
   unsigned char *getMacAddress() { return _data.mac_addr; }
   boolean setReceiverID(const char *strID);
+    void setReplyACK(bool bReACK)
+    {
+        _bReplyACK = bReACK;
+    }
 
   // config setting: drequency, group, data-rate, power, wakeup-time
   boolean readConfig(const int nRetry = 1);
@@ -117,7 +122,8 @@ public:
   void sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery);
   void sendPacketAnsSOS();
 
-
+    // ACK: Acknowledgement
+    void sendPacketACK(uint8_t *idMac, bool bUplink);
     // REQ_NDCALL
     void sendPacketReqNDCall(uint8_t *idMac, uint8_t ansType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime);
     // REQ_LOCATION
