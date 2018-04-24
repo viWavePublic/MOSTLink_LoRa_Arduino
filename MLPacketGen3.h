@@ -75,6 +75,7 @@ public:
     : MLAnsNDCallPayloadGen(dateTime, statusGPS, lng, lat, batteryLevel)
     {
         _cmdId = CMD_REP_LOCATION;
+        _version = 0x0C;
     }
     int getPayload(uint8_t *payload) { return 0; };
     void setPayload(const uint8_t *payload, int szPayload);
@@ -94,7 +95,7 @@ public:
 class MLReportBeaconPayloadGen : public MLPayloadGen {
 public:
     MLReportBeaconPayloadGen()
-    : MLPayloadGen(CMD_REP_BEACON)
+    : MLPayloadGen(CMD_REP_BEACON, 0, NULL, 0x0C)
     {
         _cmdId = CMD_REP_BEACON;
     }

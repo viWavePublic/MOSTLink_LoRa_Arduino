@@ -127,10 +127,14 @@ void inputBySerial()
         lora.sendData(bufSend, nLen / 2);
       }
       else if ('a' == cCmd)  {   // ans alarm to STOP tracker
-        if (strCmd[1] == '0')
+        if (strCmd[1] == '0') {
           lora.setReplyACK(false);
-        else if (strCmd[1] == '1')
+          Serial.println(F("==replyACK Disable"));
+        }
+        else if (strCmd[1] == '1') {
           lora.setReplyACK(true);
+          Serial.println(F("==replyACK Enable"));
+        }
         else {
           MLutility::stringHexToBytes(bufSend, strMac, 16);
           lora.sendPacketACK(bufSend, true);
@@ -150,7 +154,10 @@ void inputBySerial()
         // report type: 0x21 - one time: response location after delay time
         //              0x01 - one time: response location directly
         //              0x02 periodic
-        lora.sendPacketReqLocation(bufSend, 0x21, 0x02, 0, nDelay);
+        if (nDelay <= 0)
+          lora.sendPacketReqLocation(bufSend, 0x01, 0x03, 0, 45);
+        else
+          lora.sendPacketReqLocation(bufSend, 0x21, 0x03, 0, nDelay);
       }
       else if ('j' == cCmd)  {
         // command: "/j30" - periodic 30 sec
@@ -188,6 +195,7 @@ void inputBySerial()
         //   "CD" disableGPS:    0=enable, 1=disable
         //   "C0" GPS always on: 0=disable, 1=enable
         //   "A1" wait ACK: 0=disable, 1=enable
+        //   "A6" num of re-send
 
         MLutility::stringHexToBytes(bufSend, strMac, 16);
         char *cmdParam = strCmd + 1;
@@ -199,6 +207,7 @@ void inputBySerial()
       }
     }
     else {
+      Serial.println(F("** Undef command **"));
       lora.sendData((char*)buf);
       
     }
