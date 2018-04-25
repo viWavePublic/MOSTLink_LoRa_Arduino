@@ -38,9 +38,13 @@ public:
     void setPayload(const uint8_t *payload, int szPayload);
     int getPayload(uint8_t *payload);
     uint32_t getDataTime() { return _dateTime; }
-    uint8_t getStatusGPS() { return _statusGPS; }
+    uint8_t getStatusGPS() {
+        if (_version == 0x0C)
+            return _typeGPS;
+        else
+            return _statusGPS;
+    }
     uint8_t getTypeReport() { return _typeReport; }
-    uint8_t getTypeGPS() { return _typeGPS; }
 
     uint8_t getBatteryLevel() { return _batteryLevel; }
     double getLat() { return _loc.latitude / 1000000.0; }
@@ -49,8 +53,8 @@ public:
 protected:
     uint32_t _dateTime;
     union {
-        uint8_t _statusGPS;
-        struct {
+        uint8_t _statusGPS;     // MOSTLink v1.4 (0x0B) or below
+        struct {                // MOSTLink v1.5 (0x0C)
             uint8_t _typeReport:5;
             uint8_t _typeGPS:3;
         };

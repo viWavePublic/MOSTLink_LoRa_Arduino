@@ -152,7 +152,7 @@ int MOSTLora::parsePacket()
                 dtostrf(pPayload->getLat(), 8, 6, strLat);
                 dtostrf(pPayload->getLng(), 8, 6, strLng);
                 sprintf(strFmt, "(%s, %s), tReport=%d, tGPS=%d, battery=%d, timeUX:%ld", \
-                        strLat, strLng, pPayload->getTypeReport(), pPayload->getTypeGPS(), (int)pPayload->getBatteryLevel(), pPayload->getDataTime());
+                        strLat, strLng, pPayload->getTypeReport(), pPayload->getStatusGPS(), (int)pPayload->getBatteryLevel(), pPayload->getDataTime());
                 debugSerial.println(strFmt);
             }
             else if (cmdID == CMD_REP_BEACON || cmdID == CMD_REQ_ALARM_BEACON) {
