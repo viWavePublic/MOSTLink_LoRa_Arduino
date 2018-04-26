@@ -269,7 +269,7 @@ int LoraBase::receData()
             if (E_LORA_WAKEUP == _eMode) {      // get RSSI at last character
                 _szBuf--;
 #ifdef DEBUG_LORA
-                nRssi = _buf[_szBuf];
+                nRssi = _buf[_szBuf] - 157;
                 debugSerial.print(nRssi);
                 debugSerial.print(F(" rssi. "));
 #endif // DEBUG_LORA

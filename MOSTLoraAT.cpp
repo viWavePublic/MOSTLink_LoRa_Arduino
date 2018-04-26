@@ -28,7 +28,7 @@ int MOSTLoraAT::receData()
     if (strstr(_strBuf, "AAT1 R1=") == _strBuf)
     {
         const char *strRssi = _strBuf + 8;
-        int rssi = atoi(strRssi) - 159;
+        int rssi = atoi(strRssi) - 157;
         debugSerial.print("rssi=");
         debugSerial.print(rssi);
 

@@ -105,8 +105,8 @@ public:
     uint8_t *getUuid() { return _uuid; }
     uint8_t getTypeReport() { return _typeReport; }
     uint8_t getTypeBeacon() { return _typeBeacon; }
-    uint8_t getRssi() { return _rssi; }
-    uint8_t getTxpower() { return _txPower; }
+    int8_t getRssi() { return _rssi; }
+    int8_t getTxpower() { return _txPower; }
     uint8_t getBatteryLevel() { return _batteryLevel; }
 private:
     uint8_t _uuid[20];
@@ -118,8 +118,8 @@ private:
         };
     };
 
-    uint8_t _rssi;
-    uint8_t _txPower;
+    int8_t _rssi;
+    int8_t _txPower;
     uint8_t _batteryLevel;
 };
 
