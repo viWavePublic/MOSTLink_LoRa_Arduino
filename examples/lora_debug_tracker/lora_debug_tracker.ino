@@ -7,7 +7,8 @@
 //    3. "/i" REQ_LOCATION one time: "/i30" response after 30 sec
 //    4. "/j" REQ_LOCATION periodic: "/j60" periodic per 60 sec
 //    5. "/0" stop help alarm
-//    6. "/-" set device command
+//    6. "/7" standby mode: stop periodic
+//    7. "/-" set device command, example below:
 //            "/-D0=915123"
 //            "/-O2=0" BLE enable; "/-O2=1" BLE disable
 //            "/-CD=0" GPS enable; "/-CD=1" GPS disable
@@ -87,7 +88,7 @@ void inputBySerial()
         lora.setMode(E_LORA_WAKEUP);         // E_LORA_WAKEUP
 
       }
-      else if ('s' == cCmd)  {
+      else if ('s' == cCmd)  {  // send REQ_ND_CALL to tracker (LT-300)
         // 922222, 925555
         strMac = "9B667C110A001B80";
         MLutility::stringHexToBytes(bufSend, strMac, 16);
@@ -95,38 +96,29 @@ void inputBySerial()
         Serial.println(F("---sendReqNDCall---"));
         lora.sendPacketReqNDCall(bufSend, 0x0c, 3, 10, 5);
       }
-      else if ('+' == cCmd)  {
+      else if ('+' == cCmd)  {  // send HEX by input string
         char *strHex = strCmd + 1;
         int nLen = strlen(strHex);
         MLutility::stringHexToBytes(bufSend, strHex, nLen);
 
-        Serial.println(F("---send-Preset---"));
+        Serial.println(F("---send-HEX---"));
         lora.sendData(bufSend, nLen / 2);
       }
       
-      else if ('t' == cCmd)  {
+      else if ('t' == cCmd)  {    // send test preset
         // for test preset
 //        char *strHex = "FBFC0B15009B667C110A001B80180B31030C030036";  // NDCall
         char *strHex = "FBFC0B2200000DB53802703668820C08000F4C322844303D393135303030290D0A37";  // SET device freq
-        if (strCmd[1] == '1') {
-           strHex[35] = 'E';
-           strHex[67] = '6';
-        }
-        else if (strCmd[1] == '2') {
-           strHex[35] = '8';
-           strHex[67] = '0';
-        }          
-        else if (strCmd[1] == '9') {
-           strHex[35] = 'A';
-           strHex[67] = '0';
-        }
         int nLen = strlen(strHex);
         MLutility::stringHexToBytes(bufSend, strHex, nLen);
 
         Serial.println(F("---send_TEST"));
         lora.sendData(bufSend, nLen / 2);
       }
-      else if ('a' == cCmd)  {   // ans alarm to STOP tracker
+      ////////////////////////////
+      // LT-601
+      ////////////////////////////
+      else if ('a' == cCmd)  {   // reply ACK: 1=enable, 0=disable
         if (strCmd[1] == '0') {
           lora.setReplyACK(false);
           Serial.println(F("==replyACK Disable"));
@@ -140,7 +132,7 @@ void inputBySerial()
           lora.sendPacketACK(bufSend, true);
         }
       }
-      else if ('i' == cCmd)  {
+      else if ('i' == cCmd)  {  // one-time report location (30)
         // 915000, 915600
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
@@ -159,7 +151,7 @@ void inputBySerial()
         else
           lora.sendPacketReqLocation(bufSend, 0x21, 0x03, 0, nDelay);
       }
-      else if ('j' == cCmd)  {
+      else if ('j' == cCmd)  {  // period report location
         // command: "/j30" - periodic 30 sec
         MLutility::stringHexToBytes(bufSend, strMac, 16);
 
