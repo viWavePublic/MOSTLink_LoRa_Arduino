@@ -121,14 +121,16 @@ public:
   // REQ_SOS/RES_SOS for Lt300 tracker node
   void sendPacketReqSOS(long datetime, char statusGPS, double lat, double lng, char battery);
   void sendPacketAnsSOS();
-
+    
+    // REQ_SET_LORA_CONFIG
+    void sendPacketSetLoraConfig(uint8_t *idMac, uint8_t channelID, long freq, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId);
     // ACK: Acknowledgement
     void sendPacketACK(uint8_t *idMac, bool bUplink);
     // REQ_NDCALL
     void sendPacketReqNDCall(uint8_t *idMac, uint8_t ansType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime);
     // REQ_LOCATION
     void sendPacketReqLocation(uint8_t *idMac, uint8_t reportType, uint8_t action, uint16_t ansTypeEx_ResInterval, uint16_t ansTypeEx_DelayTime);
-    //CMD_REQ_GTR_COMMAND
+    // REQ_GTR_COMMAND
     void sendPacketReqGtrCommand(uint8_t *idMac, char *cmdParam, bool bPresetL2 = true);
 
     // ANS_ALARM

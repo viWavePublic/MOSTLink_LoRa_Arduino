@@ -46,11 +46,6 @@ int MLPacketParser::mostloraPacketParse(MLPacketGen *mlpacket, const uint8_t *pa
 }
 
 int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *payload, const int szPayload) {
-    uint8_t frequency[ML_FREQUENCY_LEN] = {0};
-    uint8_t dataRate;
-    uint8_t power;
-    uint8_t wakeupInterval;
-    uint8_t groupId;
     uint16_t responseInterval;
     uint8_t dataLen;
     uint8_t data[ML_MAX_DATA_SIZE] = {0};
@@ -63,13 +58,11 @@ int MLPacketParser::mostloraPayloadParse(MLPacketGen *mlpacket, const uint8_t *p
     uint8_t optionFlagsPos = 0;
     switch (cmdId) {
         case CMD_REQ_SET_LORA_CONFIG:
-            memcpy(frequency, payload+CMD_REQ_SET_FREQ_POS, ML_FREQUENCY_LEN);
-            dataRate = payload[CMD_REQ_SET_DATA_RATE_POS];
-            power = payload[CMD_REQ_SET_POWER_POS];
-            wakeupInterval = payload[CMD_REQ_SET_WAKEUP_INT_POS];
-            groupId = payload[CMD_REQ_SET_GROUP_ID_POS];
-            mlpacket->setMLPayloadGen(new MLReqSetLoraConfigGen(frequency, dataRate, power, wakeupInterval, groupId));
-            optionFlagsPos = CMD_REQ_SET_GROUP_ID_POS + 1;
+        {
+            MLReqSetLoraConfigGen *pPayloadLoraConfig = new MLReqSetLoraConfigGen(1, 915000, 0, 7, 5, 0);
+            pPayloadLoraConfig->setPayload(payload, szPayload);
+            mlpacket->setMLPayloadGen(pPayloadLoraConfig);
+        }
             break;
         case CMD_REQ_DATA:
             responseInterval = payload[CMD_REQ_D_RES_INT_POS+1] << 8 | payload[CMD_REQ_D_RES_INT_POS];

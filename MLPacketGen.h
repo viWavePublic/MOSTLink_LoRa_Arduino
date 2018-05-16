@@ -85,15 +85,18 @@ protected:
 
 class MLReqSetLoraConfigGen : public MLPayloadGen {
     public:
-        MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId);
+        MLReqSetLoraConfigGen(uint8_t channelID, long freq, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId);
         int getPayload(uint8_t *payload);
-        uint8_t* getFrequency() { return _frequency; }
+        void setPayload(const uint8_t *payload, int szPayload);
+    
+        uint32_t getFrequency() { return _frequency; }
         uint8_t getDataRate() { return _dataRate; }
         uint8_t getPower() { return _power; }
         uint8_t getWakeupInterval() { return _wakeupInterval; }
         uint8_t getGroupId() { return _groupId; }
     private:
-        uint8_t _frequency[ML_FREQUENCY_LEN];
+        uint8_t _channelID;
+        uint32_t _frequency;
         uint8_t _dataRate;
         uint8_t _power;
         uint8_t _wakeupInterval;

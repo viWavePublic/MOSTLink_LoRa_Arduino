@@ -16,6 +16,20 @@
 #include "MLPacketGen2.h"
 #include "MLPacketGen3.h"
 
+// REQ_SET_LORA_CONFIG
+void MOSTLora::sendPacketSetLoraConfig(uint8_t *idMac, uint8_t channelID, long freq, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId)
+{
+    MLPacketGen mlPacketGen(0,0,0,0,idMac);
+    MLPayloadGen *pPayload = new MLReqSetLoraConfigGen(channelID, freq, dataRate, power, wakeupInterval, groupId);
+    
+    mlPacketGen.setMLPayloadGen(pPayload);
+    uint8_t packetLen = mlPacketGen.getMLPacket(_buf);
+    
+    /////////////////////
+    // send packet is ready
+    sendPacket(_buf, packetLen);
+}
+
 // ACK: Acknowledgement, for reply ACK-packet
 void MOSTLora::sendPacketACK(uint8_t *idMac, bool bUplink)
 {

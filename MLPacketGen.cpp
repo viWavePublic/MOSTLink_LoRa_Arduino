@@ -25,10 +25,11 @@ uint32_t MLPayloadGen::convertHexToDec(const uint8_t *src, int numSrc, bool litt
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId)
+MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t channelID, long freq, uint8_t dataRate, uint8_t power, uint8_t wakeupInterval, uint8_t groupId)
 : MLPayloadGen(CMD_REQ_SET_LORA_CONFIG)
 {
-    memcpy(_frequency, frequency, ML_FREQUENCY_LEN);
+    _channelID = channelID;
+    _frequency = freq;
     _dataRate = dataRate;
     _power = power;
     _wakeupInterval = wakeupInterval;
@@ -36,22 +37,44 @@ MLReqSetLoraConfigGen::MLReqSetLoraConfigGen(uint8_t *frequency, uint8_t dataRat
 }
 
 int MLReqSetLoraConfigGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
-    memcpy(&payload[pos], _frequency, ML_FREQUENCY_LEN);
+    // prefix
+    int pos = getPayloadPrefix(payload);
+
+    payload[pos++] = _channelID;
+    memcpy(&payload[pos], &_frequency, ML_FREQUENCY_LEN);
     pos += ML_FREQUENCY_LEN;
     payload[pos++] = _dataRate;
     payload[pos++] = _power;
     payload[pos++] = _wakeupInterval;
     payload[pos++] = _groupId;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
 
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
+}
+
+void MLReqSetLoraConfigGen::setPayload(const uint8_t *payload, int szPayload)
+{
+    int pos = 3;
+
+    _channelID = payload[pos];
+    pos++;
+    
+    _frequency = 0;
+    memcpy(&_frequency, &payload[pos], ML_FREQUENCY_LEN);
+    pos += 3;
+
+    _dataRate = payload[pos];
+    pos++;
+    
+    _power = payload[pos];
+    pos++;
+    
+    _wakeupInterval = payload[pos];
+    pos++;
+    
+    _groupId = payload[pos];
+    pos++;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -65,20 +88,17 @@ MLReqDataPayloadGen::MLReqDataPayloadGen(uint16_t resInterval, uint8_t dataLen, 
 }
 
 int MLReqDataPayloadGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
     payload[pos++] = _resInterval & 0xFF;
     payload[pos++] = _resInterval >> 8;
     payload[pos++] = _dataLen;
     memcpy(&payload[pos], _data, _dataLen);
     pos += _dataLen;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[++pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
+    
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
 }
 
@@ -94,41 +114,37 @@ MLNotifyLocationGen::MLNotifyLocationGen(uint32_t dateTime, mllocation location,
 }
 
 int MLNotifyLocationGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
     memcpy(payload + pos, &_dateTime, 4);
     pos = pos + 4;
     memcpy(payload + pos, &_location, 8);
     pos = pos + 8;
     payload[pos++] = _notifyType;
     payload[pos++] = _gpsStatus;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[++pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
+    
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
-MLAnsSetLoraConfigGen::MLAnsSetLoraConfigGen(uint8_t errorCode) : MLPayloadGen(CMD_ANS_SET_LORA_CONFIG) {
+MLAnsSetLoraConfigGen::MLAnsSetLoraConfigGen(uint8_t errorCode)
+: MLPayloadGen(CMD_ANS_SET_LORA_CONFIG)
+{
     _errorCode = errorCode;
 }
 
 int MLAnsSetLoraConfigGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
     payload[pos++] = _errorCode;
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[++pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
-
+    
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
 }
 
@@ -168,10 +184,9 @@ MLRetConfigGeofGen::MLRetConfigGeofGen(uint16_t geofRadius, uint16_t resInterval
 }
 
 int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
     payload[pos++] = _geofRadius & 0xFF;
     payload[pos++] = _geofRadius >> 8;
     payload[pos++] = _resInterval & 0xFF;
@@ -179,10 +194,8 @@ int MLRetConfigGeofGen::getPayload(uint8_t *payload) {
     memcpy(payload + pos, &_location, 8);
     pos = pos + 8;
 
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
 }
 
@@ -204,10 +217,9 @@ MLNotifyVindunoPayloadGen::MLNotifyVindunoPayloadGen(uint8_t *apiKey, float soil
 }
 
 int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
-    uint8_t pos = 0;
-    payload[pos++] = _version;
-    payload[pos++] = _cmdId & 0xFF;
-    payload[pos++] = _cmdId >> 8;
+    // prefix
+    int pos = getPayloadPrefix(payload);
+    
     memcpy(&payload[pos], _apiKey, VINDUINO_API_KEY_LEN);
     pos += VINDUINO_API_KEY_LEN;
     
@@ -219,10 +231,8 @@ int MLNotifyVindunoPayloadGen::getPayload(uint8_t *payload) {
         pos = pos + 4;
     }
     
-    payload[pos++] = _optionFlags;
-    if (_optionDataLen > 0)
-        memcpy(&payload[pos], _optionData, _optionDataLen);
-    pos += _optionDataLen;
+    // postfix
+    pos = getPayloadPostfix(payload, pos);
     return pos;
 }
 
