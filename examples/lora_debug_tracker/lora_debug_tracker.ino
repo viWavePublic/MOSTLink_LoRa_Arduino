@@ -86,7 +86,39 @@ void inputBySerial()
         Serial.println(freq);
         lora.writeConfig(freq, 0, 0, 7, 5);
         lora.setMode(E_LORA_WAKEUP);         // E_LORA_WAKEUP
+      }
+      else if ('c' == cCmd)  {  // send REQ_SET_LORA_CONFIG to LT-300 (channel1)
+        const char *strFreq = buf + 2;
+        long freq = atol(strFreq);
+        if (freq < 800000 || freq > 929000)
+          freq = 915000;
+          
+        Serial.print("channel(1): set freq= ");
+        Serial.println(freq);
+                
+        strMac = "9B667C110A001B80";
+        MLutility::stringHexToBytes(bufSend, strMac, 16);        
+        Serial.println(F("---sendSetLoraConfig---"));
+        lora.sendPacketSetLoraConfig(bufSend, 0, freq, 0, 7, 5, 0);
 
+        // ------ Update LoRa shield freq: same as LT-300
+        delay(1500);
+        lora.writeConfig(freq, 0, 0, 7, 5);
+        lora.setMode(E_LORA_WAKEUP);         // E_LORA_WAKEUP        
+      }
+      else if ('d' == cCmd)  {  // send REQ_SET_LORA_CONFIG to LT-300 (channel2)
+        const char *strFreq = buf + 2;
+        long freq = atol(strFreq);
+        if (freq < 800000 || freq > 999000)
+          freq = 915600;
+
+        Serial.print("channel(2): set freq= ");
+        Serial.println(freq);          
+                  
+        strMac = "9B667C110A001B80";
+        MLutility::stringHexToBytes(bufSend, strMac, 16);        
+        Serial.println(F("---sendSetLoraConfig---"));
+        lora.sendPacketSetLoraConfig(bufSend, 1, 915000, 0, 7, 5, 0);
       }
       else if ('s' == cCmd)  {  // send REQ_ND_CALL to tracker (LT-300)
         // 922222, 925555
