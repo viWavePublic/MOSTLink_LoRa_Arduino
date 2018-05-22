@@ -151,17 +151,21 @@ void inputBySerial()
       // LT-601
       ////////////////////////////
       else if ('a' == cCmd)  {   // reply ACK: 1=enable, 0=disable
-        if (strCmd[1] == '0') {
-          lora.setReplyACK(false);
-          Serial.println(F("==replyACK Disable"));
-        }
-        else if (strCmd[1] == '1') {
-          lora.setReplyACK(true);
-          Serial.println(F("==replyACK Enable"));
-        }
-        else {
+        if (strCmd[1] == '\0') {    // replyACK by manual
           MLutility::stringHexToBytes(bufSend, strMac, 16);
           lora.sendPacketACK(bufSend, true);
+          Serial.println(F("==replyACK NOW"));
+        }
+        else {
+          int replyACK = atoi(strCmd + 1);
+          lora.setReplyACK(replyACK);
+          Serial.print(replyACK);
+          if (replyACK >= 0) {
+            Serial.println(F("==replyACK Enable"));            
+          }
+          else {
+            Serial.println(F("==replyACK Disable"));                        
+          }
         }
       }
       else if ('i' == cCmd)  {  // one-time report location (30)

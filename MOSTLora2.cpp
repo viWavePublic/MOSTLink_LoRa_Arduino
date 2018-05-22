@@ -218,9 +218,10 @@ int MOSTLora::parsePacket()
             }
             
             // reply ACK_packet when rece need_ACK
-            if (pkGen.getAckBit() && _bReplyACK) {
-                delay(1000);
-                debugSerial.print(F("==replyACK=="));
+            if (pkGen.getAckBit() && _millisReplyACK >= 0) {
+                delay(_millisReplyACK);
+                debugSerial.print(_millisReplyACK);
+                debugSerial.print(F("ms ==replyACK=="));
                 sendPacketACK(pNodeID, !pkGen.getDirection());
             }
         }

@@ -47,7 +47,7 @@ struct DataLora {
 class MOSTLora : public LoraBase
 {
 private:
-    bool _bReplyACK;
+    int16_t _millisReplyACK;    // when rece need_ACK, reply ACK_packet after milliseconds (negative value mean NO reply_ACK)
     DataLora _data;
     unsigned char _receiverID[8];   // receiver ID
     
@@ -80,9 +80,13 @@ private:
 public:
   unsigned char *getMacAddress() { return _data.mac_addr; }
   boolean setReceiverID(const char *strID);
-    void setReplyACK(bool bReACK)
+    // Reply ACK when receive packet-with-ACK
+    int16_t getReplyACK() {
+        return _millisReplyACK;
+    }
+    void setReplyACK(int16_t msReplyACK)
     {
-        _bReplyACK = bReACK;
+        _millisReplyACK = msReplyACK;
     }
 
   // config setting: drequency, group, data-rate, power, wakeup-time
